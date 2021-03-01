@@ -38,8 +38,8 @@ class VplanetModel(object):
         
         theta = np.array(theta)
         
-        param_file_all = np.array([x.split('.')[0] for x in params])  # e.g. ['vpl', 'primary', 'primary', 'secondary', 'secondary']
-        param_name_all = np.array([x.split('.')[1] for x in params])  # e.g. ['dStopTime', 'dRotPeriod', 'dMass', 'dRotPeriod', 'dMass']
+        param_file_all = np.array([x.split('.')[0] for x in self.params])  # e.g. ['vpl', 'primary', 'primary', 'secondary', 'secondary']
+        param_name_all = np.array([x.split('.')[1] for x in self.params])  # e.g. ['dStopTime', 'dRotPeriod', 'dMass', 'dRotPeriod', 'dMass']
 
         for file in self.infile_list: # vpl.in, primary.in, secondary.in
             with open(os.path.join(self.inpath, file), 'r') as f:
@@ -59,7 +59,21 @@ class VplanetModel(object):
                 print(file_in, file = f)
 
 
-    def run_model(self, theta, remove=False, verbose=True):
+    def get_outparam(self, output, outparams):
+
+        outparam_file_all = np.array([x.split('.')[0] for x in outparams]) 
+        outparam_name_all = np.array([x.split('.')[1] for x in outparams])
+
+        num_out = len(outparams)
+        outvalues = np.zeros(num_out)
+
+        for i in range(num_out):
+            outvalues[i] = float(getattr(getattr(output.log.final, outparam_file_all[i]), outparam_name_all[i]))
+
+        return outvalues
+
+
+    def run_model(self, theta, remove=False, verbose=True, **kwargs):
         """
         theta   : (float, list) parameter values, corresponding to self.param
         remove  : (bool) True will erase input/output files after model is run
@@ -73,5 +87,11 @@ class VplanetModel(object):
         
         if verbose == True:
             print('Executed model %svpl.in %.3f s'%(self.outpath, time.time() - t0))
-            
-        return output
+
+        if 'outparams' in kwargs:
+            outparams = kwargs['outparams']  # e.g. ['primary.Luminosity', 'primary.Radius', 'secondary.Luminosity', 'secondary.Radius']
+            outvalues = self.get_outparam(output, outparams)
+            return outvalues
+
+        else:
+            return output
