@@ -20,12 +20,17 @@ class VplanetModel(object):
 
         outpath : (str) path to where model infiles should be written
                   'output/'
+
+        factor  : (float, list) theta conversion factor
         """
 
         self.params = params
         self.inpath = kwargs.get('inpath', '.')
         self.vplfile = kwargs.get('vplfile', 'vpl.in')
         self.sys_name = kwargs.get('sys_name', 'system')
+
+        self.nparam = len(params)
+        self.factor = np.array(kwargs.get('factor', np.ones(nparam)))
         
         self.infile_list = kwargs.get('infile_list', os.listdir(self.inpath))
 
@@ -35,7 +40,8 @@ class VplanetModel(object):
         theta   : (float, list) parameter values, corresponding to self.param
         """
         
-        theta = np.array(theta)
+        # Apply unit conversions to theta
+        theta = np.array(theta) * self.factor 
 
         self.outpath = kwargs.get('outpath', '.')
 
