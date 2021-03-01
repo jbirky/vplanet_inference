@@ -24,19 +24,23 @@ class VplanetModel(object):
 
         self.params = params
         self.inpath = kwargs.get('inpath', '.')
-        self.outpath = kwargs.get('outpath', '.')
         self.vplfile = kwargs.get('vplfile', 'vpl.in')
         self.sys_name = kwargs.get('sys_name', 'system')
         
         self.infile_list = kwargs.get('infile_list', os.listdir(self.inpath))
 
 
-    def initialize_model(self, theta):
+    def initialize_model(self, theta, **kwargs):
         """
         theta   : (float, list) parameter values, corresponding to self.param
         """
         
         theta = np.array(theta)
+
+        self.outpath = kwargs.get('outpath', '.')
+
+        if not os.path.exists(self.outpath):
+            os.mkdir(self.outpath)
         
         param_file_all = np.array([x.split('.')[0] for x in self.params])  # e.g. ['vpl', 'primary', 'primary', 'secondary', 'secondary']
         param_name_all = np.array([x.split('.')[1] for x in self.params])  # e.g. ['dStopTime', 'dRotPeriod', 'dMass', 'dRotPeriod', 'dMass']
@@ -79,14 +83,17 @@ class VplanetModel(object):
         remove  : (bool) True will erase input/output files after model is run
         """
 
-        self.initialize_model(theta)
+        self.outpath = kwargs.get('outpath', '.')
+        self.initialize_model(theta, **kwargs)
         
         t0 = time.time()
         subprocess.call(["vplanet vpl.in"], cwd=self.outpath, shell=True)
-        output = vpl.GetOutput(self.outpath, logfile=self.sys_name+'.log')
-        
+
         if verbose == True:
             print('Executed model %svpl.in %.3f s'%(self.outpath, time.time() - t0))
+
+        # if no logfile is found, it's probably because there was something wrong with the infile formatting
+        output = vpl.GetOutput(self.outpath, logfile=self.sys_name+'.log')
 
         if 'outparams' in kwargs:
             outparams = kwargs['outparams']  # e.g. ['primary.Luminosity', 'primary.Radius', 'secondary.Luminosity', 'secondary.Radius']
@@ -95,3 +102,12 @@ class VplanetModel(object):
 
         else:
             return output
+
+
+    def run_model_batch(self, theta_list, remove=False, verbose=True, **kwargs):
+
+        for i, tt in enumerate(theta_list):
+            op = os.path.join(outpath, 'model%s/'%(i))
+            vpm.run_model(tt, outpath=op)
+
+        return None
