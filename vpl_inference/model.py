@@ -18,9 +18,6 @@ class VplanetModel(object):
         inpath  : (str) path to template infiles
                   'infiles/'
 
-        outpath : (str) path to where model infiles should be written
-                  'output/'
-
         factor  : (float, list) theta conversion factor
         """
 
@@ -38,6 +35,9 @@ class VplanetModel(object):
     def InitializeModel(self, theta, **kwargs):
         """
         theta   : (float, list) parameter values, corresponding to self.param
+
+        outpath : (str) path to where model infiles should be written
+            'output/'
         """
         
         # Apply unit conversions to theta
@@ -159,7 +159,34 @@ class VplanetModel(object):
         return lnlike
 
 
-    def LnPrior(self):
+    def LnPriorFlat(self, theta, bounds):
+
+        theta = np.array(theta)
+        nparam = theta.shape[0]
+
+        if nparam != bounds.shape[0]:
+            print('dim theta != dim bounds')
+            raise
+
+        for i in range(nparam):
+            if (theta[i] < bounds[i][0]) or (theta[i] > bounds[i][1]):
+                return -np.inf
+
+        return 0
+
+
+    def LnPriorSample(self):
+        """
+        prior format for approxposterior
+        """
+
+        return None
+
+
+    def LnPriorTransform(self):
+        """
+        prior format for nested sampling
+        """
 
         return None
 
