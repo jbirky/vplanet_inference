@@ -1,3 +1,2 @@
-from .utils import *
+from .model import *
 from .analysis import *
-# from .inference import *
