@@ -30,7 +30,7 @@ class VplanetModel(object):
         self.sys_name = kwargs.get('sys_name', 'system')
 
         self.nparam = len(params)
-        self.factor = np.array(kwargs.get('factor', np.ones(nparam)))
+        self.factor = np.array(kwargs.get('factor', np.ones(self.nparam)))
         
         self.infile_list = kwargs.get('infile_list', os.listdir(self.inpath))
 
@@ -41,6 +41,7 @@ class VplanetModel(object):
         """
         
         # Apply unit conversions to theta
+        self.factor = np.array(kwargs.get('factor', self.factor))
         theta = np.array(theta) * self.factor 
 
         self.outpath = kwargs.get('outpath', '.')
@@ -70,26 +71,34 @@ class VplanetModel(object):
 
 
     def get_outparam(self, output, outparams):
+        """
+        output    : (vplot object) results form a model run obtained using vplot.GetOutput()
 
-        outparam_file_all = np.array([x.split('.')[0] for x in outparams]) 
-        outparam_name_all = np.array([x.split('.')[1] for x in outparams])
+        outparams : (str, list) return specified list of parameters from log file
+                    ['initial.primary.Luminosity', 'final.primary.Radius', 'initial.secondary.Luminosity', 'final.secondary.Radius']
+        """
+        nout = len(outparams)
+        outvalues = np.zeros(nout)
 
-        num_out = len(outparams)
-        outvalues = np.zeros(num_out)
-
-        for i in range(num_out):
-            outvalues[i] = float(getattr(getattr(output.log.final, outparam_file_all[i]), outparam_name_all[i]))
+        for i in range(nout):
+            base = output.log
+            for attr in outparams[i].split('.'):
+                base = getattr(base, attr)
+            outvalues[i] = float(base)
 
         return outvalues
 
 
     def run_model(self, theta, remove=False, verbose=True, **kwargs):
         """
-        theta   : (float, list) parameter values, corresponding to self.param
-        remove  : (bool) True will erase input/output files after model is run
+        theta     : (float, list) parameter values, corresponding to self.param
+
+        remove    : (bool) True will erase input/output files after model is run
+
+        outparams : (str, list) return specified list of parameters from log file
+                    ['initial.primary.Luminosity', 'final.primary.Radius', 'initial.secondary.Luminosity', 'final.secondary.Radius']
         """
 
-        self.outpath = kwargs.get('outpath', '.')
         self.initialize_model(theta, **kwargs)
         
         t0 = time.time()
@@ -102,7 +111,7 @@ class VplanetModel(object):
         output = vpl.GetOutput(self.outpath, logfile=self.sys_name+'.log')
 
         if 'outparams' in kwargs:
-            outparams = kwargs['outparams']  # e.g. ['primary.Luminosity', 'primary.Radius', 'secondary.Luminosity', 'secondary.Radius']
+            outparams = kwargs['outparams']  
             outvalues = self.get_outparam(output, outparams)
             return outvalues
 
@@ -112,8 +121,14 @@ class VplanetModel(object):
 
     def run_model_batch(self, theta_list, remove=False, verbose=True, **kwargs):
 
-        for i, tt in enumerate(theta_list):
-            op = os.path.join(outpath, 'model%s/'%(i))
-            vpm.run_model(tt, outpath=op)
+        # run models in parallel
+        if 'ncore' in kwargs:
+            ncore = kwargs['ncore']
+
+        # run models sequentially
+        else:  
+            for i, tt in enumerate(theta_list):
+                op = os.path.join(outpath, 'model%s/'%(i))
+                vpm.run_model(tt, outpath=op)
 
         return None
