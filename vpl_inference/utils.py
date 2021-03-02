@@ -35,7 +35,7 @@ class VplanetModel(object):
         self.infile_list = kwargs.get('infile_list', os.listdir(self.inpath))
 
 
-    def initialize_model(self, theta, **kwargs):
+    def InitializeModel(self, theta, **kwargs):
         """
         theta   : (float, list) parameter values, corresponding to self.param
         """
@@ -70,7 +70,7 @@ class VplanetModel(object):
                 print(file_in, file = f)
 
 
-    def get_outparam(self, output, outparams):
+    def GetOutparam(self, output, outparams, **kwargs):
         """
         output    : (vplot object) results form a model run obtained using vplot.GetOutput()
 
@@ -81,7 +81,7 @@ class VplanetModel(object):
         outvalues = np.zeros(nout)
 
         for i in range(nout):
-            base = output.log
+            base = kwargs.get('base', output.log)
             for attr in outparams[i].split('.'):
                 base = getattr(base, attr)
             outvalues[i] = float(base)
@@ -89,7 +89,7 @@ class VplanetModel(object):
         return outvalues
 
 
-    def run_model(self, theta, remove=False, verbose=True, **kwargs):
+    def RunModel(self, theta, remove=False, verbose=True, **kwargs):
         """
         theta     : (float, list) parameter values, corresponding to self.param
 
@@ -99,7 +99,7 @@ class VplanetModel(object):
                     ['initial.primary.Luminosity', 'final.primary.Radius', 'initial.secondary.Luminosity', 'final.secondary.Radius']
         """
 
-        self.initialize_model(theta, **kwargs)
+        self.InitializeModel(theta, **kwargs)
         
         t0 = time.time()
         subprocess.call(["vplanet vpl.in"], cwd=self.outpath, shell=True)
@@ -111,24 +111,59 @@ class VplanetModel(object):
         output = vpl.GetOutput(self.outpath, logfile=self.sys_name+'.log')
 
         if 'outparams' in kwargs:
-            outparams = kwargs['outparams']  
-            outvalues = self.get_outparam(output, outparams)
+            self.outparams = kwargs['outparams']  
+            outvalues = self.GetOutparam(output, self.outparams)
             return outvalues
 
         else:
             return output
 
 
-    def run_model_batch(self, theta_list, remove=False, verbose=True, **kwargs):
+    def RunModelBatch(self, theta_list, remove=False, verbose=True, **kwargs):
 
         # run models in parallel
         if 'ncore' in kwargs:
             ncore = kwargs['ncore']
 
+            """
+            to be implemented
+            """
+
         # run models sequentially
         else:  
             for i, tt in enumerate(theta_list):
                 op = os.path.join(outpath, 'model%s/'%(i))
-                vpm.run_model(tt, outpath=op)
+                vpm.RunModel(tt, outpath=op)
+
+        return None
+
+    
+    def LnLike(self, data, theta, outparams):
+        """
+        Gaussian likelihood function comparing vplanet model and given observational values/uncertainties
+
+        data      : (float, matrix)
+                    [(rad, radSig), 
+                     ...
+                     (lum, lumSig)]
+
+        outparams : (str, list) return specified list of parameters from log file
+                    ['final.primary.Radius', ..., 'final.primary.Luminosity']
+        """
+
+        ymodel = self.RunModel(theta, outparams=outparams)
+
+        # Gaussian likelihood 
+        lnlike = -0.5 * np.sum(((ymodel - data.T[0])/data.T[1])**2)
+
+        return lnlike
+
+
+    def LnPrior(self):
+
+        return None
+
+
+    def PosteriorSweep(self):
 
         return None
