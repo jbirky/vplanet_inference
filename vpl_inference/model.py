@@ -12,7 +12,7 @@ class VplanetModel(object):
 
     def __init__(self, params, **kwargs):
         """
-        param   : (str, list) variable parameter names
+        params  : (str, list) variable parameter names
                   ['vpl.dStopTime', 'star.dRotPeriod', 'star.dMass', 'planet.dEcc', 'planet.dOrbPeriod']
                 
         inpath  : (str) path to template infiles
@@ -91,7 +91,7 @@ class VplanetModel(object):
 
     def RunModel(self, theta, remove=False, verbose=True, **kwargs):
         """
-        theta     : (float, list) parameter values, corresponding to self.param
+        theta     : (float, list) parameter values, corresponding to self.params
 
         remove    : (bool) True will erase input/output files after model is run
 
@@ -137,60 +137,136 @@ class VplanetModel(object):
 
         return None
 
-    
-    def LnLike(self, data, theta, outparams):
-        """
-        Gaussian likelihood function comparing vplanet model and given observational values/uncertainties
 
+    def InitializeBayes(self, data=None, outparams=None, bounds=None):
+        """
         data      : (float, matrix)
                     [(rad, radSig), 
-                     ...
-                     (lum, lumSig)]
+                    ...
+                    (lum, lumSig)]
 
         outparams : (str, list) return specified list of parameters from log file
                     ['final.primary.Radius', ..., 'final.primary.Luminosity']
         """
+        if data != None:
+            self.data = data 
+        else:
+            print('Must input data!')
+            raise 
+        
+        if outparams != None:
+            self.outparams = outparams
+            self.nout = len(outparams)
+        else:
+            print('Must specify outparams!')
+            raise 
 
-        ymodel = self.RunModel(theta, outparams=outparams)
+        if bounds != None:
+            self.bounds = bounds
+        else:
+            self.bounds = np.empty(shape=(self.nparams, 2), dtype='object') 
+
+    
+    def LnLike(self, theta):
+        """
+        Gaussian likelihood function comparing vplanet model and given observational values/uncertainties
+        """
+
+        ymodel = self.RunModel(theta, outparams=self.outparams)
 
         # Gaussian likelihood 
-        lnlike = -0.5 * np.sum(((ymodel - data.T[0])/data.T[1])**2)
+        lnlike = -0.5 * np.sum(((ymodel - self.data.T[0])/self.data.T[1])**2)
 
         return lnlike
 
 
-    def LnPriorFlat(self, theta, bounds):
+    def LnPriorFlat(self, theta):
+        """
+        theta   : (float, list) parameter values, corresponding to self.param
+
+        bounds  : (float, matrix) min and max values for parameter in theta
+                  [(min_theta_0, max_theta_0),
+                   ...
+                   (min_theta_n, max_theta_n)]
+        """
 
         theta = np.array(theta)
-        nparam = theta.shape[0]
 
-        if nparam != bounds.shape[0]:
-            print('dim theta != dim bounds')
+        if theta.shape[0] != self.bounds.shape[0]:
+            print('Error: dim theta != dim bounds')
             raise
 
         for i in range(nparam):
-            if (theta[i] < bounds[i][0]) or (theta[i] > bounds[i][1]):
-                return -np.inf
+            min_bound, max_bound = self.bounds[i]
+
+            if min_bound != None:
+                if theta < min_bound:
+                    return -np.inf 
+            
+            if max_bound != None:
+                if theta > max_bound:
+                    return -np.inf 
+
+            # if (theta[i] < self.bounds[i][0]) or (theta[i] > self.bounds[i][1]):
+            #     return -np.inf
 
         return 0
 
 
-    def LnPriorSample(self):
+    def LnPriorSample(self, size=1, LnPrior=self.LnPriorFlat, **kwargs):
         """
-        prior format for approxposterior
+        prior format for approxposterior; defaults to uniform prior unless otherwise specified
+
+        bounds  : (float, matrix) min and max values for parameter in theta
+                  [(min_theta_0, max_theta_0),
+                   ...
+                   (min_theta_n, max_theta_n)] 
+
+        prior_dist : (list) specify custom non-uniform prior
+                     [np.random.uniform(low=0.07, high=0.11),
+                     norm.rvs(loc=fsatTrappist1, scale=fsatTrappist1Sig, size=1)[0],
+                     np.random.uniform(low=0.1, high=12),
+                     norm.rvs(loc=ageTrappist1, scale=ageTrappist1Sig, size=1)[0],
+                     norm.rvs(loc=betaTrappist1, scale=betaTrappist1Sig, size=1)[0]]
         """
 
-        return None
+        uniform_sample = np.random.uniform(self.bounds.T[0], self.bounds.T[1])
+
+        ret = []
+        for ii in range(size):
+            while True:
+                guess = kwargs.get('prior_dist', uniform_sample)
+                if not np.isinf(LnPrior(guess, **kwargs)):
+                    ret.append(guess)
+                    break
+        if size > 1:
+            return np.array(ret)
+        else:
+            return np.array(ret[0])
 
 
-    def LnPriorTransform(self):
+    def PriorTransform(self, theta):
         """
         prior format for nested sampling
+
+        bounds  : (float, matrix) min and max values for parameter in theta
+            [(min_theta_0, max_theta_0),
+            ...
+            (min_theta_n, max_theta_n)]
         """
 
-        return None
+        pt = np.zeros(len(self.bounds))
+        for i, b in enumerate(self.bounds):
+            pt[i] = (b[1] - b[0]) * theta[i] + b[0]
+
+        return pt
 
 
-    def PosteriorSweep(self):
+    def LnPosterior(self, theta, LnLike=self.LnLike, LnPrior=self.LnPriorFlat):
+
+        return LnLike(theta) + LnPrior(theta)
+
+
+    def PosteriorSweep(self, theta_list, LnLike=self.LnLike, LnPrior=self.LnPriorFlat):
 
         return None
