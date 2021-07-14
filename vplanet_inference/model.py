@@ -5,13 +5,15 @@ import os
 import re
 import subprocess
 import time
+import random
 
 __all__ = ["VplanetModel"]
 
 
 class VplanetModel(object):
 
-    def __init__(self, params, **kwargs):
+    def __init__(self, params, inpath=".", vplfile="vpl.in", sys_name="system", 
+                 factor=None, verbose=True, infile_list=None):
         """
         params  : (str, list) variable parameter names
                   ['vpl.dStopTime', 'star.dRotPeriod', 'star.dMass', 'planet.dEcc', 'planet.dOrbPeriod']
@@ -23,17 +25,24 @@ class VplanetModel(object):
         """
 
         self.params = params
-        self.inpath = kwargs.get('inpath', '.')
-        self.vplfile = kwargs.get('vplfile', 'vpl.in')
-        self.sys_name = kwargs.get('sys_name', 'system')
+        self.inpath = inpath
+        self.vplfile = vplfile
+        self.sys_name = sys_name
 
         self.nparam = len(params)
-        self.factor = np.array(kwargs.get('factor', np.ones(self.nparam)))
+
+        if factor is None:
+            self.factor = np.ones(self.nparam)
+        else:
+            self.factor = factor
         
-        self.infile_list = kwargs.get('infile_list', os.listdir(self.inpath))
+        if infile_list is None:
+            self.infile_list = os.listdir(self.inpath)
+        else:
+            self.infile_list = infile_list
 
 
-    def initialize_model(self, theta, outpath="output/", **kwargs):
+    def initialize_model(self, theta, outpath=None):
         """
         theta   : (float, list) parameter values, corresponding to self.param
 
@@ -42,13 +51,10 @@ class VplanetModel(object):
         """
         
         # Apply unit conversions to theta
-        self.factor = np.array(kwargs.get('factor', self.factor))
         theta = np.array(theta) * self.factor 
 
-        self.outpath = outpath
-
-        if not os.path.exists(self.outpath):
-            os.mkdir(self.outpath)
+        if not os.path.exists(outpath):
+            os.mkdir(outpath)
         
         param_file_all = np.array([x.split('.')[0] for x in self.params])  # e.g. ['vpl', 'primary', 'primary', 'secondary', 'secondary']
         param_name_all = np.array([x.split('.')[1] for x in self.params])  # e.g. ['dStopTime', 'dRotPeriod', 'dMass', 'dRotPeriod', 'dMass']
@@ -67,7 +73,7 @@ class VplanetModel(object):
             for i in range(len(theta_file)):
                 file_in = re.sub("%s(.*?)#" % param_name_file[i], "%s %.6e #" % (param_name_file[i], theta_file[i]), file_in)
 
-            write_file = os.path.join(self.outpath, file)
+            write_file = os.path.join(outpath, file)
             with open(write_file, 'w') as f:
                 print(file_in, file = f)
             print(f"Created file {write_file}")
@@ -92,7 +98,7 @@ class VplanetModel(object):
         return outvalues
 
 
-    def run_model(self, theta, remove=False, verbose=True, **kwargs):
+    def run_model(self, theta, remove=True, outparams=None, outpath=None):
         """
         theta     : (float, list) parameter values, corresponding to self.params
 
@@ -102,22 +108,34 @@ class VplanetModel(object):
                     ['initial.primary.Luminosity', 'final.primary.Radius', 'initial.secondary.Luminosity', 'final.secondary.Radius']
         """
 
-        self.initialize_model(theta, **kwargs)
+        # randomize output directory
+        if outpath is None:
+            outpath = f"output/{random.randrange(16**12)}"
+
+        self.initialize_model(theta, outpath=outpath)
         
         t0 = time.time()
+
+        # Execute the model!
+        subprocess.call(["vplanet vpl.in"], cwd=outpath, shell=True)
+
         # if no logfile is found, it's probably because there was something wrong with the infile formatting
-        output = vplanet.run(os.path.join(self.outpath, "vpl.in"))
+        output = vplanet.get_output(os.path.join(outpath, "vpl.in"))
 
-        if verbose == True:
-            print('Executed model %svpl.in %.3f s'%(self.outpath, time.time() - t0))
+        if self.verbose == True:
+            print('Executed model %svpl.in %.3f s'%(outpath, time.time() - t0))
 
-        if 'outparams' in kwargs:
-            self.outparams = kwargs['outparams']  
+        if outparams is not None:
+            self.outparams = outparams 
             outvalues = self.get_outparam(output, self.outparams)
-            return outvalues
-
+            model_out = outvalues
         else:
-            return output
+            model_out = output
+
+        if remove == True:
+            os.rmdir(outpath)
+
+        return model_out
 
 
     def initialize_bayes(self, data=None, outparams=None, bounds=None):
@@ -130,31 +148,31 @@ class VplanetModel(object):
         outparams : (str, list) return specified list of parameters from log file
                     ['final.primary.Radius', ..., 'final.primary.Luminosity']
         """
-        if data != None:
+        if data is not None:
             self.data = data 
         else:
             print('Must input data!')
             raise 
         
-        if outparams != None:
+        if outparams is not None:
             self.outparams = outparams
             self.nout = len(outparams)
         else:
             print('Must specify outparams!')
             raise 
 
-        if bounds != None:
+        if bounds is not None:
             self.bounds = bounds
         else:
             self.bounds = np.empty(shape=(self.nparams, 2), dtype='object') 
 
     
-    def lnlike(self, theta):
+    def lnlike(self, theta, outpath=None):
         """
         Gaussian likelihood function comparing vplanet model and given observational values/uncertainties
         """
 
-        ymodel = self.run_model(theta, outparams=self.outparams)
+        ymodel = self.run_model(theta, outparams=self.outparams, outpath=outpath)
 
         # Gaussian likelihood 
         lnlike = -0.5 * np.sum(((ymodel - self.data.T[0])/self.data.T[1])**2)
