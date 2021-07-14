@@ -1,5 +1,6 @@
-import numpy as np 
 import vplot as vpl 
+import vplanet
+import numpy as np 
 import os
 import re
 import subprocess
@@ -32,7 +33,7 @@ class VplanetModel(object):
         self.infile_list = kwargs.get('infile_list', os.listdir(self.inpath))
 
 
-    def initialize_model(self, theta, **kwargs):
+    def initialize_model(self, theta, outpath="output/", **kwargs):
         """
         theta   : (float, list) parameter values, corresponding to self.param
 
@@ -44,7 +45,7 @@ class VplanetModel(object):
         self.factor = np.array(kwargs.get('factor', self.factor))
         theta = np.array(theta) * self.factor 
 
-        self.outpath = kwargs.get('outpath', '.')
+        self.outpath = outpath
 
         if not os.path.exists(self.outpath):
             os.mkdir(self.outpath)
@@ -66,8 +67,10 @@ class VplanetModel(object):
             for i in range(len(theta_file)):
                 file_in = re.sub("%s(.*?)#" % param_name_file[i], "%s %.6e #" % (param_name_file[i], theta_file[i]), file_in)
 
-            with open(os.path.join(self.outpath, file), 'w') as f:
+            write_file = os.path.join(self.outpath, file)
+            with open(write_file, 'w') as f:
                 print(file_in, file = f)
+            print(f"Created file {write_file}")
 
 
     def get_outparam(self, output, outparams, **kwargs):
@@ -84,7 +87,7 @@ class VplanetModel(object):
             base = kwargs.get('base', output.log)
             for attr in outparams[i].split('.'):
                 base = getattr(base, attr)
-            outvalues[i] = float(base)
+            outvalues[i] = float(base.value)
 
         return outvalues
 
@@ -102,13 +105,11 @@ class VplanetModel(object):
         self.initialize_model(theta, **kwargs)
         
         t0 = time.time()
-        subprocess.call(["vplanet vpl.in"], cwd=self.outpath, shell=True)
+        # if no logfile is found, it's probably because there was something wrong with the infile formatting
+        output = vplanet.run(os.path.join(self.outpath, "vpl.in"))
 
         if verbose == True:
             print('Executed model %svpl.in %.3f s'%(self.outpath, time.time() - t0))
-
-        # if no logfile is found, it's probably because there was something wrong with the infile formatting
-        output = vpl.GetOutput(self.outpath, logfile=self.sys_name+'.log')
 
         if 'outparams' in kwargs:
             self.outparams = kwargs['outparams']  
