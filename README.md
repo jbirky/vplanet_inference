@@ -1,4 +1,4 @@
-z## vplanet_inference
+## vplanet_inference
 
 Python tools for doing inference with vplanet
 
@@ -15,7 +15,11 @@ export PYTHONPATH=$PYTHONPATH:/path_to/vplanet_inference
 
 #### Configure vplanet forward model
 
-```
+```python
+import vplanet_inference as vpi
+import numpy as np
+import os
+
 inpath = os.path.join(vpi.INFILE_DIR, "stellar")
 infile_list = ["vpl.in", "star.in"]
 
@@ -35,7 +39,7 @@ vpm = vpi.VplanetModel(inparams, inpath=inpath, infile_list=infile_list, factor=
 
 #### Configure prior and likelihood
 
-```
+```python
 # Prior bounds
 bounds = [(0.07, 0.11),        
           (-5.0, -1.0),
