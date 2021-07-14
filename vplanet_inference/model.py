@@ -76,7 +76,9 @@ class VplanetModel(object):
             write_file = os.path.join(outpath, file)
             with open(write_file, 'w') as f:
                 print(file_in, file = f)
-            print(f"Created file {write_file}")
+
+            if self.verbose:
+                print(f"Created file {write_file}")
 
 
     def get_outparam(self, output, outparams, **kwargs):
