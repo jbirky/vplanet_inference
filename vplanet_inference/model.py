@@ -4,6 +4,7 @@ import numpy as np
 import os
 import re
 import subprocess
+import shutil
 import time
 import random
 
@@ -13,7 +14,7 @@ __all__ = ["VplanetModel"]
 class VplanetModel(object):
 
     def __init__(self, params, inpath=".", vplfile="vpl.in", sys_name="system", 
-                 factor=None, verbose=True, infile_list=None):
+                 factor=None, infile_list=None, verbose=True):
         """
         params  : (str, list) variable parameter names
                   ['vpl.dStopTime', 'star.dRotPeriod', 'star.dMass', 'planet.dEcc', 'planet.dOrbPeriod']
@@ -40,6 +41,8 @@ class VplanetModel(object):
             self.infile_list = os.listdir(self.inpath)
         else:
             self.infile_list = infile_list
+
+        self.verbose = verbose
 
 
     def initialize_model(self, theta, outpath=None):
@@ -112,7 +115,11 @@ class VplanetModel(object):
 
         # randomize output directory
         if outpath is None:
-            outpath = f"output/{random.randrange(16**12)}"
+            while True:
+                # create a unique randomized path to execute the model files
+                outpath = f"output/{random.randrange(16**12)}"
+                if not os.path.exists(outpath):
+                    break
 
         self.initialize_model(theta, outpath=outpath)
         
@@ -122,7 +129,7 @@ class VplanetModel(object):
         subprocess.call(["vplanet vpl.in"], cwd=outpath, shell=True)
 
         # if no logfile is found, it's probably because there was something wrong with the infile formatting
-        output = vplanet.get_output(os.path.join(outpath, "vpl.in"))
+        output = vplanet.get_output(outpath)
 
         if self.verbose == True:
             print('Executed model %svpl.in %.3f s'%(outpath, time.time() - t0))
@@ -134,8 +141,11 @@ class VplanetModel(object):
         else:
             model_out = output
 
+        if self.verbose:
+            print(f"theta : {theta} \t y : {model_out}")
+
         if remove == True:
-            os.rmdir(outpath)
+            shutil.rmtree(outpath)
 
         return model_out
 
