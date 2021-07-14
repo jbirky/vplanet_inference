@@ -43,7 +43,7 @@ output = vpm.run_model(theta, outpath='output/')
 Or return specified output parameters:
 ```
 theta = np.array([5e8, 1.0, 0.9])
-outparams = ['primary.Radius', 'secondary.Radius']
+outparams = ['initial.primary.Luminosity', 'final.primary.Radius', 'initial.secondary.Luminosity', 'final.secondary.Radius']
 
 output = vpm.run_model(theta, outparams=outparams)
 ```

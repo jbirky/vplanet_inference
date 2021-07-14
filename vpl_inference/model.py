@@ -142,8 +142,8 @@ class VplanetModel(object):
         """
         data      : (float, matrix)
                     [(rad, radSig), 
-                    ...
-                    (lum, lumSig)]
+                     ...
+                     (lum, lumSig)]
 
         outparams : (str, list) return specified list of parameters from log file
                     ['final.primary.Radius', ..., 'final.primary.Luminosity']
@@ -249,10 +249,7 @@ class VplanetModel(object):
         """
         prior format for nested sampling
 
-        bounds  : (float, matrix) min and max values for parameter in theta
-            [(min_theta_0, max_theta_0),
-            ...
-            (min_theta_n, max_theta_n)]
+        theta   : (float, list) parameter values, corresponding to self.param
         """
 
         pt = np.zeros(len(self.bounds))
@@ -263,6 +260,11 @@ class VplanetModel(object):
 
 
     def LnPosterior(self, theta, LnLike=self.LnLike, LnPrior=self.LnPriorFlat):
+        """
+        Compute LnPosterior = LnLiklihood + LnPrior
+
+        theta   : (float, list) parameter values, corresponding to self.param
+        """
 
         return LnLike(theta) + LnPrior(theta)
 
