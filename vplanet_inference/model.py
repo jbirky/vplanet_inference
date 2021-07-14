@@ -54,7 +54,7 @@ class VplanetModel(object):
         theta = np.array(theta) * self.factor 
 
         if not os.path.exists(outpath):
-            os.mkdir(outpath)
+            os.makedirs(outpath)
         
         param_file_all = np.array([x.split('.')[0] for x in self.params])  # e.g. ['vpl', 'primary', 'primary', 'secondary', 'secondary']
         param_name_all = np.array([x.split('.')[1] for x in self.params])  # e.g. ['dStopTime', 'dRotPeriod', 'dMass', 'dRotPeriod', 'dMass']
