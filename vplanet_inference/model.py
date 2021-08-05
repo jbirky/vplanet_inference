@@ -14,7 +14,7 @@ __all__ = ["VplanetModel"]
 class VplanetModel(object):
 
     def __init__(self, params, inpath=".", vplfile="vpl.in", sys_name="system", 
-                 factor=None, infile_list=None, verbose=True):
+                 infile_list=None, factor=None, conversions=None, verbose=True):
         """
         params  : (str, list) variable parameter names
                   ['vpl.dStopTime', 'star.dRotPeriod', 'star.dMass', 'planet.dEcc', 'planet.dOrbPeriod']
@@ -36,6 +36,8 @@ class VplanetModel(object):
             self.factor = np.ones(self.nparam)
         else:
             self.factor = factor
+
+        self.conversions = conversions
         
         if infile_list is None:
             self.infile_list = os.listdir(self.inpath)
@@ -55,6 +57,11 @@ class VplanetModel(object):
         
         # Apply unit conversions to theta
         theta = np.array(theta) * self.factor 
+
+        # Apply conversion functions to theta
+        if self.conversions is not None:
+            for conv in self.conversions.keys():
+                theta[conv] = self.conversions[conv](theta[conv])
 
         if not os.path.exists(outpath):
             os.makedirs(outpath)
