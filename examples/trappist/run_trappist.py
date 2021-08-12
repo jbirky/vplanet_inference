@@ -54,8 +54,11 @@ prior_data = [(None, None),     # mass [Msun]
               (7.6, 2.2),       # age [Gyr]
               (-1.18, 0.31)]    # beta
 
+# like_data = np.array([[5.22e-4, 0.19e-4],   # Lbol [Lsun]
+#                       [3.9e-7, 0.5e-7]])    # Lxuv [Lsun]
+
 like_data = np.array([[5.22e-4, 0.19e-4],   # Lbol [Lsun]
-                      [3.9e-7, 0.5e-7]])    # Lxuv [Lsun]
+                      [7.5e-4, 1.5e-4]])    # Lxuv/Lbol
 
 # Prior bounds
 bounds = [(0.07, 0.11),        
@@ -65,7 +68,7 @@ bounds = [(0.07, 0.11),
           (-2.0, 0.0)]
 
 # ========================================================
-# Configure prior & likelihood
+# Configure prior 
 # ========================================================
 
 # Prior - emcee format
@@ -74,8 +77,20 @@ lnprior = partial(ut.lnprior_normal, bounds=bounds, data=prior_data)
 # Prior - dynesty format
 prior_transform = partial(ut.prior_transform_normal, bounds=bounds, data=prior_data)
 
-# Initialize the likelihood function with the observations
-vpm.initialize_bayes(data=like_data, bounds=bounds, outparams=outparams)
+# ========================================================
+# Configure likelihood
+# ========================================================
+
+# vpm.initialize_bayes(data=like_data, bounds=bounds, outparams=outparams)
+
+def lnlike(theta):
+    out = vpm.run_model(theta, outparams=outparams)
+    mdl = np.array([out[0], out[1]/out[0]])
+    lnl = -0.5 * np.sum(((mdl - like_data.T[0])/like_data.T[1])**2)
+    return lnl
+
+def lnpost(theta):
+    return lnlike(theta) + lnprior(theta)
 
 # ========================================================
 # Run alabi
@@ -86,7 +101,7 @@ kernel = "ExpSquaredKernel"
 labels = [r"$m_{\star}$ [M$_{\odot}$]", r"$f_{sat}$",
           r"$t_{sat}$ [Gyr]", r"Age [Gyr]", r"$\beta_{XUV}$"]
 
-sm = SurrogateModel(fn=vpm.lnlike, bounds=bounds, savedir=f"results/{kernel}", labels=labels)
+sm = SurrogateModel(fn=lnpost, bounds=bounds, savedir=f"results/{kernel}", labels=labels)
 sm.init_samples(ntrain=100, ntest=100)
 # sm.init_samples(train_file="initial_training_sample.npz", test_file="initial_test_sample.npz")
 sm.init_gp(kernel=kernel, fit_amp=True, fit_mean=True, white_noise=-15)
