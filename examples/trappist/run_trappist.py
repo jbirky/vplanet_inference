@@ -3,20 +3,11 @@ from alabi import SurrogateModel
 from alabi import utility as ut
 import vplanet_inference as vpi
 import numpy as np
-from scipy.stats import norm
 from functools import partial
 import scipy
 import os
 
-import matplotlib.pyplot as plt
-import matplotlib.colors as colors
-from matplotlib import rc
-rc('text', usetex=True)
-rc('xtick', labelsize=16)
-rc('ytick', labelsize=16)
-font = {'family' : 'normal',
-        'weight' : 'light'}
-rc('font', **font)
+os.nice(10)
 
 # ========================================================
 # Configure vplanet forward model
@@ -54,9 +45,6 @@ prior_data = [(None, None),     # mass [Msun]
               (7.6, 2.2),       # age [Gyr]
               (-1.18, 0.31)]    # beta
 
-# like_data = np.array([[5.22e-4, 0.19e-4],   # Lbol [Lsun]
-#                       [3.9e-7, 0.5e-7]])    # Lxuv [Lsun]
-
 like_data = np.array([[5.22e-4, 0.19e-4],   # Lbol [Lsun]
                       [7.5e-4, 1.5e-4]])    # Lxuv/Lbol
 
@@ -70,6 +58,9 @@ bounds = [(0.07, 0.11),
 # ========================================================
 # Configure prior 
 # ========================================================
+
+# Prior sampler - alabi format
+ps = partial(ut.prior_sampler_normal, prior_data=prior_data, bounds=bounds)
 
 # Prior - emcee format
 lnprior = partial(ut.lnprior_normal, bounds=bounds, data=prior_data)
@@ -101,21 +92,16 @@ kernel = "ExpSquaredKernel"
 labels = [r"$m_{\star}$ [M$_{\odot}$]", r"$f_{sat}$",
           r"$t_{sat}$ [Gyr]", r"Age [Gyr]", r"$\beta_{XUV}$"]
 
-sm = SurrogateModel(fn=lnpost, bounds=bounds, savedir=f"results/{kernel}", labels=labels)
-sm.init_samples(ntrain=100, ntest=100)
-# sm.init_samples(train_file="initial_training_sample.npz", test_file="initial_test_sample.npz")
-sm.init_gp(kernel=kernel, fit_amp=True, fit_mean=True, white_noise=-15)
-sm.active_train(niter=500, algorithm="bape", gp_opt_freq=20)
+sm = SurrogateModel(fn=lnpost, bounds=bounds, prior_sampler=ps, savedir=f"results/{kernel}", labels=labels)
+sm.init_samples(ntrain=100, ntest=100, reload=True, scale=True)
+sm.init_gp(kernel=kernel, fit_amp=False, fit_mean=True, white_noise=-15)
+sm.active_train(niter=500, algorithm="bape", gp_opt_freq=10)
 sm.plot(plots=["gp_all"])
 
-# from alabi.cache_utils import load_model_cache
-# sm = load_model_cache(f"results/{kernel}/surrogate_model.pkl")
+sm = alabi.cache_utils.load_model_cache(f"results/{kernel}/surrogate_model.pkl")
 
-sm.run_emcee(lnprior=lnprior, nwalkers=20, nsteps=2e4, opt_init=False)
+sm.run_emcee(lnprior=lnprior, nwalkers=50, nsteps=5e4, opt_init=False)
 sm.plot(plots=["emcee_corner"])
 
-sampler_kwargs = {} #{'bound': 'single'}
-run_kwargs = {'dlogz_init': 0.05, 'wt_kwargs': {'pfrac': 1.0}}
-sm.run_dynesty(ptform=prior_transform, mode='dynamic', multi_proc=False, 
-               sampler_kwargs=sampler_kwargs, run_kwargs=run_kwargs)
+sm.run_dynesty(ptform=prior_transform, mode='dynamic')
 sm.plot(plots=["dynesty_all"])
