@@ -83,6 +83,9 @@ class VplanetModel(object):
             for i in range(len(theta_file)):
                 file_in = re.sub("%s(.*?)#" % param_name_file[i], "%s %.6e #" % (param_name_file[i], theta_file[i]), file_in)
 
+                if param_name_file[i] == 'dStopTime':
+                    file_in = re.sub("%s(.*?)#" % "dOutputTime", "%s %.6e #" % ("dOutputTime", theta_file[i]), file_in)
+
             write_file = os.path.join(outpath, file)
             with open(write_file, 'w') as f:
                 print(file_in, file = f)
