@@ -1,0 +1,24 @@
+# The host star, the sun -> Primary body!
+sName			secondary		# Body's name
+saModules       stellar eqtide  # Modules
+
+# Physical Parameters
+iBodyType     1                 # Star!
+dMass         1.0661            # Mass, solar masses
+dRotPeriod    -0.2              # Initial rotation period in d
+
+# Orbital properties
+dOrbPeriod  	-7.0                # Initial orbital period in d
+dEcc        	0.2                 # Initial eccentricity
+
+# EQTIDE Parameters
+dTidalQ       	1e6         	
+dK2				0.5				# Love number of degree 2
+dMaxLockDiff    0.01            # Difference between Prot and Peq before tidally-locking
+saTidePerts		primary   		# Body name(s) of tidal perturbers
+
+# Stellar param
+sStellarModel baraffe           # Stellar evolution grid
+sMagBrakingModel matt           # Matt+2015 magnetic braking model
+
+saOutputOrder	Time -Radius Temperature -Luminosity -TotEn -TotAngMom -Semim -RotPer Ecce -OrbPer -SurfEnFluxTotal # Output
