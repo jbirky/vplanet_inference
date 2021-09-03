@@ -7,14 +7,14 @@ import subprocess
 import shutil
 import time
 import random
+import astropy.units as u
 
 __all__ = ["VplanetModel"]
 
 
 class VplanetModel(object):
 
-    def __init__(self, params, inpath=".", vplfile="vpl.in", sys_name="system", 
-                 infile_list=None, factor=None, conversions=None, verbose=True):
+    def __init__(self, inparams, inpath=".", vplfile="vpl.in", sys_name="system", verbose=True):
         """
         params  : (str, list) variable parameter names
                   ['vpl.dStopTime', 'star.dRotPeriod', 'star.dMass', 'planet.dEcc', 'planet.dOrbPeriod']
@@ -25,26 +25,24 @@ class VplanetModel(object):
         factor  : (float, list) theta conversion factor
         """
 
-        self.params = params
+        self.inparams = list(inparams.keys())
+        self.in_units = list(inparams.values())
         self.inpath = inpath
         self.vplfile = vplfile
         self.sys_name = sys_name
-
-        self.nparam = len(params)
-
-        if factor is None:
-            self.factor = np.ones(self.nparam)
-        else:
-            self.factor = factor
-
-        self.conversions = conversions
-        
-        if infile_list is None:
-            self.infile_list = os.listdir(self.inpath)
-        else:
-            self.infile_list = infile_list
-
+        self.nparam = len(inparams)
         self.verbose = verbose
+
+        # List of infiles (vpl.in + body files)
+        self.infile_list = [vplfile]
+        with open(os.path.join(inpath, vplfile), 'r') as vplf:
+            for readline in vplf.readlines():
+                line = readline.strip().split()
+                if len(line) > 1:
+                    if line[0] == "saBodyFiles":
+                        for ll in line:
+                            if ".in" in ll:
+                                self.infile_list.append(ll)
 
 
     def initialize_model(self, theta, outpath=None):
@@ -55,36 +53,47 @@ class VplanetModel(object):
             'output/'
         """
         
-        # Apply unit conversions to theta
-        theta = np.array(theta) * self.factor 
-
-        # Apply conversion functions to theta
-        if self.conversions is not None:
-            for conv in self.conversions.keys():
-                theta[conv] = self.conversions[conv](theta[conv])
+        # Convert units of theta to SI
+        theta_conv = np.zeros(self.nparam)
+        for ii in range(self.nparam):
+            if isinstance(self.in_units[ii], u.function.logarithmic.DexUnit):
+                # un-log units
+                theta_conv[ii] = (theta[ii] * self.in_units[ii]).physical.si.value
+            else:
+                theta_conv[ii] = (theta[ii] * self.in_units[ii]).si.value
 
         if not os.path.exists(outpath):
             os.makedirs(outpath)
         
-        param_file_all = np.array([x.split('.')[0] for x in self.params])  # e.g. ['vpl', 'primary', 'primary', 'secondary', 'secondary']
-        param_name_all = np.array([x.split('.')[1] for x in self.params])  # e.g. ['dStopTime', 'dRotPeriod', 'dMass', 'dRotPeriod', 'dMass']
+        param_file_all = np.array([x.split('.')[0] for x in self.inparams])  # e.g. ['vpl', 'primary', 'primary', 'secondary', 'secondary']
+        param_name_all = np.array([x.split('.')[1] for x in self.inparams])  # e.g. ['dStopTime', 'dRotPeriod', 'dMass', 'dRotPeriod', 'dMass']
 
         for file in self.infile_list: # vpl.in, primary.in, secondary.in
             with open(os.path.join(self.inpath, file), 'r') as f:
                 file_in = f.read()
                 
             ind = np.where(param_file_all == file.strip('.in'))[0]
-            theta_file = theta[ind]
+            theta_file = theta_conv[ind]
             param_name_file = param_name_all[ind]
             
+            # if VPL file
             if file == 'vpl.in':
                 file_in = re.sub("%s(.*?)#" % "sSystemName", "%s %s #" % ("sSystemName", self.sys_name), file_in)
-                
-            for i in range(len(theta_file)):
-                file_in = re.sub("%s(.*?)#" % param_name_file[i], "%s %.6e #" % (param_name_file[i], theta_file[i]), file_in)
 
+                # Set units to SI
+                file_in = re.sub("%s(.*?)#" % "sUnitMass", "%s %s #" % ("sUnitMass", "kg"), file_in)
+                file_in = re.sub("%s(.*?)#" % "sUnitLength", "%s %s #" % ("sUnitLength", "m"), file_in)
+                file_in = re.sub("%s(.*?)#" % "sUnitTime", "%s %s #" % ("sUnitTime", "sec"), file_in)
+                file_in = re.sub("%s(.*?)#" % "sUnitAngle", "%s %s #" % ("sUnitAngle", "rad"), file_in)
+                file_in = re.sub("%s(.*?)#" % "sUnitTemp", "%s %s #" % ("sUnitTemp", "K"), file_in)
+                
+            # body files
+            for i in range(len(theta_file)):
+                file_in = re.sub("%s(.*?)#" % param_name_file[i], "%s %.10e #" % (param_name_file[i], theta_file[i]), file_in)
+
+                # Set output timesteps to simulation stop time
                 if param_name_file[i] == 'dStopTime':
-                    file_in = re.sub("%s(.*?)#" % "dOutputTime", "%s %.6e #" % ("dOutputTime", theta_file[i]), file_in)
+                    file_in = re.sub("%s(.*?)#" % "dOutputTime", "%s %.10e #" % ("dOutputTime", theta_file[i]), file_in)
 
             write_file = os.path.join(outpath, file)
             with open(write_file, 'w') as f:
@@ -108,14 +117,14 @@ class VplanetModel(object):
             base = kwargs.get('base', output.log)
             for attr in outparams[i].split('.'):
                 base = getattr(base, attr)
-            outvalues[i] = float(base.value)
+            outvalues[i] = base.to(self.out_units[i]).value
 
         return outvalues
 
 
     def run_model(self, theta, remove=True, outparams=None, outpath=None):
         """
-        theta     : (float, list) parameter values, corresponding to self.params
+        theta     : (float, list) parameter values, corresponding to self.inparams
 
         remove    : (bool) True will erase input/output files after model is run
 
@@ -145,7 +154,8 @@ class VplanetModel(object):
             print('Executed model %svpl.in %.3f s'%(outpath, time.time() - t0))
 
         if outparams is not None:
-            self.outparams = outparams 
+            self.outparams = list(outparams.keys())
+            self.out_units = list(outparams.values())
             outvalues = self.get_outparam(output, self.outparams)
             model_out = outvalues
         else:
