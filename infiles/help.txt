@@ -1,0 +1,783 @@
+
+		Help Message for /home/jbirky/.conda/envs/astro/bin/vplanet
+		-----------------------------------------------------------
+
+Lead Developer: Rory Barnes
+
+
+VPLANET is a general purpose planetary evolution integrator. From the command
+line, enter one optional command line option and one file name, e.g.:
+
+> vplanet vpl.in
+
+where vpl.in is the "primary" input file consisting of options and a list
+of files that contain the initial conditions for all bodies in a system.
+The code then simulates planetary systen evolution forward or backward in
+time. This onboard help provides information regarding the input and output
+files, command line options, and each option and output parameter. For more
+more information, see https://virtualplanetarylaboratory.github.io/vplanet,
+or consult the examples directory.
+
+====================   ============================================================
+Command Line Options                          Description                          
+--------------------   ------------------------------------------------------------
+-v, -verbose           -- Maximum verbosity, i.e. display all warnings and updates.
+-q, -quiet             -- No verbosity, i.e. nothing printed to device.
+-h, -help              -- Display short help.
+-H, -Help              -- Display extended help.
+====================   ============================================================
+
+Input File Structure
+--------------------
+
+- Options must be the first string on the line and must be written
+  exactly as shown below; the options are case-sensitive.
+- All characters to the right of a # sign are treated as a comment
+  and are ignored. Blank lines are also ignored.
+- Options that take an array of arguments may span multiple lines if a $ is
+  placed at the end of the line.
+- Output parameters (the arguments to saOutputOrder) are not case sensitive, and
+  need only enough characters to be unambiguous.
+
+Output File Structure
+---------------------
+
+Output files consist columns of data separated by white space in
+the same order as listed in saOutputOrder.
+
+Input Options
+-------------
+
+Format: [Negative forces units] Name -- Description [Negative unit] {Compatible modules} <Permited files> (Default value)
+
+bAccuracyMode (Double) -- Re-invert matrix every EBM time step {Modules = ALL} <Files = Any> (Default = 0).
+bAlbedoZA (Bool) -- Use albedo based on zenith angle {Modules = ALL} <Files = Any> (Default = 0).
+bAtmEscAuto (Bool) -- Let atmesc determine H envelope escape regime? {Modules = ALL} <Files = Any> (Default = 0).
+bCalcAB (Bool) -- Calculate A and B in OLR function, from (T & pCO2) {Modules = ALL} <Files = Any> (Default = 0).
+bCalcDynEllip (Bool) -- Calculate dynamical ellipticity from RotRate {Modules = DistRot SpiNBody ThermInt} <Files = Body Only> (Default = 0).
+bClimateModel (Int) -- Use annual or seasonal model {Modules = ALL} <Files = Any> (Default = ann).
+bColdStart (Bool) -- Start from snowball Earth conditions {Modules = ALL} <Files = Any> (Default = 0).
+bDiffRot (Double) -- Adjust heat diffusion for rotation rate {Modules = ALL} <Files = Any> (Default = 0).
+bDiscreteRot (Bool) -- Use Discrete Rotation Model (Phase lag only) {Modules = ALL} <Files = Any> (Default = 1).
+bDoBackward (Bool) -- Do Backward Integration? {Modules = ALL} <Files = Any> (Default = No).
+bDoForward (Bool) -- Do Forward Integration? {Modules = ALL} <Files = Any> (Default = 0).
+bDoLog (Bool) -- Write Log File? {Modules = ALL} <Files = Any> (Default = 0).
+bElevFB (Double) -- Use elevation feedback for ice sheet ablation {Modules = ALL} <Files = Any> (Default = 0).
+bEnvTides (Bool) -- Include effects of gaseous envelope tides? {Modules = ALL} <Files = Any> (Default = 0).
+bEvolveRG (Bool) -- Evolve stellar radius of gyration? {Modules = STELLAR} <Files = Any> (Default = 1).
+bFixOrbit (Bool) -- Fix Orbital Elements? {Modules = ALL} <Files = Any> (Default = 0).
+bForceEcc (Double) -- Force Eccentricity to evolve sinusoidally {Modules = ALL} <Files = Any> (Default = 0).
+bForceEqSpin (Bool) -- Force Spin Rate to Equilibrium? {Modules = ALL} <Files = Any> (Default = 0).
+bForceObliq (Double) -- Force obliquity to evolve sinusoidally {Modules = ALL} <Files = Any> (Default = 0).
+bForcePrecRate (Bool) -- Set the axial precession to a fixed rate? {Modules = ALL} <Files = Any> (Default = 0).
+bGalacTides (Bool) -- Include galactic tides {Modules = ALL} <Files = Any> (Default = 1).
+bGRCorr (Bool) -- Use general relativity correction {Modules = DistOrb DistRot SpiNBody} <Files = Body Only> (Default = 0).
+bHadley (Bool) -- Enable Hadley circulation {Modules = ALL} <Files = Any> (Default = 0).
+bHaltAllPlanetsDesicc (Bool) -- Halt when all planets desiccated? {Modules = ALL} <Files = Any> (Default = 0).
+bHaltAllPlanetsSolid (Bool) -- Halt when all planets solidified? {Modules = ALL} <Files = Any> (Default = 0).
+bHaltAtmDesiSurfCool (Bool) -- Halt when atmosphere desiccated and surface below 1000K? {Modules = ALL} <Files = Any> (Default = 0).
+bHaltCloseEnc (Bool) -- Halt if orbits get too close {Modules = ALL} <Files = Any> (Default = 0).
+bHaltDblSync (Bool) -- Halt at Double Synchronous State? {Modules = ALL} <Files = Any> (Default = 0).
+bHaltEndBaraffeGrid (Bool) -- Halt when we reach the end of the Baraffe+15 grid? {Modules = ALL} <Files = Any> (Default = 1).
+bHaltEnterHabZone (Bool) -- Halt when planet enters habitable zone? {Modules = ALL} <Files = Any> (Default = 0).
+bHaltEnvelopeGone (Bool) -- Halt When Envelope Evaporates? {Modules = ALL} <Files = Any> (Default = 0).
+bHaltHillStab (Bool) -- Halt if Hill unstable? {Modules = ALL} <Files = Any> (Default = 0).
+bHaltHolmanUnstable (Bool) -- Halt when CBP is Holman-Wiegert Unstable? {Modules = ALL} <Files = Any> (Default = 0).
+bHaltMantleMeltFracLow (Bool) -- Halt when mantle mostly solidified? {Modules = ALL} <Files = Any> (Default = 0).
+bHaltMantleSolidified (Bool) -- Halt when mantle solidified? {Modules = ALL} <Files = Any> (Default = 0).
+bHaltMerge (Bool) -- Halt at Merge {Modules = DistOrb EqTide SpiNBody STELLAR} <Files = Any> (Default = If eqtide or distorb called 1, else 0).
+bHaltPosDeDt (Bool) -- Halt if de/dt > 0? {Modules = DistOrb EqTide SpiNBody} <Files = Any> (Default = 0).
+bHaltRocheLobe (Bool) -- Halt when Roche lobe crossing occurs? {Modules = ALL} <Files = Any> (Default = 0).
+bHaltSurfaceDesiccated (Bool) -- Halt at Desiccation? {Modules = ALL} <Files = Any> (Default = 0).
+bHaltSyncRot (Bool) -- Halt if the rotation becomes syncrhonous? {Modules = ALL} <Files = Any> (Default = 0).
+bHaltTideLock (Bool) -- Halt if Tide-Locked? {Modules = ALL} <Files = Any> (Default = 0).
+bHostBinary (Bool) -- Include 3 body interactions with binary star {Modules = ALL} <Files = Any> (Default = 0).
+bIceSheets (Bool) -- Include ice sheets {Modules = ALL} <Files = Any> (Default = 0).
+bInstantO2Sink (Bool) -- Is oxygen absorbed instantaneously at the surface? {Modules = ALL} <Files = Any> (Default = 0).
+bInvPlane (Bool) -- Convert input coordinates to invariable plane coordinates {Modules = ALL} <Files = Any> (Default = 0).
+bMantleTides (Bool) -- Include effects of mantle tides? {Modules = ALL} <Files = Any> (Default = 0).
+bMEPDiff (Bool) -- Calculate diffusion from max entropy production (D=B/4) {Modules = ALL} <Files = Any> (Default = 0).
+bOceanTides (Bool) -- Include tidal dissapation due to oceans? {Modules = ALL} <Files = Any> (Default = 0).
+bOptManQuasiSol (Bool) -- Solidify when melt frac = 0.4? {Modules = ALL} <Files = Any> (Default = 0).
+bOutputEigen (Bool) -- Output Eigenvalues? {Modules = ALL} <Files = Any> (Default = 0).
+bOutputEnc (Bool) -- Output stellar encounter information? {Modules = ALL} <Files = Any> (Default = 0).
+bOutputLapl (Bool) -- Output Laplace functions and related data? {Modules = ALL} <Files = Any> (Default = 0).
+bOverrideMaxEcc (Bool) -- Override default maximum eccentricity (MAXORBDISTORB) in DistOrb? {Modules = ALL} <Files = Any> (Default = 0).
+bOverwrite (Bool) -- Permit file overwrite? {Modules = ALL} <Files = Any> (Default = 0).
+bRadialMigr (Bool) -- Use radial migration? {Modules = ALL} <Files = Any> (Default = 0).
+bReadOrbitData (Bool) -- Read in orbital data for use with distrot? {Modules = ALL} <Files = Any> (Default = 0).
+bReadOrbitOblData (Bool) -- Read in orbital and obliquity     data and use with poise {Modules = ALL} <Files = Any> (Default = 0).
+bRossbyCut (Bool) -- Terminate magnetic braking when Rossby number > 2.08? {Modules = STELLAR} <Files = Any> (Default = 0).
+bSeaIceModel (Bool) -- model sea ice dynamics and heat flow? {Modules = ALL} <Files = Any> (Default = 1).
+bSkipSeasEnabled (Bool) -- Run annual before seasonal and allow skip seas {Modules = ALL} <Files = Any> (Default = 0).
+bStellarEnc (Bool) -- Model stellar encounters? {Modules = ALL} <Files = Any> (Default = 1).
+bStopWaterLossInHZ (Bool) -- Stop water photolysis and H escape in the HZ? {Modules = ALL} <Files = Any> (Default = 1).
+bTimeEvolVelDisp (Bool) -- Scale velocity dispersion of stars with sqrt(t)? {Modules = ALL} <Files = Any> (Default = 1).
+bUseBondiLimited (Bool) -- Use Bondi-limited escape for H envelope? {Modules = ALL} <Files = Any> (Default = 0).
+bUseEnergyLimited (Bool) -- Use energy-limited escape for H envelope? {Modules = ALL} <Files = Any> (Default = 0).
+bUseOrbParams (Bool) -- Flag to use orbital parameters as inputs {Modules = ALL} <Files = Any> (Default = 0).
+bUseOuterTidalQ (Bool) -- User outermost layer's tidal Q as body's total tidal Q? {Modules = ALL} <Files = Any> (Default = 0).
+bUseRRLimited (Bool) -- Use radiation/recombination-limited escape for H envelope? {Modules = ALL} <Files = Any> (Default = 0).
+bUseTidalRadius (Bool) -- Fix radius used for CPL tidal equations? {Modules = ALL} <Files = Any> (Default = 0).
+bVarDt (Bool) -- Use variable timestep? {Modules = ALL} <Files = Any> (Default = None).
+cColor (Double) -- Hexadecimal color code for the body to be used in vplot {Modules = ALL} <Files = Body Only> (Default = 000000).
+[-]d232ThMassCore (Double) -- Initial Core Mass of 232Th  [Negative = Primordial Earth Units] {Modules = ALL} <Files = Any> (Default = Primordial Earth).
+[-]d232ThMassCrust (Double) -- Initial Crust Mass of 232Th  [Negative = Primordial Earth Units] {Modules = ALL} <Files = Any> (Default = Primordial Earth).
+[-]d232ThMassMan (Double) -- Initial Mass of 232Th  [Negative = Primordial Earth Units] {Modules = ALL} <Files = Any> (Default = Primordial Earth).
+[-]d232ThNumCore (Double) -- Initial Core Number of 232Th Atoms  [Negative = Primordial Earth Units] {Modules = ALL} <Files = Any> (Default = Primordial Earth).
+[-]d232ThNumCrust (Double) -- Initial Crust Number of 232Th Atoms  [Negative = Primordial Earth Units] {Modules = ALL} <Files = Any> (Default = Primordial Earth).
+[-]d232ThNumMan (Double) -- Initial Number of 232Th Atoms  [Negative = Primordial Earth Units] {Modules = ALL} <Files = Any> (Default = Primordial Earth).
+[-]d232ThPowerCore (Double) -- Initial Core Power Production from 232Th Atoms  [Negative = Primordial Earth Units] {Modules = ALL} <Files = Any> (Default = Primordial Earth).
+[-]d232ThPowerCrust (Double) -- Initial Crust Power Production from 232Th Atoms  [Negative = Primordial Earth Units] {Modules = ALL} <Files = Any> (Default = Primordial Earth).
+[-]d232ThPowerMan (Double) -- Initial Power Production from 232Th Atoms  [Negative = Primordial Earth Units] {Modules = ALL} <Files = Any> (Default = Primordial Earth).
+[-]d235UMassCore (Double) -- Initial Core Mass of 235U  [Negative = Primordial Earth Units] {Modules = ALL} <Files = Any> (Default = Primordial Earth).
+[-]d235UMassCrust (Double) -- Initial Crust Mass of 235U  [Negative = Primordial Earth Units] {Modules = ALL} <Files = Any> (Default = Primordial Earth).
+[-]d235UMassMan (Double) -- Initial Mass of 235U  [Negative = Primordial Earth Units] {Modules = ALL} <Files = Any> (Default = Primordial Earth).
+[-]d235UNumCore (Double) -- Initial Core Number of 235U Atoms  [Negative = Primordial Earth Units] {Modules = ALL} <Files = Any> (Default = Primordial Earth).
+[-]d235UNumCrust (Double) -- Initial Crust Number of 235U Atoms  [Negative = Primordial Earth Units] {Modules = ALL} <Files = Any> (Default = Primordial Earth).
+[-]d235UNumMan (Double) -- Initial Number of 235U Atoms  [Negative = Primordial Earth Units] {Modules = ALL} <Files = Any> (Default = Primordial Earth).
+[-]d235UPowerCore (Double) -- Initial Core Power Production from 235U Atoms  [Negative = Primordial Earth Units] {Modules = ALL} <Files = Any> (Default = Primordial Earth).
+[-]d235UPowerCrust (Double) -- Initial Crust Power Production from 235U Atoms  [Negative = Primordial Earth Units] {Modules = ALL} <Files = Any> (Default = Primordial Earth).
+[-]d235UPowerMan (Double) -- Initial Power Production from 235U Atoms  [Negative = Primoridal Earth Units] {Modules = ALL} <Files = Any> (Default = Primordial Earth).
+[-]d238UMassCore (Double) -- Initial Core Mass of 238U  [Negative = Primordial Earth Units] {Modules = ALL} <Files = Any> (Default = Primordial Earth).
+[-]d238UMassCrust (Double) -- Initial Crust Mass of 238U  [Negative = Primordial Earth Units] {Modules = ALL} <Files = Any> (Default = Primordial Earth).
+[-]d238UMassMan (Double) -- Initial Mass of 238U  [Negative = Primordial Earth Units] {Modules = ALL} <Files = Any> (Default = Primordial Earth).
+[-]d238UNumCore (Double) -- Initial Core Number of 238U Atoms  [Negative = Primordial Earth Units] {Modules = ALL} <Files = Any> (Default = Primordial Earth).
+[-]d238UNumCrust (Double) -- Initial Crust Number of 238U Atoms  [Negative = Primordial Earth Units] {Modules = ALL} <Files = Any> (Default = Primordial Earth).
+[-]d238UNumMan (Double) -- Initial Number of 238U Atoms  [Negative = Primordial Earth Units] {Modules = ALL} <Files = Any> (Default = Primordial Earth).
+[-]d238UPowerCore (Double) -- Initial Core Power Production from 238U Atoms  [Negative = Primordial Earth Units] {Modules = ALL} <Files = Any> (Default = Primordial Earth).
+[-]d238UPowerCrust (Double) -- Initial Crust Power Production from 238U Atoms  [Negative = Primordial Earth Units] {Modules = ALL} <Files = Any> (Default = Primordial Earth).
+[-]d238UPowerMan (Double) -- Initial Power Production from 238U Atoms  [Negative = Primordial Earth Units] {Modules = ALL} <Files = Any> (Default = Primordial Earth).
+[-]d26AlMassCore (Double) -- Initial Core Mass of 26Al  [Negative = Mearth] {Modules = ALL} <Files = Any> (Default = 0).
+[-]d26AlMassMan (Double) -- Initial Mantle Mass of 26Al  [Negative = Mearth] {Modules = ALL} <Files = Any> (Default = 0).
+[-]d26AlNumCore (Double) -- Initial Core Number of 26Al Atoms  [Negative = Primordial Earth 26Al Number] {Modules = ALL} <Files = Any> (Default = 0).
+[-]d26AlNumMan (Double) -- Initial Mantle Number of 26Al Atoms  [Negative = Primordial Earth 26Al Number] {Modules = ALL} <Files = Any> (Default = 0).
+[-]d26AlPowerCore (Double) -- Initial Core Power Production from 26Al Atoms  [Negative = TW] {Modules = ALL} <Files = Any> (Default = 0).
+[-]d26AlPowerMan (Double) -- Initial Mantle Power Production from 26Al Atoms  [Negative = TW] {Modules = ALL} <Files = Any> (Default = 0).
+[-]d40KMassCore (Double) -- Initial Core Mass of 40K  [Negative = Primordial Earth] {Modules = ALL} <Files = Any> (Default = Primordial Earth Units).
+[-]d40KMassCrust (Double) -- Initial Crust Mass of 40K  [Negative = Primordial Earth Units] {Modules = ALL} <Files = Any> (Default = Primordial Earth).
+[-]d40KMassMan (Double) -- Initial Mantle Mass of 40K  [Negative = Primordial Earth Units] {Modules = ALL} <Files = Any> (Default = Primordial Earth).
+[-]d40KNumCore (Double) -- Initial Core Number of 40K Atoms  [Negative = Primordial Earth Units] {Modules = ALL} <Files = Any> (Default = Primordial Earth).
+[-]d40KNumCrust (Double) -- Initial Crust Number of 40K Atoms  [Negative = Primordial Earth Units] {Modules = ALL} <Files = Any> (Default = Primordial Earth).
+[-]d40KNumMan (Double) -- Initial Mantle Number of 40K Atoms  [Negative = Primordial Earth Units] {Modules = ALL} <Files = Any> (Default = Primordial Earth).
+[-]d40KPowerCore (Double) -- Initial Core Power Production from 40K Atoms  [Negative = Primordial Earth Units] {Modules = ALL} <Files = Any> (Default = Primordial Earth).
+[-]d40KPowerCrust (Double) -- Initial Crust Power Production from 40K Atoms  [Negative = Primordial Earth Units] {Modules = ALL} <Files = Any> (Default = Primordial Earth).
+[-]d40KPowerMan (Double) -- Initial Mantle Power Production from 40K Atoms  [Negative = Primordial Earth Units] {Modules = ALL} <Files = Any> (Default = Primordial Earth).
+dAblateFF (Double) -- Ice ablation fudge factor {Modules = ALL} <Files = Any> (Default = 2.3).
+[-]dActViscMan (Double) -- Mantle viscosity activation energy  [Negative = No negative behavior] {Modules = ALL} <Files = Any> (Default = Default is ACTVISCMAN).
+[-]dAdJumpC2CMB (Double) -- Adiabatic temp jump from ave core to CMB  [Negative = No negative behavior] {Modules = ALL} <Files = Any> (Default = Default is ADJUMPC2CMB).
+[-]dAdJumpM2LM (Double) -- Adiabatic temp jump from ave mantle to LM  [Negative = No negative behavior] {Modules = ALL} <Files = Any> (Default = Default is ADJUMPM2LM).
+[-]dAdJumpM2UM (Double) -- Adiabatic temp jump from ave mantle to UM  [Negative = No negative behavior] {Modules = ALL} <Files = Any> (Default = Default is ADJUMPM2UM).
+[-]dAge (Double) -- System Age  [Negative = Gyr] {Modules = ALL} <Files = Any> (Default = 0).
+dAlbedoGlobal (Double) -- Globally averaged albedo {Modules = ALL} <Files = Body Only> (Default = 0.3).
+dAlbedoLand (Double) -- albedo of dry land {Modules = ALL} <Files = Any> (Default = 0.363).
+dAlbedoWater (Double) -- albedo of open water {Modules = ALL} <Files = Any> (Default = 0.263).
+[-]dArgP (Double) -- Argument of pericenter of planet's orbit  [Negative = Degrees] {Modules = DistOrb POISE SpiNBody} <Files = Body Only> (Default = 0).
+dAtmGasConst (Double) -- Atmospheric Gas Constant {Modules = ALL} <Files = Any> (Default = 4124).
+dAtmXAbsEffH (Double) -- Hydrogen X-ray/UV absorption efficiency (epsilon) {Modules = ALL} <Files = Any> (Default = 0.15).
+dAtmXAbsEffH2O (Double) -- Water X-ray/UV absorption efficiency (epsilon) {Modules = ALL} <Files = Any> (Default = 0.30).
+dCBPM0 (Double) -- Circumbinary planet initial mean anomaly for use in the BINARY module {Modules = ALL} <Files = Any> (Default = 0.0 degrees).
+dCBPPsi (Double) -- Circumbinary planet initial R, phi oscillation phase angle {Modules = ALL} <Files = Any> (Default = 0.0 degrees).
+dCBPZeta (Double) -- Circumbinary planet initial z oscillation phase angle {Modules = ALL} <Files = Any> (Default = 0.0 degrees).
+[-]dCO2MassMOAtm (Double) -- Initial CO2 mass in the system  [Negative = TO] {Modules = ALL} <Files = Any> (Default = 0 TO).
+dCosObl (Double) -- Coine of the Obliquity {Modules = BINARY DistRot EqTide POISE SpiNBody} <Files = Body Only> (Default = 0.5).
+[-]dDAdCore (Double) -- Liq iron core adiabatic length scale  [Negative = No negative behavior] {Modules = ALL} <Files = Any> (Default = Default is DADCORE).
+[-]dDepthMO (Double) -- Initial depth of the magma ocean  [Negative = km] {Modules = ALL} <Files = Any> (Default = core radius).
+dDfcrit (Double) -- Tolerance parameter for recalculating semi-major axis functions {Modules = ALL} <Files = Any> (Default = 0.1).
+dDiffusion (Double) -- Heat diffusion coefficient {Modules = ALL} <Files = Any> (Default = 0.44).
+[-]dDLind (Double) -- Lindemann's law length scale for iron liquidus  [Negative = No negative behavior] {Modules = ALL} <Files = Any> (Default = Default is DLIND).
+dDMDensity (Double) -- Local dark matter density {Modules = ALL} <Files = Any> (Default = 0.01 Msun pc^3).
+[-]dDTChiRef (Double) -- DTChiRef  [Negative = No negative behavior] {Modules = ALL} <Files = Any> (Default = Value in thermint.h).
+dDynEllip (Double) -- Planet's dynamical ellipticity {Modules = DistRot SpiNBody ThermInt} <Files = Body Only> (Default = 0.00328).
+dEcc (Double) -- Orbital Eccentricity {Modules = ALL} <Files = Body Only> (Default = 0).
+dEccAmp (Double) -- Amplitude of forced eccentricity oscill {Modules = ALL} <Files = Any> (Default = 0.1).
+dEccPer (Double) -- Period of forced eccentricity oscill {Modules = ALL} <Files = Any> (Default = 50000).
+[-]dElecCondCore (Double) -- Electrical conductivity of core  [Negative = No negative behavior] {Modules = ALL} <Files = Any> (Default = Default is ELECCONDCORE).
+dEncounterRad (Double) -- Radius at which stellar encounters occur {Modules = ALL} <Files = Any> (Default = 206265 AU).
+[-]dEnvelopeMass (Double) -- Initial Envelope Mass  [Negative = Mearth] {Modules = ALL} <Files = Any> (Default = 0).
+[-]dEruptEff (Double) -- Melt Eruption Efficiency  [Negative = No negative behavior] {Modules = ALL} <Files = Any> (Default = ERUPTEFF).
+dEta (Double) -- Variable Time Step Coefficient {Modules = ALL} <Files = Any> (Default = 1).
+dFixIceLat (Double) -- Fixes ice line latitude to a set value {Modules = ALL} <Files = Any> (Default = None).
+dFixMeltfactorUMan (Double) -- Fix Viscosity Melt Factor {Modules = ALL} <Files = Any> (Default = Default is FIXMELTFACTORUMAN).
+dFlowTemp (Double) -- Temperature of the hydrodynamic flow {Modules = ALL} <Files = Any> (Default = 400).
+dFreeEcc (Double) -- Circumbinary planet free eccentricity {Modules = ALL} <Files = Any> (Default = 0.0).
+dFreeInc (Double) -- Circumbinary planet free inclination {Modules = ALL} <Files = Any> (Default = 0.0 degrees).
+dFrzTSeaIce (Double) -- Temp of sea ice formation in seasonal model {Modules = ALL} <Files = Any> (Default = -2 deg C).
+dFXUV (Double) -- XUV flux at the body's orbit {Modules = ALL} <Files = Any> (Default = null).
+dGalacDensity (Double) -- Density of galactic environment {Modules = ALL} <Files = Any> (Default = 0.102).
+dGasDensity (Double) -- Local ISM density {Modules = ALL} <Files = Any> (Default = 0.05 Msun pc^3).
+[-]dHalt232ThPower (Double) -- Minimum 232Th Power  [Negative = TW] {Modules = ALL} <Files = Any> (Default = 0).
+[-]dHalt235UPower (Double) -- Minimum 235U Power  [Negative = TW] {Modules = ALL} <Files = Any> (Default = 0).
+[-]dHalt238UPower (Double) -- Minimum 238U Power  [Negative = TW] {Modules = ALL} <Files = Any> (Default = 0).
+[-]dHalt40KPower (Double) -- Minimum 40K Power  [Negative = TW] {Modules = ALL} <Files = Any> (Default = 0).
+dHaltMaxEcc (Double) -- Maximum eccentricity value that halts ntegration {Modules = DistOrb EqTide} <Files = Any> (Default = 1).
+dHaltMaxMutualInc (Double) -- Maximum mutual inclination value that halts integration {Modules = DistOrb SpiNBody} <Files = Any> (Default = 0 [not checked]).
+dHaltMinEcc (Double) -- Minimum Eccentricity Value that Halts Integration {Modules = DistOrb EqTide SpiNBody} <Files = Any> (Default = -1).
+dHaltMinObl (Double) -- Minimum Obliquity Value that Halts Integration {Modules = DistOrb EqTide SpiNBody} <Files = Any> (Default = -1 degrees).
+[-]dHaltMinSemi (Double) -- Minimum Semi-Major Axis Value that Halts Integration  [Negative = au] {Modules = EqTide SpiNBody} <Files = Any> (Default = 0).
+[-]dHaltMinTCore (Double) -- Halt at Minimum Core Temperature  [Negative = No negative behavior] {Modules = ALL} <Files = Any> (Default = 0 K).
+[-]dHaltMinTMan (Double) -- Halt at Minimum Mantle Temperature  [Negative = No negative behavior] {Modules = ALL} <Files = Any> (Default = 0 K).
+[-]dHaltRadPower (Double) -- Minimum Total Radgiogenic Power  [Negative = TW] {Modules = ALL} <Files = Any> (Default = 0).
+dHeatCapAnn (Double) -- Surface heat capacity in annual model {Modules = ALL} <Files = Any> (Default = 0.2).
+dHeatCapLand (Double) -- Land heat capacity in seasonal model {Modules = ALL} <Files = Any> (Default = 1.42e7).
+dHeatCapWater (Double) -- Water heat capacity per meter in seasonal model {Modules = ALL} <Files = Any> (Default = 4.2e6).
+dHecc (Double) -- Poincare's h -- Unsupported! {Modules = DistOrb SpiNBody} <Files = Body Only> (Default = -1).
+dHostBinArgP (Double) -- Arg periapse of host binary {Modules = ALL} <Files = Any> (Default = 0.0).
+dHostBinEcc (Double) -- eccentricity of host binary {Modules = ALL} <Files = Any> (Default = 0.51).
+dHostBinInc (Double) -- inclination of host binary {Modules = ALL} <Files = Any> (Default = 60.0 deg).
+dHostBinLongA (Double) -- Long of ascending node of host binary {Modules = ALL} <Files = Any> (Default = 0.0).
+dHostBinMass1 (Double) -- mass of larger host binary star {Modules = ALL} <Files = Any> (Default = 1.1 Msun).
+[-]dHostBinSemi (Double) -- Semi-major of host binary  [Negative = AU] {Modules = ALL} <Files = Any> (Default = 17.57 AU).
+dIceAlbedo (Double) -- Albedo of ice {Modules = ALL} <Files = Any> (Default = 0.6).
+dIceDepRate (Double) -- Deposition rate of ice/snow to form ice sheets {Modules = ALL} <Files = Any> (Default = 2.9e-5).
+[-]dImK2ManOrbModel (Double) -- ImK2Man model to use in orbital equations (1=ImK2(T), 2=k2/Q(T)  [Negative = No negative behavior] {Modules = ALL} <Files = Any> (Default = Default is IMK2MANORBMODEL).
+[-]dInc (Double) -- Inclination of planet's orbital plane  [Negative = Degrees] {Modules = DistOrb SpiNBody} <Files = Body Only> (Default = 0).
+dInitIceHeight (Double) -- Sets initial ice sheet height {Modules = ALL} <Files = Any> (Default = 50).
+dInitIceLat (Double) -- Sets initial ice sheet latitude {Modules = ALL} <Files = Any> (Default = 90).
+[-]dJeansTime (Bool) -- Time at which flow transitions to Jeans escape  [Negative = Gyr] {Modules = ALL} <Files = Any> (Default = 1 Gyr).
+dK2 (Double) -- Love Number of Degree 2 {Modules = ALL} <Files = Any> (Default = 1).
+dK2Env (Double) -- Envelope's Love Number of Degree 2 {Modules = ALL} <Files = Any> (Default = 0.01).
+dK2Mantle (Double) -- Mantle's Love Number of Degree 2 {Modules = ALL} <Files = Any> (Default = 0.01).
+dK2Ocean (Double) -- Ocean's Love Number of Degree 2 {Modules = ALL} <Files = Any> (Default = 0.05).
+dLandFrac (Double) -- Fraction of land on the planetary surface {Modules = ALL} <Files = Any> (Default = 0.34).
+dLapseR (Double) -- Dry adiabatic lapse rate (for elev feedback) {Modules = ALL} <Files = Any> (Default = 9.8e-3 C/m).
+[-]dLL13K0 (Double) -- Lee+Leung 2013 Radial Epicyclic Frequency  [Negative = /Year] {Modules = ALL} <Files = Any> (Default = 1 /yr).
+[-]dLL13N0 (Double) -- Lee+Leung 2013 Mean Motion  [Negative = /Year] {Modules = ALL} <Files = Any> (Default = 1 /yr).
+dLL13PhiAB (Double) -- Binary Initial Mean Anomaly for use in the BINARY module {Modules = ALL} <Files = Any> (Default = 0.0 degrees).
+[-]dLL13V0 (Double) -- Lee+Leung 2013 Radial Epicyclic Frequency  [Negative = /Year] {Modules = ALL} <Files = Any> (Default = 1 /yr).
+[-]dLongA (Double) -- Longitude of ascending node of planet's orbital plane  [Negative = Degrees] {Modules = DistRot POISE SpiNBody} <Files = Body Only> (Default = 0).
+dLongP (Double) -- Longitude of pericenter of planet's orbit {Modules = DistOrb SpiNBody} <Files = Body Only> (Default = 0).
+[-]dLuminosity (Bool) -- Initial Luminosity  [Negative = LSUN] {Modules = ALL} <Files = Any> (Default = 0).
+dLXUV (Double) -- Total XUV Luminosity -- Unsupported! {Modules = STELLAR} <Files = Body Only> (Default = -1).
+[-]dMagMomCoef (Double) -- Magnetic Moment Coefficient  [Negative = No negative behavior] {Modules = ALL} <Files = Any> (Default = Default is MAGMOMCOEF).
+[-]dManHFlowPref (Double) -- Mantle HFlow Prefix  [Negative = No negative behavior] {Modules = ALL} <Files = Any> (Default = Default is MANHFLOWPREF).
+[-]dManMeltDensity (Double) -- Density of the molten mantle  [Negative = kg/m^3] {Modules = ALL} <Files = Any> (Default = 4000 kg/m^3).
+[-]dMass (Double) -- Mass  [Negative = Mearth] {Modules = ALL} <Files = Body Only> (Default = 1 Earth Mass).
+[-]dMassFracFeOIni (Double) -- Initial Mass Fraction of FeO in the mantle  [Negative = no unit] {Modules = ALL} <Files = Any> (Default = BSE Earth: 0.0788).
+dMaxLockDiff (Double) -- Maximum relative difference between spin and equilibrium spin rates to force equilibrium spin rate {Modules = ALL} <Files = Any> (Default = 0).
+dMeanA (Double) -- Mean anomaly {Modules = ALL} <Files = Any> (Default = 0.0).
+[-]dMeanMotion (Double) -- Orbital Mean Motion  [Negative = /Year] {Modules = ALL} <Files = Body Only> (Default = 1 /yr).
+dMeltfactorLMan (Double) -- Lower Mantle Viscosity Melt Factor {Modules = ALL} <Files = Any> (Default = 1.000000).
+[-]dMeltfactorUMan (Double) -- Upper Mantle Viscosity Melt Factor  [Negative = No negative behavior] {Modules = ALL} <Files = Any> (Default = 1.000000).
+[-]dMinEnvelopeMass (Double) -- Minimum Envelope Mass  [Negative = Mearth] {Modules = ALL} <Files = Any> (Default = 1.e-8 Earth).
+[-]dMinIceSheetHeight (Double) -- Minimum ice sheet height for a latitude to be considered ice-covered  [Negative = meters] {Modules = ALL} <Files = Any> (Default = 0.001).
+[-]dMinStellarApproach (Double) -- Minimum close approach distance to primary  [Negative = AU] {Modules = ALL} <Files = Any> (Default = 1 AU).
+[-]dMinSurfWaterMass (Double) -- Minimum Surface Water Mass  [Negative = Terrestrial Oceans (TO)] {Modules = ALL} <Files = Any> (Default = 1.e-5 TO).
+dMinValue (Double) -- Minimum Non-Zero Value of Eccentricity and Obliquities {Modules = DistOrb DistRot EqTide POISE SpiNBody} <Files = Any> (Default = 0).
+dMixingDepth (Double) -- Mixing depth of ocean in seasonal model {Modules = ALL} <Files = Any> (Default = 70).
+dNuLandWater (Double) -- Coefficient of land-ocean heat flux {Modules = ALL} <Files = Any> (Default = 0.81).
+dObliqAmp (Double) -- Amplitude of forced obliquity oscill {Modules = ALL} <Files = Any> (Default = 50 deg).
+dObliqPer (Double) -- Period of forced obliquity oscill {Modules = ALL} <Files = Any> (Default = 50000).
+dObliquity (Double) -- Obliquity {Modules = BINARY DistRot EqTide POISE SpiNBody} <Files = Body Only> (Default = 0).
+[-]dOrbPeriod (Double) -- Orbital Period  [Negative = Days] {Modules = ALL} <Files = Body Only> (Default = 1 year).
+[-]dOutputTime (Double) -- Output Interval  [Negative = Years] {Modules = ALL} <Files = Any> (Default = 1 year).
+dOxygenMantleMass (Double) -- Initial Oxygen Mass in the Mantle {Modules = ALL} <Files = Any> (Default = 0).
+dOxygenMass (Double) -- The initial oxygen mass in the atmosphere. {Modules = ALL} <Files = Any> (Default = 0).
+dpCO2 (Double) -- Partial pressure of CO2 in atmosphere {Modules = ALL} <Files = Any> (Default = 3.3e-4).
+dPlanckA (Double) -- Constant 'A' used in OLR calculation {Modules = ALL} <Files = Any> (Default = 203.3).
+dPlanckB (Double) -- Sensitivity 'B' used in OLR calculation {Modules = ALL} <Files = Any> (Default = 2.09).
+dPositionXSpiNBody (Double) -- X position of the body {Modules = ALL} <Files = Any> (Default = 0).
+dPositionYSpiNBody (Double) -- Y position of the body {Modules = ALL} <Files = Any> (Default = 0).
+dPositionZSpiNBody (Double) -- Z position of the body {Modules = ALL} <Files = Any> (Default = 0).
+[-]dPrecA (Double) -- Planet's precession angle  [Negative = Degrees] {Modules = DistRot POISE SpiNBody} <Files = Body Only> (Default = 0).
+dPrecRate (Double) -- Fixed rate of axial precession (angle/s) {Modules = ALL} <Files = Any> (Default = 7.7261e-12).
+[-]dPresSWind (Double) -- Stellar Wind Pressure at body  [Negative = No negative behavior] {Modules = ALL} <Files = Any> (Default = Default is EPRESSWIND).
+dPresXUV (Double) -- Pressure at base of thermosphere {Modules = ALL} <Files = Any> (Default = 5 Pa).
+dRadGyra (Double) -- Radius of Gyration; moment of inertia constant {Modules = ALL} <Files = Body Only> (Default = 0.5).
+[-]dRadius (Double) -- Radius  [Negative = Rearth] {Modules = ALL} <Files = Body Only> (Default = 1 Earth Radius).
+dRefHeight (Double) -- Reference height of atmos temp (for elev feedback) {Modules = ALL} <Files = Any> (Default = 1000 m).
+dRForm (Double) -- Galactic formation radius {Modules = ALL} <Files = Any> (Default = 4.5 kpc).
+[-]dRotPeriod (Double) -- Rotation Period  [Negative = Days] {Modules = ALL} <Files = Body Only> (Default = 1 Day).
+[-]dRotRate (Double) -- Rotational Angular Frequency  [Negative = /Day] {Modules = ALL} <Files = Body Only> (Default = 2*pi/day).
+[-]dRotVel (Double) -- Rotational Velocity  [Negative = km/s] {Modules = ALL} <Files = Body Only> (Default = 0).
+dSatXUVFrac (Bool) -- Saturated XUV luminosity fraction {Modules = ALL} <Files = Any> (Default = 1e-3).
+[-]dSatXUVTime (Bool) -- XUV saturation time  [Negative = Gyr] {Modules = ALL} <Files = Any> (Default = 0.1 Gyr).
+dSeaIceConduct (Double) -- Heat conductivity of sea ice {Modules = ALL} <Files = Any> (Default = 2).
+dSeasOutputTime (Double) -- Output interval for seasonal parameters {Modules = ALL} <Files = Any> (Default = 0).
+[-]dSemi (Double) -- Semi-Major Axis  [Negative = AU] {Modules = ALL} <Files = Body Only> (Default = 1 AU).
+[-]dShModRef (Double) -- Reference kinematic mantle shear modulus  [Negative = No negative behavior] {Modules = ALL} <Files = Any> (Default = Default is SHMODREF).
+dSpecMomInertia (Double) -- Specific moment of inertia of polar axis {Modules = ALL} <Files = Any> (Default = 0.33).
+dSpinUpTol (Double) -- Tolerance for spin up phase {Modules = ALL} <Files = Any> (Default = 0.1 deg C).
+dStagLid (Double) -- Stagnant Lid Switch {Modules = ALL} <Files = Any> (Default = Default is STAGLID).
+dStarScaleL (Double) -- Stellar radial scale length in MW {Modules = ALL} <Files = Any> (Default = 2.4 kpc).
+[-]dStiffness (Double) -- Effective stiffness of mantle  [Negative = No negative behavior] {Modules = ALL} <Files = Any> (Default = Default is STIFFNESS).
+[-]dStopTime (Double) -- Integration Stop Time  [Negative = Years] {Modules = ALL} <Files = Any> (Default = 10 years).
+dSurfAlbedo (Double) -- Albedo of (ice-free) surface {Modules = ALL} <Files = Any> (Default = 0.3).
+[-]dSurfTemp (Double) -- Initial surface temp  [Negative = Kelvin] {Modules = ALL} <Files = Any> (Default = 4000 K).
+[-]dSurfWaterMass (Double) -- Initial Surface Water Mass  [Negative = Terrestrial Oceans (TO)] {Modules = ALL} <Files = Any> (Default = 0).
+dSyncEcc (Double) -- Minimum Eccentricity for Non-Synchronous Rotation {Modules = ALL} <Files = Any> (Default = 0).
+[-]dTCore (Double) -- Initial Core Temperature  [Negative = No negative behavior] {Modules = ALL} <Files = Any> (Default = 6000 K).
+dTemperature (Bool) -- Initial effective temperature {Modules = ALL} <Files = Any> (Default = TSUN).
+dTGlobalInit (Double) -- Estimate of initial global temperature {Modules = ALL} <Files = Any> (Default = 14.85).
+dThermTemp (Double) -- Thermosphere temperature {Modules = ALL} <Files = Any> (Default = 400).
+dTidalQ (Double) -- Tidal Quality Factor {Modules = ALL} <Files = Any> (Default = 1e6).
+dTidalQEnv (Double) -- Envelope Tidal Quality Factor {Modules = ALL} <Files = Any> (Default = 1.0e4).
+dTidalQMantle (Double) -- Tidal Q of Mantle {Modules = ALL} <Files = Any> (Default = 100).
+dTidalQOcean (Double) -- Ocean Tidal Quality Factor {Modules = ALL} <Files = Any> (Default = 12).
+[-]dTidalRadius (Double) -- Eqtide Tidal Radius  [Negative = Rearth] {Modules = ALL} <Files = Any> (Default = 1 Earth Radius).
+[-]dTidalTau (Double) -- Tidal Time Lag  [Negative = Seconds] {Modules = ALL} <Files = Any> (Default = 1 Second).
+[-]dTimeStep (Double) -- Integration Timestep  [Negative = Years] {Modules = ALL} <Files = Any> (Default = 1 year).
+[-]dTMan (Double) -- Initial Mantle Temperature  [Negative = No negative behavior] {Modules = ALL} <Files = Any> (Default = 3000 K).
+[-]dTMigration (Double) -- Time of radial migration  [Negative = Years] {Modules = ALL} <Files = Any> (Default = 3 Gy).
+[-]dTrefLind (Double) -- TrefLind  [Negative = No negative behavior] {Modules = ALL} <Files = Any> (Default = Value in thermint.h).
+[-]dTSurf (Double) -- Initial Surface Temperature  [Negative = No negative behavior] {Modules = ALL} <Files = Any> (Default = 300 K).
+dVelXSpiNBody (Double) -- X velocity of the body {Modules = ALL} <Files = Any> (Default = 0).
+dVelYSpiNBody (Double) -- Y velocity of the body {Modules = ALL} <Files = Any> (Default = 0).
+dVelZSpiNBody (Double) -- Z velocity of the body {Modules = ALL} <Files = Any> (Default = 0).
+[-]dViscJumpMan (Double) -- ViscJumpMan  [Negative = No negative behavior] {Modules = ALL} <Files = Any> (Default = VISCJUMPMAN).
+[-]dViscMeltB (Double) -- Viscosity Melt Factor B  [Negative = No negative behavior] {Modules = ALL} <Files = Any> (Default = Default is VISCMELTB).
+[-]dViscMeltDelta (Double) -- Viscosity Melt Factor Delta  [Negative = No negative behavior] {Modules = ALL} <Files = Any> (Default = Default is VISCMELTDELTA).
+[-]dViscMeltGamma (Double) -- Viscosity Melt Factor Gamma  [Negative = No negative behavior] {Modules = ALL} <Files = Any> (Default = Default is VISCMELTGAMMA).
+[-]dViscMeltPhis (Double) -- Viscosity Melt Factor Phi star  [Negative = No negative behavior] {Modules = ALL} <Files = Any> (Default = Default is VISCMELTPHIS).
+[-]dViscMeltXi (Double) -- Viscosity Melt Factor Xi  [Negative = No negative behavior] {Modules = ALL} <Files = Any> (Default = Default is VISCMELTXI).
+[-]dViscRef (Double) -- ViscRef  [Negative = No negative behavior] {Modules = ALL} <Files = Any> (Default = 1).
+dViscUMan (Double) -- Upper mantle viscosity {Modules = DistRot ThermInt} <Files = Body Only> (Default = 0).
+[-]dWaterMassAtm (Double) -- Initial Water Mass in the atmosphere  [Negative = TO] {Modules = ALL} <Files = Any> (Default = 1 Terrestrial Ocean).
+[-]dWaterPartCoeff (Double) -- Water partition coefficient between melt and solid  [Negative = no unit] {Modules = ALL} <Files = Any> (Default = 0.01).
+dXFrac (Double) -- Fraction of planet radius in X-ray/UV {Modules = ALL} <Files = Any> (Default = 1).
+dXUVBeta (Bool) -- XUV decay power law exponent {Modules = ALL} <Files = Any> (Default = 1.23).
+iBodyType (Int) -- BodyType {Modules = ALL} <Files = Body Only> (Default = 0 Planet).
+iDigits (Int) -- Number of Digits After Decimal Point {Modules = ALL} <Files = Any> (Default = 4).
+iGeography (Int) -- Type of land distribution {Modules = ALL} <Files = Any> (Default = uni3).
+iIceDt (Int) -- Minimum ice sheet timestep (unit orbital period) {Modules = ALL} <Files = Any> (Default = 5).
+iLatCellNum (Int) -- Number of latitude cells used in climate model {Modules = ALL} <Files = Any> (Default = 50).
+iNStepInYear (Int) -- Number of time-steps/year in seasonal model {Modules = ALL} <Files = Any> (Default = 60).
+iNumYears (Int) -- Number of years to run seasonal model {Modules = ALL} <Files = Any> (Default = 10).
+iOLRModel (Int) -- Outgoing longwave rad model {Modules = ALL} <Files = Any> (Default = sms09).
+iRandSeed (Int) -- Seed for random number generator (stellar encounters) {Modules = ALL} <Files = Any> (Default = 42).
+iReRunSeas (Int) -- how often to rerun seasonal in ice sheet model, in number of orbital periods {Modules = ALL} <Files = Any> (Default = 500).
+iSciNot (Int) -- Logarithm to Change from Standard to Scientific Notation {Modules = ALL} <Files = Any> (Default = 4).
+iVerbose (Int) -- Verbosity Level: 0-5 {Modules = ALL} <Files = Any> (Default = 3).
+saBodyFiles (Array) -- Input files for each body {Modules = ALL} <Files = Primary Only> (Default = None).
+saGridOutput (Array) -- Gridded Output Parameter(s) {Modules = POISE} <Files = Body Only> (Default = None).
+saModules (Array) -- Body's Module List {Modules = ALL} <Files = Primary Only> (Default = none).
+saOutputOrder (Array) -- Output Parameter(s) {Modules = ALL} <Files = Body Only> (Default = None).
+saTidePerts (Array) -- Names of bodies engaged in tidal evolution {Modules = ALL} <Files = Any> (Default = none).
+sAtmXAbsEffH2OModel (String) -- Water X-ray/XUV absorption efficiency evolution model {Modules = ALL} <Files = Any> (Default = NONE).
+sFileOrbitData (String) -- Name of file containing orbit time series {Modules = ALL} <Files = Any> (Default = orbit.txt).
+sFileOrbitOblData (String) -- Name of file containing orbit    and obliquity time series {Modules = ALL} <Files = Any> (Default = Obl_data.txt).
+sHZModel (String) -- Habitable Zone Model: Kopparapu13 {Modules = ALL} <Files = Any> (Default = Kopparapu13).
+sIntegrationMethod (Array) -- Integration Method: Euler, Runge-Kutta4 (Default = Runge-Kutta4) {Modules = ALL} <Files = Any> (Default = Runge-Kutta4).
+sLogFile (String) -- Log File Name {Modules = ALL} <Files = Any> (Default = null).
+sMagBrakingModel (String) -- Magnetic braking model. {Modules = ALL} <Files = Any> (Default = REINERS).
+sMagmOcAtmModel (String) -- Atmospheric flux model: Grey or Petit {Modules = ALL} <Files = Any> (Default = GREY).
+sMassRad (String) -- Mass-Radius Relationship for Central Body: GS99 RH00 BO06 Sotin07  {Modules = BINARY DistRot EqTide POISE SpiNBody STELLAR} <Files = Body Only> (Default = None).
+sName (String) -- Body's Name {Modules = ALL} <Files = Body Only> (Default = Integer of Input Order, i.e. 1).
+sOrbitModel (Int) -- Orbit Model: LL2 [2nd order] RD4 [4th order] {Modules = ALL} <Files = Any> (Default = rd4).
+sOutFile (String) -- Name of Output File {Modules = ALL} <Files = Any> (Default = cSystemName.backward).
+sPlanetRadiusModel (String) -- Gaseous Planet Radius Model {Modules = ALL} <Files = Any> (Default = NONE).
+sRadioHeatModel (String) -- Radiogenic heating model {Modules = ALL} <Files = Any> (Default = NONE).
+sStellarModel (String) -- Luminosity evolution model {Modules = ALL} <Files = Any> (Default = BARAFFE).
+sSystemName (String) -- System Name {Modules = ALL} <Files = Primary Only> (Default = None - must be supplied).
+sTideModel (String) -- Tidal Model: p2 [constant-phase-lag, 2nd order] t8 [constant-time-lag, 8th order] {Modules = ALL} <Files = Any> (Default = p2).
+sUnitAngle (String) -- Angle Units: Degrees Radians {Modules = ALL} <Files = Any> (Default = Radians).
+sUnitLength (String) -- Length Units: cm m km Solar Earth Jupiter AU {Modules = ALL} <Files = Any> (Default = cm).
+sUnitMass (String) -- Mass Units: Grams Kilograms Solar Earth Jupiter Saturn {Modules = ALL} <Files = Any> (Default = grams).
+sUnitTemp (String) -- Temperature Units: Kelvin Celsius Farenheit {Modules = ALL} <Files = Any> (Default = Kelvin).
+sUnitTime (String) -- Time Units: Seconds, Days Years Myr Gyr {Modules = ALL} <Files = Any> (Default = Seconds).
+sWaterLossModel (String) -- Water loss and oxygen buildup model {Modules = ALL} <Files = Any> (Default = LBEXACT).
+sWindModel (String) -- Wind Angular Momentum Loss Model {Modules = ALL} <Files = Any> (Default = REINERS).
+sXUVModel (String) -- XUV Evolution Model {Modules = STELLAR} <Files = Any> (Default = RIBAS).
+
+
+Output Parameters
+---------------------
+
+Format: [Negative forces units] Name -- Description [Negative unit]
+
+These options follow the argument saOutputOrder.
+
+[-]232ThEnFlux -- Surface Energy Flux from 232Th. [Negative = W/m^2]
+[-]232ThMassCore -- Total Mass of 232Th. [Negative = Mearth]
+[-]232ThMassCrust -- Total Mass of 232Th. [Negative = Mearth]
+[-]232ThMassMan -- Total Mass of 232Th. [Negative = Mearth]
+[-]232ThNumCore -- Total Number of 232Th Atoms. [Negative = Initial Primordial Earth Number]
+[-]232ThNumCrust -- Total Number of 232Th Atoms. [Negative = Initial Primordial Earth Number]
+[-]232ThNumMan -- Total Number of 232Th Atoms. [Negative = Initial Primordial Earth Number]
+[-]232ThPowerCore -- Total Power Generated by 232Th. [Negative = TW]
+[-]232ThPowerCrust -- Total Power Generated by 232Th. [Negative = TW]
+[-]232ThPowerMan -- Total Power Generated by 232Th. [Negative = TW]
+[-]232ThPowerTotal -- Total Power from Decay of 232Th Atoms. [Negative = TW]
+[-]232ThTimescale -- Timescale for 232Th Power Generation. [Negative = Gyr]
+[-]235UEnFlux -- Surface Energy Flux due to 235U. [Negative = W/m^2]
+[-]235UMassCore -- Total Core Mass of 235U. [Negative = Mearth]
+[-]235UMassCrust -- Total Crust Mass of 235U. [Negative = Mearth]
+[-]235UMassMan -- Total Mass of 235U. [Negative = Mearth]
+[-]235UNumCore -- Total Core Number of 235U Atoms. [Negative = Initial Primordial Earth Number]
+[-]235UNumCrust -- Total Crust Number of 235U Atoms. [Negative = Initial Primordial Earth Number]
+[-]235UNumMan -- Total Number of 235U Atoms. [Negative = Initial Primordial Earth Number]
+[-]235UPowerCore -- Total Core Power Generated by 235U. [Negative = TW]
+[-]235UPowerCrust -- Total Crust Power Generated by 235U. [Negative = TW]
+[-]235UPowerMan -- Total Power Generated by 235U. [Negative = TW]
+[-]235UPowerTotal -- Total Power from Decay of 235U Atoms. [Negative = TW]
+[-]235UTimescale -- Timescale for 235U Power Generation. [Negative = Gyr]
+[-]238UEnFlux -- Surface Energy Flux due to 238U. [Negative = W/m^2]
+[-]238UMassCore -- Total Core Mass of 238U. [Negative = Mearth]
+[-]238UMassCrust -- Total Crust Mass of 238U. [Negative = Mearth]
+[-]238UMassMan -- Total Mass of 238U. [Negative = Mearth]
+[-]238UNumCore -- Total Core Number of 238U Atoms. [Negative = Initial Primordial Earth Number]
+[-]238UNumCrust -- Total Crust Number of 238U Atoms. [Negative = Initial Primordial Earth Number]
+[-]238UNumMan -- Total Number of 238U Atoms. [Negative = Initial Primordial Earth Number]
+[-]238UPowerCore -- Total Core Power Generated by 238U. [Negative = TW]
+[-]238UPowerCrust -- Total Crust Power Generated by 238U. [Negative = TW]
+[-]238UPowerMan -- Total Power Generated by 238U. [Negative = TW]
+[-]238UPowerTotal -- Total Power from Decay of 238U Atoms. [Negative = TW]
+[-]238UTimescale -- Timescale for 238U Power Generation. [Negative = Gyr]
+[-]26AlEnFlux -- Surface Energy Flux from 26Al. [Negative = W/m^2]
+[-]26AlMassCore -- Mass of core in 26Al. [Negative = Mearth]
+[-]26AlMassMan -- Mass of Mantle in 26Al. [Negative = Mearth]
+[-]26AlNumCore -- Total Core Number of 26Al Atoms. [Negative = Initial Primordial Earth Number]
+[-]26AlNumMan -- Total Number of 26Al Atoms. [Negative = Initial Primordial Earth Number]
+[-]26AlPowerCore -- Core Power Generated by 26Al. [Negative = TW]
+[-]26AlPowerMan -- Total Power Generated by 26Al. [Negative = TW]
+[-]26AlPowerTotal -- Total Power from Decay of 26Al Atoms. [Negative = TW]
+[-]26AlTimescale -- Timescale for 26Al Power Generation. [Negative = Gyr]
+[-]40KEnFlux -- Surface Energy Flux from 40K. [Negative = W/m^2]
+[-]40KMassCore -- Total Core Mass of 40K. [Negative = Mearth]
+[-]40KMassCrust -- Total Crust Mass of 40K. [Negative = Mearth]
+[-]40KMassMan -- Total Mass of 40K. [Negative = Mearth]
+[-]40KNumCore -- Total Core Number of 40K Atoms. [Negative = Initial Primordial Earth Number]
+[-]40KNumCrust -- Total Crust Number of 40K Atoms. [Negative = Initial Primordial Earth Number]
+[-]40KNumMan -- Total Number of 40K Atoms. [Negative = Initial Primordial Earth Number]
+[-]40KPowerCore -- Core Power Generated by 40K. [Negative = TW]
+[-]40KPowerCrust -- Crust Power Generated by 40K. [Negative = TW]
+[-]40KPowerMan -- Total Power Generated by 40K. [Negative = TW]
+[-]40KPowerTotal -- Total Power from Decay of 40K Atoms. [Negative = TW]
+[-]40KTimescale -- Timescale for 40K Power Generation. [Negative = Gyr]
+[-]Age -- System Age. [Negative = Gyr]
+AlbedoGlobal -- Global mean bond albedo from POISE.
+AlbedoLandLat -- Land surface albedo by latitude..
+AlbedoLat -- Surface albedo by latitude..
+AlbedoWaterLat -- Water surface albedo by latitude..
+AngMX -- X component of angular mom vector.
+AngMY -- Y component of angular mom vector.
+AngMZ -- Z component of angular mom vector.
+[-]AnnInsol -- Annual insolation by latitude.. [Negative = W/m^2]
+[-]AreaIceCov -- Fractional area ice covered. [Negative =  ]
+[-]ArgP -- Body's argument of pericenter. [Negative = Deg]
+[-]AtmGasConst -- Atmospheric gas constant. [Negative = J / K kg]
+AtmXAbsEffH2O -- XUV atmospheric escape efficiency for H2O.
+[-]BedrockH -- height/depth of bedrock. [Negative = m]
+[-]BinPriPhi -- Binary primary star azimuthal angle in BINARY. [Negative = Deg]
+[-]BinPriR -- Radial position of binary primary star for module BINARY. [Negative = AU]
+[-]BinSecPhi -- Binary secondary star azimuthal angle in BINARY. [Negative = Deg]
+[-]BinSecR -- Radial position of binary secondary star for module BINARY. [Negative = AU]
+[-]BLLMan -- Boundary Layer Thickness Lower Mantle. [Negative = km]
+[-]BLUMan -- Boundary Layer Thickness Upper Mantle. [Negative = km]
+[-]BodyDeccDt -- In EqTide, the total change in eccentricity is due to towrues on both bodies. This output parameter returns the change due to current body.. [Negative = /Gyr]
+[-]BodyDsemiDtEqtide -- In EqTide, the total change in semi-major axis is due to dissipation in both bodies. This output parameter returns the change due to current body.. [Negative = AU/Gyr]
+BodyType -- Type of Body (0 == planet).
+[-]BondiRadius -- Bondi Radius. [Negative = Rearth]
+CassiniOne -- First Cassini parameter (misalignment of Cassini state vectors).
+CassiniTwo -- Second Cassini parameter (alignment of Cassini state vectors.
+CBPInsol -- CBP's binary Orbit-Averaged Insolation in BINARY.
+[-]CBPPhi -- CBP Orbital Azimuthal Angle in BINARY. [Negative = Deg]
+CBPPhiDot -- CBP's Phi Angular Orbital Velocity in BINARY.
+[-]CBPR -- CBP's Orbital Radius in BINARY. [Negative = AU]
+CBPRDot -- CBP's Radial Orbital Velocity in BINARY.
+[-]CBPZ -- CBP's Orbital Cylindrical Height Out of the Orbital Plane in BINARY. [Negative = AU]
+CBPZDot -- CBP's Z Orbital Velocity in BINARY.
+[-]ChiIC -- Light Element Concentration in Inner Core. [Negative = nd]
+[-]ChiOC -- Light Element Concentration in Outer Core. [Negative = nd]
+[-]CO2FracMelt -- CO2 mass fraction in magma ocean. [Negative = null]
+[-]CO2MassMOAtm -- CO2 mass in magma ocean and atmosphere. [Negative = kg]
+[-]CO2MassSol -- CO2 mass in solidified mantle. [Negative = kg]
+[-]CoreBuoyCompo -- Core Compositional Buoyancy Flux. [Negative = m^2/s^3]
+[-]CoreBuoyTherm -- Core Thermal Buoyancy Flux. [Negative = m^2/s^3]
+[-]CoreBuoyTotal -- Core Total Buoyancy Flux. [Negative = m^2/s^3]
+[-]CriticalSemiMajorAxis -- Holman & Wiegert (1999) P-type Critical Semi-major Axis. [Negative = AU]
+[-]D232ThNumManDt -- Time Rate of Change of the number of 232Th nuclei. [Negative = /Gyr]
+[-]D235UNumManDt -- Time Rate of Change of the Number of 235U Nuclei. [Negative = /Gyr]
+[-]D238UNumManDt -- Time Rate of Change of the Number of 238U Nuclei. [Negative = /Gyr]
+[-]D26AlNumManDt -- Time Rate of Change of 26Al Heat Generation. [Negative = /Gyr]
+[-]D26AlPowerDt -- Time Rate of Change of 26Al Power Generation. [Negative = TW/Gyr]
+[-]D40KNumManDt -- Time Rate of Change of 40K Heat Generation. [Negative = /Gyr]
+[-]D40KPowerDt -- Time Rate of Change of 40K Power Generation. [Negative = TW/Gyr]
+[-]DArgPDtGalHTidal -- Body's tidal dargp/dt in GalHabit. [Negative = 1/year]
+[-]DEccDtDistOrb -- Body's eccentricity derivative in DistOrb. [Negative = 1/year]
+[-]DeccDtEqtide -- Total de/dt from EqTide. [Negative = /Gyr]
+[-]DEccDtGalHTidal -- Body's tidal decc/dt in GalHabit. [Negative = 1/year]
+[-]DeltaTime -- Average Timestep Over Last Output Interval. [Negative = years]
+[-]Density -- Average Density. [Negative = EarthDensity]
+[-]DEnvMassDt -- Envelope Mass Loss Rate. [Negative = Mearth/Myr]
+[-]DepthMeltMan -- Depth to base of Upper Mantle Melt Region. [Negative = m]
+[-]DHeccDtDistOrb -- Body's Poincare h derivative in DistOrb. [Negative = 1/year]
+[-]DHEccDtEqtide -- Time Rate of Change of Poincare's h in EqTide. [Negative = /Gyr]
+[-]DIceMassDt -- derivative of mass of ice sheets/area by latitude. [Negative = kg/m^2/s]
+[-]DIncDtDistOrb -- Body's inclination derivative in DistOrb. [Negative = deg/year]
+[-]DIncDtGalHTidal -- Body's tidal dinc/dt in GalHabit. [Negative = 1/year]
+[-]DivFlux -- Divergence of flux (flow into adjacent cells) by latitude. [Negative = W/m^2]
+[-]DKeccDtDistOrb -- Body's Poincare k in DistOrb. [Negative = 1/year]
+[-]DKEccDtEqtide -- Time Rate of Change of Poincare's k in EqTide. [Negative = /Gyr]
+[-]DLongADtDistOrb -- Body's longitude of ascending node derivative in DistOrb. [Negative = deg/yr]
+[-]DLongADtGalHTidal -- Body's tidal dlonga/dt in GalHabit. [Negative = 1/year]
+[-]DLongPDtDistOrb -- Body's longitude of pericenter derivative in DistOrb. [Negative = deg/yr]
+DMeanMotionDtEqtide -- Total dMeanMotion/dt from EqTide.
+[-]DOblDtDistRot -- Body's dobl/dt in DistRot. [Negative = deg/year]
+[-]DOblDtEqtide -- Time Rate of Change of Obliquity in EqTide. [Negative = deg/Gyr]
+[-]DOrbPerDtEqtide -- Total dOrbPer/dt from EqTide. [Negative = days/Gyr]
+[-]DPincDtDistOrb -- Body's Poincare p in DistOrb. [Negative = 1/year]
+[-]DPrecADtDistRot -- Body's dpA/dt in DistRot. [Negative = deg/year]
+[-]DQincDtDistOrb -- Body's Poincare q in DistOrb. [Negative = 1/year]
+[-]DRICDTCMB -- d(R_ic)/d(T_cmb). [Negative = m/K]
+[-]DRotPerDtEqtide -- Time Rate of Change of Rotation Period in EqTide. [Negative = days/Myr]
+[-]DRotPerDtStellar -- Time Rate of Change of Rotation Period in STELLAR. [Negative = days/Myr]
+DRotRateDtEqtide -- Time Rate of Change of Rotational Frequency in EqTide.
+[-]DsemiDtEqtide -- Total da/dt from EqTide. [Negative = AU/Gyr]
+[-]DSincDtDistOrb -- Body's sin(Inc/2) derivative in DistOrb. [Negative = 1/year]
+[-]DTChi -- Core Liquidus Depression. [Negative = K]
+[-]DXoblDtDistRot -- Body's dXobl/dt in DistRot. [Negative = 1/year]
+[-]DXoblDtEqtide -- Time Rate of Change of Laskar's X in EqTide. [Negative = /Gyr]
+DynEllip -- dynamical ellipticity of planet.
+[-]DynViscUMan -- Upper Mantle's Dynamic Viscosity. [Negative = Pa]
+[-]DYoblDtDistRot -- Body's dYobl/dt in DistRot. [Negative = 1/year]
+[-]DYoblDtEqtide -- Time Rate of Change of Laskar's Y in EqTide. [Negative = /Gyr]
+[-]DZoblDtDistRot -- Body's dZobl/dt in DistRot. [Negative = 1/year]
+[-]DZoblDtEqtide -- Time Rate of Change of Laskar's Z in EqTide. [Negative = /Gyr]
+Eccentricity -- Orbital Eccentricity.
+[-]EccTimeEqtide -- Timescale for Eccentricity Evolution (e/[de/dt]) in EqTide. [Negative = years]
+EccX -- X component of ecc vector.
+EccY -- Y component of ecc vector.
+EccZ -- Z component of ecc vector.
+[-]EnergyResL -- Energy residual on land. [Negative = W/m^2]
+[-]EnergyResW -- Energy residual over water. [Negative = W/m^2]
+[-]EnvelopeMass -- Envelope mass. [Negative = Mearth]
+EnvK2 -- Envelope's Love number k_2.
+EnvTidalQ -- Envelope Tidal Q.
+[-]EqRotPer -- Equilibrium Rotation Period. [Negative = days]
+[-]EqRotPerCont -- CPL2 Continuous Equilibrium Rotation Period. [Negative = days]
+[-]EqRotPerDiscrete -- CPL2 Discrete Equilibrium Spin Period. [Negative = days]
+EqRotRateCont -- CPL2 Continuous Equilibrium Spin Rate.
+[-]EqRotRateDiscrete -- CPL2 Discrete Equilibrium Spin Rate. [Negative = /day]
+[-]EqTidePower -- Equilibrium Power from Tides. [Negative = /day]
+[-]EruptEff -- Mantle Melt Eruption Efficiency. [Negative = nd]
+EtaO -- Oxygen eta parameter (Luger and Barnes 2015).
+[-]FluxIn -- Incoming flux by latitude. [Negative = W/m^2]
+[-]FluxInGlobal -- Global mean flux in (insol*(1-albedo)) from POISE. [Negative = W/m^2]
+[-]FluxMerid -- Total meridional (northward) flux by latitude. [Negative = PW]
+[-]FluxOut -- Outgoing (spaceward) flux by latitude. [Negative = W/m^2]
+[-]FluxOutGlobal -- Global mean flux out from POISE. [Negative = W/m^2]
+[-]FMeltLMan -- Melt Fraction Lower Mantle. [Negative = nd]
+[-]FMeltUMan -- Melt Fraction Upper Mantle. [Negative = nd]
+[-]FracFe2O3Man -- Fe2O3 mass fraction in magma ocean. [Negative = null]
+FreeEcc -- CBP's Free Eccentricity in BINARY.
+[-]FreeInc -- CBP's Free Inclination in BINARY. [Negative = Deg]
+FVelDisp -- Scaling factor for velocity dispersion.
+[-]FXUV -- XUV flux. [Negative = W/m^2]
+GammaOrb -- Gamma_Orbital.
+GammaRot -- Gamma_Rotation.
+[-]GravICB -- ICB Gravity. [Negative = m/s^2]
+HEcc -- Poincare's h (=e*sin(varpi).
+HEscapeRegime -- Integer flag for H envelope escape regime.
+[-]HflowCMB -- Heat Flow Core-Mantle Boundary. [Negative = TW]
+[-]HflowLatentIC -- Latent Heat Release at ICB. [Negative = TW]
+[-]HflowLatentMan -- Latent Heat Flow Mantle. [Negative = TW]
+[-]HflowLMan -- Heat Flow Lower Mantle. [Negative = TW]
+[-]HflowMeltMan -- Melt Heat Flow Mantle. [Negative = TW]
+[-]HflowSecMan -- Mantle Secular Heat Flow. [Negative = TW]
+[-]HflowSurf -- Heat Flow Surface Total. [Negative = TW]
+[-]HflowUMan -- Heat Flow Upper Mantle. [Negative = TW]
+[-]HfluxCMB -- Heat Flux Core-Mantle Boundary. [Negative = W/m^2]
+[-]HfluxCMBAd -- Adiabatic Heat Flux Core-Mantle Boundary. [Negative = W/m^2]
+[-]HfluxCMBConv -- Super-Adiabatic (convective) Heat Flux Core-Mantle Boundary. [Negative = W/m^2]
+[-]HfluxLMan -- Heat Flux Lower Mantle. [Negative = W/m^2]
+[-]HfluxUMan -- Heat Flux Upper Mantle. [Negative = W/m^2]
+[-]HydrogenMassSpace -- H mass lost to space. [Negative = kg]
+[-]HZInnerEdge -- Inner Edge of the Habitable Zone (Runaway Greenhouse). [Negative = AU]
+[-]HZLimEarlyMars -- Early Mars HZ Limit. [Negative = AUM]
+[-]HZLimitDryRunaway -- Semi-major axis of Dry Runaway HZ Limit. [Negative = AU]
+[-]HZLimMaxGreenhouse -- Maximum Greenhouse HZ Limit. [Negative = AU]
+[-]HZLimMoistGreenhouse -- Moist Greenhouse HZ Limit. [Negative = AU]
+[-]HZLimRecVenus -- Recent Venus HZ Limit. [Negative = AU]
+[-]HZLimRunaway -- Runaway Greenhouse HZ Limit. [Negative = AU]
+[-]IceAblate -- ice decay per orbit (ablation only). [Negative = m/orbit]
+[-]IceAccum -- Ice growth per orbit (accumulation only). [Negative = m/orbit]
+IceBeltLand -- Does the planet have a land ice belt?.
+IceBeltNorthLatLand -- Northernmost extent of land ice belt..
+IceBeltNorthLatSea -- Northernmost extent of sea ice belt..
+IceBeltSea -- Does the planet have a sea ice belt?.
+IceBeltSouthLatLand -- Southernmost extent of land ice belt..
+IceBeltSouthLatSea -- Southernmost extent of sea ice belt..
+IceCapNorthLand -- Does the planet have a northern polar ice cap on land?.
+IceCapNorthLatLand -- Southernmost extent of northern land ice cap..
+IceCapNorthLatSea -- Southernmost extent of northern sea ice cap..
+IceCapNorthSea -- Does the planet have a northern polar sea ice cap.
+IceCapSouthLand -- Does the planet have a southern polar ice cap on land?.
+IceCapSouthLatLand -- Northernmost extent of southern land ice cap..
+IceCapSouthLatSea -- Northernmost extent of southern sea ice cap..
+IceCapSouthSea -- Does the planet have a southern polar sea ice cap?.
+[-]IceFlow -- flow of ice sheets/area by latitude. [Negative = m/s]
+IceFree -- Is the planet free of sea and land ice?.
+[-]IceHeight -- Height of ice sheets. [Negative = m]
+[-]IceMass -- Mass of ice sheets/area by latitude. [Negative = kg/m^2]
+ImK2 -- Im(k_2).
+[-]Imk2Man -- Imaginary Love Number k2 Mantle. [Negative = nd]
+[-]Inc -- Body's Inclination. [Negative = Deg]
+[-]Instellation -- Orbit-averaged INcident STELLar radiATION. [Negative = W/m^2]
+K2 -- k_2.
+[-]K2Man -- Real Love Number k2 Mantle. [Negative = nd]
+KEcc -- Poincare's k (=e*cos(varpi).
+[-]KinEnergy -- Body's non-orbital Kinetic Energy. [Negative = ergs]
+[-]Latitude -- Latitude.. [Negative = deg]
+[-]LL13K0 -- Leung+Lee 2013 Radial epicyclic frequency. [Negative = 1/year]
+[-]LL13N0 -- CBP Mean Motion in BINARY. [Negative = 1/year]
+[-]LL13V0 -- CBP vertical epicyclic frequency in BINARY. [Negative = 1/year]
+[-]LockTime -- Time when body tidally locked.. [Negative = Myr]
+[-]LongA -- Body's Longitude of ascending node. [Negative = Deg]
+[-]LongP -- Body's Longitude of pericenter. [Negative = Deg]
+[-]LostAngMom -- Lost Angular Momentum due to Magnetic Braking. [Negative = kg*m^2/s]
+[-]LostEnergy -- Body's Total Lost Energy. [Negative = ergs]
+[-]Luminosity -- Luminosity. [Negative = LSUN]
+[-]LXUVFlare -- XUV Luminosity from flares. [Negative = LSUN]
+LXUVFrac -- Fraction of luminosity in XUV.
+[-]LXUVStellar -- Base X-ray/XUV Luminosity. [Negative = LSUN]
+[-]LXUVTot -- Total XUV Luminosity. [Negative = LSUN]
+[-]MagMom -- Core Magnetic Moment. [Negative = EMAGMOM]
+[-]MagPauseRad -- Magnetopause Radius. [Negative = EMAGPAUSERAD]
+[-]Mass -- Mass. [Negative = Mearth]
+[-]MassChiIC -- Mass of Chi in Inner Core. [Negative = EMASSIC_CHI]
+[-]MassChiOC -- Mass of Chi in Outer Core. [Negative = EMASSOC_CHI]
+[-]MassIC -- Mass of Inner Core. [Negative = EMASSIC]
+[-]MassOC -- Mass of Outer Core. [Negative = EMASSOC]
+[-]MeanAnomaly -- Orbital Mean Anomaly. [Negative = Deg]
+[-]MeanLongitude -- Orbital Mean Longitude. [Negative = Deg]
+[-]MeanMotion -- Orbital Mean Motion. [Negative = /day]
+[-]MeltfactorLMan -- Melt Factor Lower Mantle. [Negative = nd]
+[-]MeltfactorUMan -- Melt Factor Upper Mantle. [Negative = nd]
+[-]MeltFraction -- Melt fraction of the magma ocean. [Negative = null]
+[-]MeltMassFluxMan -- Mantle Melt Mass Flux. [Negative = kg/s]
+NBadImpulse -- cumulative number of questionable encounters.
+NEncounters -- cumulative number of stellar encounters.
+[-]NetFluxAtmo -- Atmospheric Net Flux (OLR-ASR). [Negative = W/m^2]
+[-]Obliquity -- Obliquity. [Negative = deg]
+[-]OblTimeDistRot -- Obliquity timescale in DistRot. [Negative = year]
+[-]OblTimeEqtide -- Timescale for Obliquity Evolution in EqTide. [Negative = years]
+OceanK2 -- Ocean's Love number k_2.
+OceanTidalQ -- Ocean Tidal Q.
+[-]OrbAngMom -- Orbital Angular Momentum. [Negative = kg*m^2/s]
+[-]OrbEnergy -- Body's Total Orbital Energy. [Negative = ergs]
+[-]OrbPeriod -- Orbital Period. [Negative = days]
+[-]OrbPotEnergy -- Body's Orbital Potential Energy. [Negative = ergs]
+[-]OxygenMantleMass -- Mass of oxygen in mantle. [Negative = bars]
+[-]OxygenMass -- Oxygen mass in the atmosphere. [Negative = bars]
+[-]OxygenMassMOAtm -- Oxygen mass in magma ocean and atmosphere. [Negative = kg]
+[-]OxygenMassSol -- Oxygen Mass in solidified mantle. [Negative = kg]
+[-]OxygenMassSpace -- O atoms lost to space. [Negative = kg]
+[-]PeakInsol -- Peak insolation by latitude.. [Negative = W/m^2]
+[-]PeriQ -- Pericenter distance. [Negative = AU]
+Pinc -- Body's Poincare p in DistOrb.
+PlanckBAvg -- Annually averaged Planck B coeff.
+[-]PlanetRadius -- Planet radius. [Negative = Rearth]
+PositionXSpiNBody -- Body's x position in SpiNBody.
+PositionYSpiNBody -- Body's y position in SpiNBody.
+PositionZSpiNBody -- Body's z position in SpiNBody.
+[-]PotEnergy -- Body's non-orbital Potential Energy. [Negative = ergs]
+[-]PotTemp -- Potential temperature magma ocean. [Negative = K]
+[-]PowerEqtide -- Internal Power due to Tides in EqTide. [Negative = TW]
+[-]PowerGravIC -- Gravitational Power Release at ICB. [Negative = TW]
+[-]PrecA -- Body's precession angle. [Negative = Deg]
+[-]PrecATimeDistRot -- Axial precession timescale in DistRot. [Negative = year]
+PrecFNat -- natural precession freq of planet.
+[-]PressCO2Atm -- CO2 pressure in atmosphere. [Negative = bar]
+[-]PressOxygenAtm -- Oxygen pressure in atmosphere. [Negative = bar]
+[-]PresSurf -- Surface pressure due to atmosphere. [Negative = GPa]
+[-]PressWaterAtm -- Water pressure in atmosphere. [Negative = bar]
+[-]PresSWind -- Stellar wind pressure at body. [Negative = EPRESSWIND]
+[-]PresXUV -- Pressure at base of thermosphere. [Negative = Pa]
+Qinc -- Body's Poincare q in DistOrb.
+[-]R0 -- CBP's Orbital Guiding Center Radius in BINARY. [Negative = AU]
+RadGyra -- Radius of Gyration/Moment of Inertia Constant.
+[-]RadioPower -- Power from radiogenic heating in the mantle. [Negative = TW]
+[-]Radius -- Radius. [Negative = Rearth]
+[-]RadPowerCore -- Total Power Generated by Radiogenic Nuclides in Core. [Negative = TW]
+[-]RadPowerCrust -- Total Power Generated by Radiogenic Nuclides in the crust. [Negative = TW]
+[-]RadPowerMan -- Total Power Generated by Radiogenic Nuclides in the mantle. [Negative = TW]
+[-]RadPowerTotal -- Total Power Generated by Radiogenic Nuclides in Total (M+C). [Negative = TW]
+[-]RadSolid -- Radius to the solid surface. [Negative = Rearth]
+[-]RadXUV -- XUV radius separating hydro. dyn. escape and equilibrium. [Negative = Rearth]
+[-]RayleighMan -- Mantle Rayleigh Number. [Negative = nd]
+[-]RGLimit -- Runaway greenhouse semi-major axis. [Negative = AU]
+[-]RIC -- Inner Core Radius. [Negative = km]
+[-]RICDot -- Inner Core growth rate. [Negative = m/s]
+[-]RocheRadius -- Roche Lobe Radius. [Negative = Rearth]
+RossbyNumber -- Rossby Number.
+[-]RotAngMom -- Rotational Angular Momentum. [Negative = kg*m^2/s]
+RotKinEnergy -- Body's Rotational Energy.
+[-]RotPer -- Rotational Period. [Negative = days]
+[-]RotRate -- Rotational Frequency. [Negative = /day]
+[-]RotTimeEqtide -- Timescale for Rotational Evolution in EqTide. [Negative = years]
+[-]RotVel -- Rotational Velocity. [Negative = km/s]
+[-]RRCriticalFlux -- Critical XUV Flux that separates RR and energy-limited escape. [Negative = W/m^2]
+[-]ScaleHeight -- Scale height in Lehmer & Catling (2016) model. [Negative = km]
+[-]SemiMajorAxis -- Semi-major Axis. [Negative = AU]
+[-]SemiTimeEqtide -- Timescale for Semi-major Axis Evolution (a/[da/dt]) in EqTide. [Negative = years]
+[-]ShmodUMan -- Shear Modulus Upper Mantle. [Negative = Pa]
+[-]SignTJumpLMan -- Sign of Lower Mantle Temperature Jump. [Negative = K]
+[-]SignTJumpUMan -- Sign of Upper Mantle Temperature Jump. [Negative = K]
+Sinc -- Body's sin(Inc/2) in DistOrb.
+SkipSeas -- Is Seasonal model skipped due to RGH or snowball?.
+Snowball -- Is the planet in a snowball state?.
+SnowballLand -- Is all land covered in ice?.
+SnowballSea -- Is all sea covered in ice?.
+[-]SolidRadius -- Solidification radius of the mantle. [Negative = Rearth]
+[-]SpiNBodyInc -- Body's inclination in SpiNBody. [Negative = Deg]
+[-]SpiNBodyLongA -- Body's inclination in SpiNBody. [Negative = Deg]
+[-]SurfEnFluxEqtide -- Surface Energy Flux due to Tides in EqTide. [Negative = W/m^2]
+[-]SurfEnFluxRadTotal -- Total Surface Heat Flux Generated by Radiogenic Nuclides. [Negative = W/m^2]
+[-]SurfEnFluxTotal -- Total Surface Energy Flux. [Negative = W/m^2]
+[-]SurfTemp -- Surface temperature magma ocean. [Negative = K]
+[-]SurfWaterMass -- Surface water mass. [Negative = TO]
+[-]TCMB -- CMB Temperature. [Negative = K]
+[-]TCore -- Core Temperature. [Negative = K]
+[-]TDepthMeltMan -- Temp at base of Upper Mantle Melt Region. [Negative = K]
+[-]TDotCore -- Change in Core Temperature. [Negative = K/s]
+[-]TDotMan -- Change in Mantle Temperature. [Negative = K/s]
+Temperature -- Effective Temperature.
+[-]TempLandLat -- Land surface temperature by latitude.. [Negative = C]
+[-]TempLat -- Surface temperature by latitude.. [Negative = C]
+[-]TempMaxLand -- Maximum surface temperature on land. [Negative = C]
+[-]TempMaxLat -- Maximum surface temperature over a year by latitude.. [Negative = C]
+[-]TempMaxWater -- Maximum surface temperature on water. [Negative = C]
+[-]TempMinLat -- Minimum surface temperature over a year by latitude.. [Negative = C]
+[-]TempWaterLat -- Water surface temperature by latitude.. [Negative = C]
+[-]TGlobal -- Global mean temperature from POISE. [Negative = C]
+[-]ThermConductOC -- Thermal Conductivity of the Outer Core. [Negative = W/m/K]
+[-]ThermTemp -- Isothermal atmospheric temperature. [Negative = K]
+[-]TidalPower -- Power from tidal heating in the mantle. [Negative = TW]
+TidalQ -- Tidal Q.
+TidalQMantle -- Mantle's Tidal Q.
+[-]TidalRadius -- In EqTide, the value of the radius that enters the tidal evolution equations. This parameter is distinct from others, such as the radius of XUV absorption or a pressure level in an atmosphere.. [Negative = Rearth]
+[-]TidalTau -- Tidal Time Lag. [Negative = sec]
+TideLock -- Tidally Locked?.
+[-]Time -- Simulation Time. [Negative = Gyr]
+[-]TJumpLMan -- Lower Mantle Temperature Jump. [Negative = K]
+[-]TJumpMeltMan -- Temp Jump across Upper Mantle Melt Region. [Negative = K]
+[-]TJumpUMan -- Upper Mantle Temperature Jump. [Negative = K]
+[-]TLMan -- Lower Mantle Temperature. [Negative = K]
+[-]TMan -- Mantle Temperature. [Negative = K]
+[-]TotAngMom -- Total Angular Momentum. [Negative = kg*m^2/s]
+[-]TotEnergy -- Total System Energy. [Negative = ergs]
+[-]TotIceBalance -- Global total ice balance in ice sheets (this time step). [Negative = kg]
+[-]TotIceFlow -- Global total ice flow in ice sheets (should = 0). [Negative = kg]
+[-]TotIceMass -- Global total ice mass in ice sheets. [Negative = kg]
+[-]TotOrbEnergy -- System's Total Orbital Energy. [Negative = ergs]
+[-]TrefLind -- Core Liquidus Lindeman Reference. [Negative = K]
+[-]TUMan -- Upper Mantle Temperature. [Negative = K]
+VelXSpiNBody -- Body's x velocity in SpiNBody.
+VelYSpiNBody -- Body's y velocity in SpiNBody.
+VelZSpiNBody -- Body's z velocity in SpiNBody.
+[-]ViscJumpMan -- Mantle Viscosity Ratio. [Negative = nd]
+[-]ViscLMan -- Lower Mantle Viscosity. [Negative = m^2/s]
+[-]ViscMMan -- Average (mid) Mantle Viscosity. [Negative = m^2/s]
+[-]ViscUMan -- Upper Mantle Viscosity. [Negative = m^2/s]
+[-]ViscUManArr -- Upper Mantle Arrhenius Viscosity. [Negative = m^2/s]
+[-]WaterFracMelt -- water mass fraction in magma ocean. [Negative = null]
+[-]WaterMassMOAtm -- Water mass in magma ocean and atmosphere. [Negative = TO]
+[-]WaterMassSol -- Water mass in solidified mantle. [Negative = TO]
+XO -- Atomic oxygen mixing ratio in upper atmosphere.
+Xobl -- Body's sin(obliquity)*cos(precession angle).
+[-]XoblTimeDistRot -- Xobl timescale in DistRot. [Negative = year]
+Yobl -- Body's sin(obliquity)*sin(precession angle).
+[-]YoblTimeDistRot -- Yobl timescale in DistRot. [Negative = year]
+Zobl -- Body's cos(obliquity).
+[-]ZoblTimeDistRot -- Zobl timescale in DistRot. [Negative = year]

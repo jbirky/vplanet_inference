@@ -1,4 +1,3 @@
-# The host star, the sun -> Primary body!
 sName		primary		# Body's name
 saModules       stellar eqtide  # Modules
 
