@@ -222,12 +222,12 @@ class VplanetModel(object):
             self.bounds = np.empty(shape=(self.ninparams, 2), dtype='object') 
 
     
-    def lnlike(self, theta, outpath=None):
+    def lnlike(self, theta, outsubpath=None):
         """
         Gaussian likelihood function comparing vplanet model and given observational values/uncertainties
         """
 
-        ymodel = self.run_model(theta, outparams=self.outparams, outpath=outpath)
+        ymodel = self.run_model(theta, outparams=self.outparams, outsubpath=outsubpath)
 
         # Gaussian likelihood 
         lnlike = -0.5 * np.sum(((ymodel - self.data.T[0])/self.data.T[1])**2)
