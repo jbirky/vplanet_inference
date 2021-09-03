@@ -1,0 +1,27 @@
+# The host star, the sun -> Primary body!
+sName		primary		# Body's name
+saModules       stellar eqtide  # Modules
+
+# Physical Parameters
+iBodyType     1                 # Star!
+dMass 2.147483e+33 # Mass, solar masses
+dRotPeriod 4.320000e+05 # Initial rotation period in d
+
+dObliquity    0.0
+
+# The first body in the saBodyFiles list must be the central mass.
+# This body carries no orbital information => the coordinate system is bodycentric.
+
+# EQTIDE Parameters
+dTidalTau -1.000000e+00 # Tidal Time lag (yr)
+dK2		0.5		# Love number of degree 2
+dMaxLockDiff    0.01            # Fraction diff between Prot and Peq below which system tidally locks
+sTideModel	t8		# Tidal model, p2=CPL, t8=CTL
+saTidePerts	secondary	# Body name(s) of tidal perturbers
+
+# STELLAR Parameters
+sStellarModel baraffe           # Stellar evolution model
+sMagBrakingModel matt           # Matt+2015 magnetic braking model
+
+saOutputOrder	Time -Radius Temperature -Luminosity -RotPer -LostAngMom -SurfEnFluxTotal  # Output 
+
