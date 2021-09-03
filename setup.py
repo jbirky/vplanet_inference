@@ -20,5 +20,5 @@ setup(name="vplanet_inference",
                           "pytest",
                           "h5py",
                           "tqdm",
-                          "vplanet"]
+                          "vplanet >= 2.0.6"]
      )
