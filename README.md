@@ -2,13 +2,10 @@
 
 Python tools for doing inference with vplanet
 
-### Basic Setup
+### Installation
 
-Dependencies:
-- vplanet
-- vplot
-
-Add environmental variable:
 ```
-export PYTHONPATH=$PYTHONPATH:/path_to/vplanet_inference
+git clone https://github.com/jbirky/vplanet_inference
+cd vplanet_inference
+python setup.py install
 ```
