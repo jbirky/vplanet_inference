@@ -14,7 +14,7 @@ __all__ = ["VplanetModel"]
 
 class VplanetModel(object):
 
-    def __init__(self, inparams, inpath=".", outparams=None, outpath="output/", 
+    def __init__(self, inparams, inpath=".", outparams=None, outpath="output/", fixsub=None,
                  vplfile="vpl.in", sys_name="system", verbose=True):
         """
         params  : (str, list) variable parameter names
@@ -23,7 +23,8 @@ class VplanetModel(object):
         inpath  : (str) path to template infiles
                   'infiles/'
 
-        factor  : (float, list) theta conversion factor
+        outparams : (str, list) return specified list of parameters from log file
+                    ['final.primary.Radius', 'final.secondary.Radius']
         """
 
         # Input parameters
@@ -52,6 +53,11 @@ class VplanetModel(object):
                         for ll in line:
                             if ".in" in ll:
                                 self.infile_list.append(ll)
+        
+        # Fixed parameter substitutions - to be implemented!
+        if fixsub is not None:
+            self.fixparam = list(fixsub.keys())
+            self.fixvalue = list(fixsub.values())
 
 
     def initialize_model(self, theta, outpath=None):
@@ -108,7 +114,7 @@ class VplanetModel(object):
                 file_in = re.sub("%s(.*?)#" % "sUnitAngle", "%s %s #" % ("sUnitAngle", "rad"), file_in)
                 file_in = re.sub("%s(.*?)#" % "sUnitTemp", "%s %s #" % ("sUnitTemp", "K"), file_in)
                 
-            # body files
+            # iterate over all input parameters, and substitute parameters in appropriate files
             for i in range(len(theta_file)):
                 file_in = re.sub("%s(.*?)#" % param_name_file[i], "%s %.10e #" % (param_name_file[i], theta_file[i]), file_in)
 
@@ -147,9 +153,6 @@ class VplanetModel(object):
         theta     : (float, list) parameter values, corresponding to self.inparams
 
         remove    : (bool) True will erase input/output files after model is run
-
-        outparams : (str, list) return specified list of parameters from log file
-                    ['initial.primary.Luminosity', 'final.primary.Radius', 'initial.secondary.Luminosity', 'final.secondary.Radius']
         """
 
         # randomize output directory
