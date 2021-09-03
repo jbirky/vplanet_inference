@@ -14,7 +14,8 @@ __all__ = ["VplanetModel"]
 
 class VplanetModel(object):
 
-    def __init__(self, inparams, inpath=".", vplfile="vpl.in", sys_name="system", verbose=True):
+    def __init__(self, inparams, inpath=".", outparams=None, outpath="output/", 
+                 vplfile="vpl.in", sys_name="system", verbose=True):
         """
         params  : (str, list) variable parameter names
                   ['vpl.dStopTime', 'star.dRotPeriod', 'star.dMass', 'planet.dEcc', 'planet.dOrbPeriod']
@@ -25,13 +26,21 @@ class VplanetModel(object):
         factor  : (float, list) theta conversion factor
         """
 
+        # Input parameters
         self.inparams = list(inparams.keys())
         self.in_units = list(inparams.values())
         self.inpath = inpath
         self.vplfile = vplfile
         self.sys_name = sys_name
-        self.nparam = len(inparams)
+        self.ninparam = len(inparams)
         self.verbose = verbose
+
+        # Output parameters
+        if outparams is not None:
+            self.outparams = list(outparams.keys())
+            self.out_units = list(outparams.values())
+            self.noutparam = len(self.outparams)
+        self.outpath_base = outpath
 
         # List of infiles (vpl.in + body files)
         self.infile_list = [vplfile]
@@ -54,13 +63,25 @@ class VplanetModel(object):
         """
         
         # Convert units of theta to SI
-        theta_conv = np.zeros(self.nparam)
-        for ii in range(self.nparam):
+        theta_conv = np.zeros(self.ninparam)
+        theta_new_unit = []
+
+        for ii in range(self.ninparam):
             if isinstance(self.in_units[ii], u.function.logarithmic.DexUnit):
                 # un-log units
-                theta_conv[ii] = (theta[ii] * self.in_units[ii]).physical.si.value
+                new_theta = (theta[ii] * self.in_units[ii]).physical.si
             else:
-                theta_conv[ii] = (theta[ii] * self.in_units[ii]).si.value
+                new_theta = (theta[ii] * self.in_units[ii]).si
+            theta_conv[ii] = new_theta.value
+            theta_new_unit.append(new_theta.unit)
+
+        if self.verbose:
+            print("\nInput:")
+            print("-----------------")
+            for ii in range(self.ninparam):
+                print("%s : %s %s (user)   --->   %s %s (vpl file)"%(self.inparams[ii],
+                    theta[ii], self.in_units[ii], theta_conv[ii], theta_new_unit[ii]))
+            print("")
 
         if not os.path.exists(outpath):
             os.makedirs(outpath)
@@ -110,10 +131,9 @@ class VplanetModel(object):
         outparams : (str, list) return specified list of parameters from log file
                     ['initial.primary.Luminosity', 'final.primary.Radius', 'initial.secondary.Luminosity', 'final.secondary.Radius']
         """
-        nout = len(outparams)
-        outvalues = np.zeros(nout)
+        outvalues = np.zeros(self.noutparam)
 
-        for i in range(nout):
+        for i in range(self.noutparam):
             base = kwargs.get('base', output.log)
             for attr in outparams[i].split('.'):
                 base = getattr(base, attr)
@@ -122,7 +142,7 @@ class VplanetModel(object):
         return outvalues
 
 
-    def run_model(self, theta, remove=True, outparams=None, outpath=None):
+    def run_model(self, theta, remove=True, outsubpath=None):
         """
         theta     : (float, list) parameter values, corresponding to self.inparams
 
@@ -133,12 +153,10 @@ class VplanetModel(object):
         """
 
         # randomize output directory
-        if outpath is None:
-            while True:
-                # create a unique randomized path to execute the model files
-                outpath = f"output/{random.randrange(16**12)}"
-                if not os.path.exists(outpath):
-                    break
+        if outsubpath is None:
+            # create a unique randomized path to execute the model files
+            outsubpath = random.randrange(16**12)
+        outpath = f"{self.outpath_base}/{outsubpath}"
 
         self.initialize_model(theta, outpath=outpath)
         
@@ -153,16 +171,18 @@ class VplanetModel(object):
         if self.verbose == True:
             print('Executed model %svpl.in %.3f s'%(outpath, time.time() - t0))
 
-        if outparams is not None:
-            self.outparams = list(outparams.keys())
-            self.out_units = list(outparams.values())
+        if self.outparams is None:
+            model_out = output
+        else:
             outvalues = self.get_outparam(output, self.outparams)
             model_out = outvalues
-        else:
-            model_out = output
 
-        if self.verbose:
-            print(f"theta : {theta} \t y : {model_out}")
+            if self.verbose:
+                print("\nOutput:")
+                print("-----------------")
+                for ii in range(self.noutparam):
+                    print("%s : %s %s"%(self.outparams[ii], model_out[ii], self.out_units[ii]))
+                print("")
 
         if remove == True:
             shutil.rmtree(outpath)
@@ -196,7 +216,7 @@ class VplanetModel(object):
         if bounds is not None:
             self.bounds = bounds
         else:
-            self.bounds = np.empty(shape=(self.nparams, 2), dtype='object') 
+            self.bounds = np.empty(shape=(self.ninparams, 2), dtype='object') 
 
     
     def lnlike(self, theta, outpath=None):
