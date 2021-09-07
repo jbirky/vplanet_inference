@@ -208,13 +208,6 @@ class VplanetModel(object):
         else:
             print('Must input data!')
             raise 
-        
-        if outparams is not None:
-            self.outparams = outparams
-            self.nout = len(outparams)
-        else:
-            print('Must specify outparams!')
-            raise 
 
         if bounds is not None:
             self.bounds = bounds
