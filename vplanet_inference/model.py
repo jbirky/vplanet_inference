@@ -193,7 +193,7 @@ class VplanetModel(object):
         return model_out
 
 
-    def initialize_bayes(self, data=None, outparams=None, bounds=None):
+    def initialize_bayes(self, data=None, bounds=None):
         """
         data      : (float, matrix)
                     [(rad, radSig), 
@@ -220,7 +220,7 @@ class VplanetModel(object):
         Gaussian likelihood function comparing vplanet model and given observational values/uncertainties
         """
 
-        ymodel = self.run_model(theta, outparams=self.outparams, outsubpath=outsubpath)
+        ymodel = self.run_model(theta, outsubpath=outsubpath)
 
         # Gaussian likelihood 
         lnlike = -0.5 * np.sum(((ymodel - self.data.T[0])/self.data.T[1])**2)
