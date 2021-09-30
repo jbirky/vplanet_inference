@@ -17,8 +17,4 @@ saTidePerts		secondary		# Body name(s) of tidal perturbers
 sStellarModel 		baraffe     # Stellar evolution model
 sMagBrakingModel 	matt        # Matt+2015 magnetic braking model
 
-saOutputOrder	Time -Radius Temperature -Luminosity -RotPer -LostAngMom -SurfEnFluxTotal  # Output 
-
-
-# The first body in the saBodyFiles list must be the central mass.
-# This body carries no orbital information => the coordinate system is bodycentric.
+saOutputOrder	Time -Radius -Luminosity -RotPer -OrbPeriod Eccentricity

@@ -22,4 +22,4 @@ saTidePerts	secondary	# Body name(s) of tidal perturbers
 sStellarModel baraffe           # Stellar evolution model
 sMagBrakingModel matt           # Matt+2015 magnetic braking model
 
-saOutputOrder	Time -Radius Temperature -Luminosity -RotPer -LostAngMom -SurfEnFluxTotal  # Output 
+saOutputOrder	Time -Radius -Luminosity -RotPer -OrbPeriod Eccentricity
