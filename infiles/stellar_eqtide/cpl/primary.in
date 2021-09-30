@@ -3,8 +3,8 @@ saModules       stellar eqtide  # Modules
 
 # Physical Parameters
 iBodyType     1                 # Star!
-dMass         1.0782            # Mass, solar masses
-dRotPeriod    -0.2              # Initial rotation period in d
+dMass         1.0782            # Mass
+dRotPeriod    -0.2              # Initial rotation period 
 
 # EQTIDE Parameters
 dTidalQ       	1e6         	
