@@ -67,6 +67,8 @@ class VplanetModel(object):
                 self.timesteps = timesteps.si.value
             except:
                 raise ValueError("Units for timestep not valid.")
+        else:
+            self.timesteps = None
 
 
     def initialize_model(self, theta, outpath=None):
