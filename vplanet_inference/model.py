@@ -15,7 +15,7 @@ __all__ = ["VplanetModel"]
 class VplanetModel(object):
 
     def __init__(self, inparams, inpath=".", outparams=None, outpath="output/", fixsub=None,
-                 vplfile="vpl.in", sys_name="system", verbose=True):
+                 vplfile="vpl.in", sys_name="system", timesteps=None, verbose=True):
         """
         params  : (str, list) variable parameter names
                   ['vpl.dStopTime', 'star.dRotPeriod', 'star.dMass', 'planet.dEcc', 'planet.dOrbPeriod']
@@ -25,6 +25,8 @@ class VplanetModel(object):
 
         outparams : (str, list) return specified list of parameters from log file
                     ['final.primary.Radius', 'final.secondary.Radius']
+        
+        timesteps : (float * astropy units, optional)
         """
 
         # Input parameters
@@ -59,13 +61,18 @@ class VplanetModel(object):
             self.fixparam = list(fixsub.keys())
             self.fixvalue = list(fixsub.values())
 
+        # Set output timesteps (if specified, otherwise will default to same as dStopTime)
+        try:
+            self.timesteps = timesteps.si.value
+        except:
+            raise ValueError("Units for timestep not valid.")
+
 
     def initialize_model(self, theta, outpath=None):
         """
         theta   : (float, list) parameter values, corresponding to self.param
 
         outpath : (str) path to where model infiles should be written
-            'output/'
         """
         
         # Convert units of theta to SI
@@ -102,7 +109,15 @@ class VplanetModel(object):
             ind = np.where(param_file_all == file.strip('.in'))[0]
             theta_file = theta_conv[ind]
             param_name_file = param_name_all[ind]
-            
+                
+            # iterate over all input parameters, and substitute parameters in appropriate files
+            for i in range(len(theta_file)):
+                file_in = re.sub("%s(.*?)#" % param_name_file[i], "%s %.10e #" % (param_name_file[i], theta_file[i]), file_in)
+
+                # Set output timesteps to simulation stop time
+                if param_name_file[i] == 'dStopTime':
+                    file_in = re.sub("%s(.*?)#" % "dOutputTime", "%s %.10e #" % ("dOutputTime", theta_file[i]), file_in)
+
             # if VPL file
             if file == 'vpl.in':
                 file_in = re.sub("%s(.*?)#" % "sSystemName", "%s %s #" % ("sSystemName", self.sys_name), file_in)
@@ -113,14 +128,10 @@ class VplanetModel(object):
                 file_in = re.sub("%s(.*?)#" % "sUnitTime", "%s %s #" % ("sUnitTime", "sec"), file_in)
                 file_in = re.sub("%s(.*?)#" % "sUnitAngle", "%s %s #" % ("sUnitAngle", "rad"), file_in)
                 file_in = re.sub("%s(.*?)#" % "sUnitTemp", "%s %s #" % ("sUnitTemp", "K"), file_in)
-                
-            # iterate over all input parameters, and substitute parameters in appropriate files
-            for i in range(len(theta_file)):
-                file_in = re.sub("%s(.*?)#" % param_name_file[i], "%s %.10e #" % (param_name_file[i], theta_file[i]), file_in)
 
-                # Set output timesteps to simulation stop time
-                if param_name_file[i] == 'dStopTime':
-                    file_in = re.sub("%s(.*?)#" % "dOutputTime", "%s %.10e #" % ("dOutputTime", theta_file[i]), file_in)
+                # Set output timesteps (if specified, otherwise will default to same as dStopTime)
+                if self.timesteps is not None:
+                    file_in = re.sub("%s(.*?)#" % "dOutputTime", "%s %.10e #" % ("dOutputTime", self.timesteps), file_in)
 
             write_file = os.path.join(outpath, file)
             with open(write_file, 'w') as f:
@@ -172,7 +183,7 @@ class VplanetModel(object):
         output = vplanet.get_output(outpath)
 
         if self.verbose == True:
-            print('Executed model %svpl.in %.3f s'%(outpath, time.time() - t0))
+            print('Executed model %s/vpl.in %.3f s'%(outpath, time.time() - t0))
 
         if self.outparams is None:
             model_out = output
