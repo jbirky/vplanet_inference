@@ -62,10 +62,11 @@ class VplanetModel(object):
             self.fixvalue = list(fixsub.values())
 
         # Set output timesteps (if specified, otherwise will default to same as dStopTime)
-        try:
-            self.timesteps = timesteps.si.value
-        except:
-            raise ValueError("Units for timestep not valid.")
+        if timesteps is not None:
+            try:
+                self.timesteps = timesteps.si.value
+            except:
+                raise ValueError("Units for timestep not valid.")
 
 
     def initialize_model(self, theta, outpath=None):
