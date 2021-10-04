@@ -15,7 +15,7 @@ dObliquity  0.0
 # EQTIDE Parameters
 dTidalTau       3.17e-9         # Tidal Time lag 
 dK2		0.5		# Love number of degree 2
-dMaxLockDiff    0.1            # Difference between Prot and Peq before tidally-locking
+dMaxLockDiff    0.01            # Difference between Prot and Peq before tidally-locking
 saTidePerts	primary   	# Body name(s) of tidal perturbers
 
 # Stellar param
