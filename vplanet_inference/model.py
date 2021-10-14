@@ -15,7 +15,7 @@ __all__ = ["VplanetModel"]
 class VplanetModel(object):
 
     def __init__(self, inparams, inpath=".", outparams=None, outpath="output/", fixsub=None,
-                 vplfile="vpl.in", sys_name="system", timesteps=None, time_init=None, verbose=True):
+                 vplfile="vpl.in", sys_name="system", timesteps=None, time_init=5e6*u.yr, verbose=True):
         """
         params  : (str, list) variable parameter names
                   ['vpl.dStopTime', 'star.dRotPeriod', 'star.dMass', 'planet.dEcc', 'planet.dOrbPeriod']
@@ -71,13 +71,10 @@ class VplanetModel(object):
             self.timesteps = None
 
         # Set initial simulation time (dAge)
-        if timesteps is not None:
-            try:
-                self.time_init = time_init.si.value
-            except:
-                raise ValueError("Units for time_init not valid.")
-        else:
-            self.time_init = None
+        try:
+            self.time_init = time_init.si.value
+        except:
+            raise ValueError("Units for time_init not valid.")
 
 
     def initialize_model(self, theta, outpath=None):
