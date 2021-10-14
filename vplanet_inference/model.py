@@ -147,7 +147,7 @@ class VplanetModel(object):
 
             else: # (not VPL file)
                 # Set output timesteps (if specified, otherwise will default to same as dStopTime)
-                if self.timesteps is not None:
+                if self.time_init is not None:
                     file_in = re.sub("%s(.*?)#" % "dAge", "%s %.10e #" % ("dAge", self.time_init), file_in)
 
             write_file = os.path.join(outpath, file)
