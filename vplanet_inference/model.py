@@ -15,7 +15,7 @@ __all__ = ["VplanetModel"]
 class VplanetModel(object):
 
     def __init__(self, inparams, inpath=".", outparams=None, outpath="output/", fixsub=None,
-                 vplfile="vpl.in", sys_name="system", timesteps=None, verbose=True):
+                 vplfile="vpl.in", sys_name="system", timesteps=None, time_init=None, verbose=True):
         """
         params  : (str, list) variable parameter names
                   ['vpl.dStopTime', 'star.dRotPeriod', 'star.dMass', 'planet.dEcc', 'planet.dOrbPeriod']
@@ -69,6 +69,15 @@ class VplanetModel(object):
                 raise ValueError("Units for timestep not valid.")
         else:
             self.timesteps = None
+
+        # Set initial simulation time (dAge)
+        if timesteps is not None:
+            try:
+                self.time_init = time_init.si.value
+            except:
+                raise ValueError("Units for time_init not valid.")
+        else:
+            self.time_init = None
 
 
     def initialize_model(self, theta, outpath=None):
@@ -135,6 +144,11 @@ class VplanetModel(object):
                 # Set output timesteps (if specified, otherwise will default to same as dStopTime)
                 if self.timesteps is not None:
                     file_in = re.sub("%s(.*?)#" % "dOutputTime", "%s %.10e #" % ("dOutputTime", self.timesteps), file_in)
+
+            else: # (not VPL file)
+                # Set output timesteps (if specified, otherwise will default to same as dStopTime)
+                if self.timesteps is not None:
+                    file_in = re.sub("%s(.*?)#" % "dAge", "%s %.10e #" % ("dAge", self.time_init), file_in)
 
             write_file = os.path.join(outpath, file)
             with open(write_file, 'w') as f:

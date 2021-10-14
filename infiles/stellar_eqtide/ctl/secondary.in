@@ -5,6 +5,7 @@ saModules       stellar eqtide  # Modules
 iBodyType     1                 # Star!
 dMass         1.0661            # Mass
 dRotPeriod    -0.2              # Initial rotation period 
+dAge 	      5e6 		# Initial simulation time
 
 # Orbital properties
 dOrbPeriod  -7.0                # Initial orbital period 

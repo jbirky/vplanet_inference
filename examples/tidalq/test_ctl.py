@@ -34,8 +34,9 @@ outparams = {"final.primary.Radius": u.Rsun,
              "final.secondary.OrbPeriod": u.day,
              "final.secondary.Eccentricity": u.dimensionless_unscaled}
 
-vpm = vpi.VplanetModel(inparams, inpath=inpath, outparams=outparams)
+vpm = vpi.VplanetModel(inparams, inpath=inpath, outparams=outparams, timesteps=1e7*u.yr, time_init=1e6*u.yr)
 
 theta = np.array([1.08, 1.07, 5.0, 5.0, -1.0, -1.0, 10., 10., .5, 6.0, 2.48])
 
-output = vpm.run_model(theta)
+output = vpm.run_model(theta, remove=False, outsubpath='n1')
+breakpoint()
