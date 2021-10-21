@@ -89,13 +89,18 @@ class VplanetModel(object):
         theta_new_unit = []
 
         for ii in range(self.ninparam):
-            if isinstance(self.in_units[ii], u.function.logarithmic.DexUnit):
+            if self.in_units[ii] is None:
+                theta_conv[ii] = theta[ii]
+                theta_new_unit.append(None)
+            elif isinstance(self.in_units[ii], u.function.logarithmic.DexUnit):
                 # un-log units
                 new_theta = (theta[ii] * self.in_units[ii]).physical.si
+                theta_conv[ii] = new_theta.value
+                theta_new_unit.append(new_theta.unit)
             else:
                 new_theta = (theta[ii] * self.in_units[ii]).si
-            theta_conv[ii] = new_theta.value
-            theta_new_unit.append(new_theta.unit)
+                theta_conv[ii] = new_theta.value
+                theta_new_unit.append(new_theta.unit)
 
         if self.verbose:
             print("\nInput:")
@@ -168,7 +173,12 @@ class VplanetModel(object):
             base = kwargs.get('base', output.log)
             for attr in outparams[i].split('.'):
                 base = getattr(base, attr)
-            outvalues[i] = base.to(self.out_units[i]).value
+
+            # Apply unit conversions to SI
+            if self.out_units[i] is None:
+                outvalues[i] = base
+            else:
+                outvalues[i] = base.to(self.out_units[i]).value
 
         return outvalues
 
