@@ -6,7 +6,8 @@ iBodyType     1                 # Star!
 dMass         1.0782            # Mass
 dRotPeriod    -0.2              # Initial rotation period 
 dObliquity    0.0
-dRadius 	0.005
+sMassRad  sotin07
+dRadGyra	   0.5
 
 # EQTIDE Parameters
 dTidalTau       3.17e-9         # Tidal Time lag 
