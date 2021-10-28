@@ -5,13 +5,13 @@ saModules       eqtide  	# Modules
 iBodyType     1                 # Star!
 dMass         1.0661            # Mass
 dRotPeriod    -0.2              # Initial rotation period 
-dRadius       1.0
+dRadius       1.0		# Initial radius
 dRadGyra	   0.5
 
 # Orbital properties
 dOrbPeriod  -7.0                # Initial orbital period 
 dEcc        0.2                 # Initial eccentricity
-dObliquity  0.0 
+dObliquity  0.0 		# Initial obliquity
 
 # EQTIDE Parameters
 dTidalTau       3.17e-9         # Tidal Time lag 

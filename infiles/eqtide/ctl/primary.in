@@ -5,8 +5,8 @@ saModules       eqtide  	# Modules
 iBodyType     1                 # Star!
 dMass         1.0782            # Mass
 dRotPeriod    -0.2              # Initial rotation period 
-dObliquity    0.0
-dRadius       1.0
+dObliquity    0.0		# Initial obliquity
+dRadius       1.0		# Initial radius
 dRadGyra	   0.5
 
 # EQTIDE Parameters
