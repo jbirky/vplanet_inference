@@ -178,7 +178,10 @@ class VplanetModel(object):
             if self.out_units[i] is None:
                 outvalues[i] = base
             else:
-                outvalues[i] = base.to(self.out_units[i]).value
+                try:
+                    outvalues[i] = base.to(self.out_units[i]).value
+                except:
+                    outvalues[i] = np.nan
 
         return outvalues
 
