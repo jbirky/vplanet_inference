@@ -1,0 +1,19 @@
+sName		primary		# Body's name
+saModules       eqtide  	# Modules
+
+# Physical Parameters
+iBodyType     1                 # Star!
+dMass         1.0782            # Mass
+dRotPeriod    -0.2              # Initial rotation period 
+dObliquity    0.0		# Initial obliquity
+dRadius       1.0		# Initial radius
+dRadGyra	   0.5
+
+# EQTIDE Parameters
+dTidalQ       	1e6         	# Tidal phase lag 
+dK2		0.5		# Love number of degree 2
+dMaxLockDiff    0.01            # Fraction diff between Prot and Peq below which system tidally locks
+sTideModel	p2		# Tidal model, p2=CPL, t8=CTL
+saTidePerts	secondary	# Body name(s) of tidal perturbers
+
+saOutputOrder	Time -RotPer -OrbPeriod Eccentricity
