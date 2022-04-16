@@ -1,0 +1,26 @@
+sName		secondary	# Body's name
+saModules       stellar eqtide  # Modules
+
+# Physical Parameters
+iBodyType     1                 # Star!
+dMass         1.0661            # Mass
+dRotPeriod    -0.2              # Initial rotation period 
+dAge 	      5e6 		# Initial simulation time
+
+# Orbital properties
+dOrbPeriod  -7.0                # Initial orbital period 
+dEcc        0.2                 # Initial eccentricity
+#dSemi       -0.09                 # Initial semi major axis 
+dObliquity  0.0 
+
+# EQTIDE Parameters
+dTidalQ	        1.0e6		# Tidal phase lag
+dK2		0.5		# Love number of degree 2
+dMaxLockDiff    0.01            # Difference between Prot and Peq before tidally-locking
+saTidePerts	primary   	# Body name(s) of tidal perturbers
+
+# Stellar param
+sStellarModel baraffe           # Stellar evolution grid
+sMagBrakingModel matt           # Matt+2015 magnetic braking model
+
+saOutputOrder	Time -Radius -Luminosity -RotPer -OrbPeriod Eccentricity
