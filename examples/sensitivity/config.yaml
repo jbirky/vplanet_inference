@@ -3,7 +3,7 @@ input_fix:
   "vpl.dStopTime":
     units: "u.Myr"
     true_value: 10
-    label: r"age [Gyr]"
+    label: r"age [Myr]"
 input_var:
   "primary.dMass":
     units: "u.Msun"
