@@ -1,0 +1,48 @@
+inpath: "../../infiles/stellar_eqtide/ctl"
+input_fix:
+  "vpl.dStopTime":
+    units: "u.Myr"
+    true_value: 10
+    label: r"age [Gyr]"
+input_var:
+  "primary.dMass":
+    units: "u.Msun"
+    prior_bounds: (0.6, 1.1)
+    label: r"$\rm M_1 [M_{\odot}]$"
+  "secondary.dMass":
+    units: "u.Msun"
+    prior_bounds: (0.6, 1.1)
+    label: r"$\rm M_2 [M_{\odot}]$"
+  "primary.dRotPeriod":
+    units: "u.day"
+    prior_bounds: (0.1, 6.0)
+    label: r"$\rm P_{rot1} [d]$"
+  "secondary.dRotPeriod":
+    units: "u.day"
+    prior_bounds: (0.1, 6.0)
+    label: r"$\rm P_{rot2} [d]$"
+  "secondary.dEcc": 
+    units: "u.dimensionless_unscaled"
+    prior_bounds: (0.0, 0.5)
+    label: r"$e$"
+  "secondary.dOrbPeriod":
+    units: "u.day"
+    prior_bounds: (0.1, 12.0)
+    label: r"$\rm P_{orb} [d]$"
+  "primary.dTidalTau":
+    units: "u.dex(u.s)"
+    prior_bounds: (-4.0, 1.0)
+    label: r"$\rm \log\tau_1$ [dex(s)]"
+  "secondary.dTidalTau":
+    units: "u.dex(u.s)"
+    prior_bounds: (-4.0, 1.0)
+    label: r"$\rm \log\tau_2$ [dex(s)]"
+output:
+  "final.primary.RotPer":
+    units: "u.day"
+  "final.secondary.RotPer":
+    units: "u.day"
+  "final.secondary.OrbPeriod":
+    units: "u.day"
+  "final.secondary.Eccentricity":
+    units: "u.dimensionless_unscaled"
