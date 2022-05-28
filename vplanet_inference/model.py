@@ -6,16 +6,28 @@ import re
 import subprocess
 import shutil
 import time
+import tqdm
 import random
 import astropy.units as u
+import multiprocessing as mp
 
 __all__ = ["VplanetModel"]
 
 
 class VplanetModel(object):
 
-    def __init__(self, inparams, inpath=".", outparams=None, outpath="output/", fixsub=None,
-                 vplfile="vpl.in", sys_name="system", timesteps=None, time_init=5e6*u.yr, verbose=True):
+    def __init__(self, 
+                 inparams, 
+                 inpath=".", 
+                 outparams=None, 
+                 outpath="output/", 
+                 fixsub=None,
+                 vplfile="vpl.in", 
+                 sys_name="system", 
+                 timesteps=None, 
+                 time_init=5e6*u.yr, 
+                 forward=True,
+                 verbose=True):
         """
         params  : (str, list) variable parameter names
                   ['vpl.dStopTime', 'star.dRotPeriod', 'star.dMass', 'planet.dEcc', 'planet.dOrbPeriod']
@@ -69,6 +81,9 @@ class VplanetModel(object):
                 raise ValueError("Units for timestep not valid.")
         else:
             self.timesteps = None
+
+        # Run model foward (true) or backwards (false)?
+        self.forward = forward
 
         # Set initial simulation time (dAge)
         try:
@@ -146,6 +161,14 @@ class VplanetModel(object):
                 # Set output timesteps (if specified, otherwise will default to same as dStopTime)
                 if self.timesteps is not None:
                     file_in = re.sub("%s(.*?)#" % "dOutputTime", "%s %.10e #" % ("dOutputTime", self.timesteps), file_in)
+
+                # Run evolution forward or backward
+                if self.forward == True:
+                    file_in = re.sub("%s(.*?)#" % "bDoForward", "%s %s #" % ("bDoForward", "1"), file_in)
+                    file_in = re.sub("%s(.*?)#" % "bDoBackward", "%s %s #" % ("bDoBackward", "0"), file_in)
+                else:
+                    file_in = re.sub("%s(.*?)#" % "bDoForward", "%s %s #" % ("bDoForward", "0"), file_in)
+                    file_in = re.sub("%s(.*?)#" % "bDoBackward", "%s %s #" % ("bDoBackward", "1"), file_in)
 
             else: # (not VPL file)
                 # Set output timesteps (if specified, otherwise will default to same as dStopTime)
@@ -229,6 +252,24 @@ class VplanetModel(object):
             shutil.rmtree(outpath)
 
         return model_out
+
+
+    def run_models(self, theta, remove=True, outsubpath=None, ncore=mp.cpu_count()):
+
+        t0 = time.time()
+
+        if ncore <= 1:
+            outputs = np.zeros(theta.shape[0])
+            for ii, tt in tqdm.tqdm(enumerate(theta)):
+                outputs[ii] = self.run_model(tt)
+        else:
+            with mp.Pool(ncore) as p:
+                outputs = np.array(p.map(self.run_model, theta))
+
+        tf = time.time()
+        print(f"Computed {len(theta)} function evaluations: {np.round(tf - t0)}s \n")
+
+        return outputs
 
 
     def initialize_bayes(self, data=None, bounds=None):

@@ -1,4 +1,6 @@
 from .model import *
+from .utils import *
+from .analysis import *
 
 import os
 
