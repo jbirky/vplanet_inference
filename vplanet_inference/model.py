@@ -1,4 +1,3 @@
-import vplot as vpl 
 import vplanet
 import numpy as np 
 import os
@@ -6,10 +5,8 @@ import re
 import subprocess
 import shutil
 import time
-import tqdm
 import random
 import astropy.units as u
-import multiprocessing as mp
 
 __all__ = ["VplanetModel"]
 
@@ -30,7 +27,7 @@ class VplanetModel(object):
                  verbose=True):
         """
         Class for creating and executing VPLANET infiles.
-        
+
         params  : (str, list) variable parameter names
                   ['vpl.dStopTime', 'star.dRotPeriod', 'star.dMass', 'planet.dEcc', 'planet.dOrbPeriod']
                 
