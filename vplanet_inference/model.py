@@ -29,6 +29,8 @@ class VplanetModel(object):
                  forward=True,
                  verbose=True):
         """
+        Class for creating and executing VPLANET infiles.
+        
         params  : (str, list) variable parameter names
                   ['vpl.dStopTime', 'star.dRotPeriod', 'star.dMass', 'planet.dEcc', 'planet.dOrbPeriod']
                 
@@ -252,56 +254,3 @@ class VplanetModel(object):
             shutil.rmtree(outpath)
 
         return model_out
-
-
-    def run_models(self, theta, remove=True, outsubpath=None, ncore=mp.cpu_count()):
-
-        t0 = time.time()
-
-        if ncore <= 1:
-            outputs = np.zeros(theta.shape[0])
-            for ii, tt in tqdm.tqdm(enumerate(theta)):
-                outputs[ii] = self.run_model(tt)
-        else:
-            with mp.Pool(ncore) as p:
-                outputs = np.array(p.map(self.run_model, theta))
-
-        tf = time.time()
-        print(f"Computed {len(theta)} function evaluations: {np.round(tf - t0)}s \n")
-
-        return outputs
-
-
-    def initialize_bayes(self, data=None, bounds=None):
-        """
-        data      : (float, matrix)
-                    [(rad, radSig), 
-                     ...
-                     (lum, lumSig)]
-
-        outparams : (str, list) return specified list of parameters from log file
-                    ['final.primary.Radius', ..., 'final.primary.Luminosity']
-        """
-        if data is not None:
-            self.data = data 
-        else:
-            print('Must input data!')
-            raise 
-
-        if bounds is not None:
-            self.bounds = bounds
-        else:
-            self.bounds = np.empty(shape=(self.ninparams, 2), dtype='object') 
-
-    
-    def lnlike(self, theta, outsubpath=None):
-        """
-        Gaussian likelihood function comparing vplanet model and given observational values/uncertainties
-        """
-
-        ymodel = self.run_model(theta, outsubpath=outsubpath)
-
-        # Gaussian likelihood 
-        lnlike = -0.5 * np.sum(((ymodel - self.data.T[0])/self.data.T[1])**2)
-
-        return lnlike
