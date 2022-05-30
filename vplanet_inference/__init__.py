@@ -1,5 +1,6 @@
 from .model import *
 from .analysis import *
+from .parameters import *
 
 import os
 
