@@ -88,14 +88,15 @@ class AnalyzeVplanetModel(object):
         outparams = vpi.VplanetParameters(names=list(data["output"].keys()),
                                           units=sort_yaml_key(data["output"], "units"),
                                           data=sort_yaml_key(data["output"], "data"),
-                                          uncertainty=sort_yaml_key(data["output"], "uncertainty"))
+                                          uncertainty=sort_yaml_key(data["output"], "uncertainty"),
+                                          labels=sort_yaml_key(data["output"], "label"))
 
         # initialize vplanet model
         self.inpath = kwargs.get("inpath", data["inpath"])
         self.vpm = vpi.VplanetModel(inparams_all.dict_units, inpath=self.inpath, outparams=outparams.dict_units, verbose=verbose)
 
         # if this is a synthetic model test, run vplanet model on true parameters
-        if (outparams.data is None) & (compute_true == True):
+        if (outparams.data[0] is None) & (outparams.uncertainty[0] is not None) & (compute_true == True):
             outparams.data = self.vpm.run_model(inparams_all.true)
 
         self.inparams_fix = inparams_fix
