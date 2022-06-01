@@ -1,3 +1,4 @@
+import numpy as np
 
 __all__ = ["VplanetParameters"]
 
@@ -12,8 +13,8 @@ class VplanetParameters(object):
 
         # optional
         self.bounds = bounds
-        self.true = true
         self.data = data
+        self.true = true
         self.uncertainty = uncertainty
 
         if (labels is None) or (labels[0] is None):
@@ -33,3 +34,17 @@ class VplanetParameters(object):
             self.dict_data = dict(zip(self.names, self.data))
         if self.labels is not None:
             self.dict_labels = dict(zip(self.names, self.labels))
+
+
+    def set_data(self, true):
+
+        self.true = true
+        self.data = np.array([self.true, self.uncertainty]).T
+
+        self.dict_true = dict(zip(self.names, self.true))
+        self.dict_data = dict(zip(self.names, self.data))
+
+
+    def get_true_units(self, param_name):
+
+        return self.true[param_name] * self.units[param_name]

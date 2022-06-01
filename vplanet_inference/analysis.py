@@ -46,6 +46,8 @@ class AnalyzeVplanetModel(object):
     
     def __init__(self, 
                  cfile, 
+                 inpath=None,
+                 outpath=".",
                  verbose=True, 
                  compute_true=True,
                  ncore=mp.cpu_count(),
@@ -61,7 +63,7 @@ class AnalyzeVplanetModel(object):
         self.config_id = self.cfile.split("/")[-1].split(".yaml")[0].strip("/")
 
         # directory to save results (defaults to local)
-        self.outpath = kwargs.get("outpath", ".")
+        self.outpath = outpath
         if not os.path.exists(self.outpath):
             os.makedirs(self.outpath)
 
@@ -92,12 +94,16 @@ class AnalyzeVplanetModel(object):
                                           labels=sort_yaml_key(data["output"], "label"))
 
         # initialize vplanet model
-        self.inpath = kwargs.get("inpath", data["inpath"])
+        if inpath is None:
+            self.inpath = data["inpath"]
+        else:
+            self.inpath = inpath
         self.vpm = vpi.VplanetModel(inparams_all.dict_units, inpath=self.inpath, outparams=outparams.dict_units, verbose=verbose)
 
         # if this is a synthetic model test, run vplanet model on true parameters
         if (outparams.data[0] is None) & (outparams.uncertainty[0] is not None) & (compute_true == True):
-            outparams.data = self.vpm.run_model(inparams_all.true)
+            output_true = self.vpm.run_model(inparams_all.true)
+            outparams.set_data(output_true)
 
         self.inparams_fix = inparams_fix
         self.inparams_var = inparams_var
@@ -210,7 +216,8 @@ class AnalyzeVplanetModel(object):
 
         # plot sensitivity tables
         fig = plt.figure(figsize=[12,8])
-        sn.heatmap(table, annot=True, annot_kws={"size": 18}, vmin=0, vmax=1, cmap="bone") 
+        sn.heatmap(table, yticklabels=self.inparams_var.labels, xticklabels=self.outparams.labels, 
+                   annot=True, annot_kws={"size": 18}, vmin=0, vmax=1, cmap="bone") 
         plt.title("First order sensitivity (S1) index", fontsize=25)
         plt.xticks(rotation=45, fontsize=18, ha='right')
         plt.yticks(rotation=0)
@@ -228,9 +235,9 @@ class AnalyzeVplanetModel(object):
         from SALib.analyze import sobol
 
         problem = {
-            'num_vars': self.inparams_var.num,
-            'names': self.inparams_var.labels,
-            'bounds': self.inparams_var.bounds
+            "num_vars": self.inparams_var.num,
+            "names": self.inparams_var.names,
+            "bounds": self.inparams_var.bounds
         }
 
         if param_values is None:
@@ -242,33 +249,33 @@ class AnalyzeVplanetModel(object):
         # save samples to npz file
         savedir = os.path.join(self.outpath, "results_sensitivity", self.config_id)
         if not os.path.exists(savedir):
-            os.makedirs(savedir)
+            os.makedirs(savedir)           
         np.savez(f"{savedir}/var_global_sensitivity_sample.npz", param_values=param_values, Y=Y)
 
-        dict_s1 = {'input': self.inparams_var.labels}
-        dict_sT = {'input': self.inparams_var.labels}
+        dict_s1 = {"input": self.inparams_var.names}
+        dict_sT = {"input": self.inparams_var.names}
                         
         for ii in range(Y.shape[1]):
             res = sobol.analyze(problem, Y.T[ii])
-            dict_s1[self.outparams.labels[ii]] = res['S1']
-            dict_sT[self.outparams.labels[ii]] = res['ST']
+            dict_s1[self.outparams.names[ii]] = res['S1']
+            dict_sT[self.outparams.names[ii]] = res['ST']
             
-        table_s1 = pd.DataFrame(data=dict_s1)
-        table_s1 = table_s1.set_index("input").rename_axis(None, axis=0).round(2)
+        table_s1 = pd.DataFrame(data=dict_s1).round(2)
+        table_s1 = table_s1.set_index("input").rename_axis(None, axis=0)
         table_s1[table_s1.values <= 0] = 0
         table_s1[table_s1.values > 1] = 1
         self.table_s1 = table_s1
         table_s1.to_csv(f"{savedir}/sensitivity_table_s1.csv")
 
-        table_sT = pd.DataFrame(data=dict_sT)
-        table_sT = table_sT.set_index("input").rename_axis(None, axis=0).round(2)
+        table_sT = pd.DataFrame(data=dict_sT).round(2)
+        table_sT = table_sT.set_index("input").rename_axis(None, axis=0)
         table_sT[table_sT.values <= 0] = 0
         table_sT[table_sT.values > 1] = 1
         self.table_sT = table_sT
         table_sT.to_csv(f"{savedir}/sensitivity_table_sT.csv")
 
-        self.fig_s1 = self.plot_sensitivity_table(table_s1)
+        self.fig_s1 = self.plot_sensitivity_table(self.table_s1)
         self.fig_s1.savefig(f"{savedir}/sensitivity_table_s1.png", bbox_inches="tight")
 
-        self.fig_sT = self.plot_sensitivity_table(table_sT)
+        self.fig_sT = self.plot_sensitivity_table(self.table_sT)
         self.fig_sT.savefig(f"{savedir}/sensitivity_table_sT.png", bbox_inches="tight")
