@@ -127,8 +127,20 @@ class VplanetModel(object):
         if not os.path.exists(outpath):
             os.makedirs(outpath)
         
+        # format list of input parameters
         param_file_all = np.array([x.split('.')[0] for x in self.inparams])  # e.g. ['vpl', 'primary', 'primary', 'secondary', 'secondary']
         param_name_all = np.array([x.split('.')[1] for x in self.inparams])  # e.g. ['dStopTime', 'dRotPeriod', 'dMass', 'dRotPeriod', 'dMass']
+
+        # list of body files
+        body_files = param_file_all[np.where(param_file_all != 'vpl')[0]]
+        self.body_files = list(set(body_files))
+
+        # format list of output parameters
+        key_split = []
+        for key in self.outparams:
+            if "final" in key.split("."):
+                key_split.append(key.split(".")[1:])
+        out_name_split = np.array(key_split).T # e.g. [['primary', 'secondary', 'secondary'], ['RotPer', 'RotPer', 'OrbPeriod']]
 
         for file in self.infile_list: # vpl.in, primary.in, secondary.in
             with open(os.path.join(self.inpath, file), 'r') as f:
@@ -137,6 +149,14 @@ class VplanetModel(object):
             ind = np.where(param_file_all == file.strip('.in'))[0]
             theta_file = theta_conv[ind]
             param_name_file = param_name_all[ind]
+
+            # get saOutputOrder for evolution
+            if file.strip('.in') in out_name_split[0]:
+                output_order_vars = out_name_split[1][np.where(out_name_split[0] == file.strip('.in'))[0]]
+                output_order_str = " Time " + " ".join(output_order_vars)
+
+                # Set variables for tracking evolution
+                file_in = re.sub("%s*" % "saOutputOrder", "%s %s #" % ("saOutputOrder", output_order_str), file_in)
                 
             # iterate over all input parameters, and substitute parameters in appropriate files
             for i in range(len(theta_file)):
@@ -207,8 +227,31 @@ class VplanetModel(object):
 
         return outvalues
 
+    
+    def get_evol(self, output, outparams):
 
-    def run_model(self, theta, remove=True, outsubpath=None):
+        evol_out = []
+        evol_unit = []
+
+        """
+        warning: this is going to break for outparams that aren't formatted final.body.param
+        """
+
+        for bf in self.body_files:
+            body_out_array = getattr(output, bf)[:]
+            # arr[0] is time, create separate array
+            time_out = body_out_array[0]
+            for arr in body_out_array[1:]:
+                evol_out.append(arr)
+                evol_unit.append(arr.unit)
+                
+        # convert units from SI, to user specified output units
+        evol_out = [evol_out[ii].to(self.out_units[ii]) for ii in range(len(evol_out))]
+
+        return time_out, evol_out
+
+
+    def run_model(self, theta, remove=True, outsubpath=None, return_evol=False):
         """
         theta     : (float, list) parameter values, corresponding to self.inparams
 
@@ -234,8 +277,8 @@ class VplanetModel(object):
         if self.verbose == True:
             print('Executed model %s/vpl.in %.3f s'%(outpath, time.time() - t0))
 
-        if self.outparams is None:
-            model_out = output
+        if return_evol==True:
+            model_out = self.get_evol(output, self.outparams)
         else:
             outvalues = self.get_outparam(output, self.outparams)
             model_out = outvalues
@@ -251,3 +294,7 @@ class VplanetModel(object):
             shutil.rmtree(outpath)
 
         return model_out
+
+
+    def quickplot_evol(self, time, evol):
+        return 0
