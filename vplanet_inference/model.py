@@ -7,6 +7,7 @@ import shutil
 import time
 import random
 import astropy.units as u
+from collections import OrderedDict
 
 __all__ = ["VplanetModel"]
 
@@ -51,6 +52,9 @@ class VplanetModel(object):
 
         # Output parameters
         if outparams is not None:
+            # format into alphabetized ordered dictionary 
+            outparams = OrderedDict(sorted(outparams.items()))
+
             self.outparams = list(outparams.keys())
             self.out_units = list(outparams.values())
             self.noutparam = len(self.outparams)
@@ -131,16 +135,17 @@ class VplanetModel(object):
         param_file_all = np.array([x.split('.')[0] for x in self.inparams])  # e.g. ['vpl', 'primary', 'primary', 'secondary', 'secondary']
         param_name_all = np.array([x.split('.')[1] for x in self.inparams])  # e.g. ['dStopTime', 'dRotPeriod', 'dMass', 'dRotPeriod', 'dMass']
 
-        # list of body files
-        body_files = param_file_all[np.where(param_file_all != 'vpl')[0]]
-        self.body_files = list(set(body_files))
-
         # format list of output parameters
         key_split = []
         for key in self.outparams:
             if "final" in key.split("."):
                 key_split.append(key.split(".")[1:])
-        out_name_split = np.array(key_split).T # e.g. [['primary', 'secondary', 'secondary'], ['RotPer', 'RotPer', 'OrbPeriod']]
+        out_name_split = np.array(key_split).T  # e.g. [['primary', 'secondary', 'secondary'], ['RotPer', 'RotPer', 'OrbPeriod']]
+
+        out_evol_dict = {key: [] for key in set(out_name_split[0])}
+        for ii in range(out_name_split.shape[1]):
+            out_evol_dict[out_name_split[0][ii]].append(out_name_split[1][ii])
+        self.out_evol_dict = out_evol_dict  # e.g. {'secondary': ['RotPer', 'OrbPeriod'], 'primary': ['RotPer']}
 
         for file in self.infile_list: # vpl.in, primary.in, secondary.in
             with open(os.path.join(self.inpath, file), 'r') as f:
@@ -153,7 +158,7 @@ class VplanetModel(object):
             # get saOutputOrder for evolution
             if file.strip('.in') in out_name_split[0]:
                 output_order_vars = out_name_split[1][np.where(out_name_split[0] == file.strip('.in'))[0]]
-                output_order_str = " Time " + " ".join(output_order_vars)
+                output_order_str = "Time " + " ".join(output_order_vars)
 
                 # Set variables for tracking evolution
                 file_in = re.sub("%s*" % "saOutputOrder", "%s %s #" % ("saOutputOrder", output_order_str), file_in)
@@ -237,7 +242,7 @@ class VplanetModel(object):
         warning: this is going to break for outparams that aren't formatted final.body.param
         """
 
-        for bf in self.body_files:
+        for bf in self.out_evol_dict.keys():
             body_out_array = getattr(output, bf)[:]
             # arr[0] is time, create separate array
             time_out = body_out_array[0]
@@ -251,7 +256,7 @@ class VplanetModel(object):
         return time_out, evol_out
 
 
-    def run_model(self, theta, remove=True, outsubpath=None, return_evol=False):
+    def run_model(self, theta, remove=True, outsubpath=None):
         """
         theta     : (float, list) parameter values, corresponding to self.inparams
 
@@ -277,24 +282,55 @@ class VplanetModel(object):
         if self.verbose == True:
             print('Executed model %s/vpl.in %.3f s'%(outpath, time.time() - t0))
 
-        if return_evol==True:
-            model_out = self.get_evol(output, self.outparams)
-        else:
+            # return final values
             outvalues = self.get_outparam(output, self.outparams)
-            model_out = outvalues
+            model_final = outvalues
 
-            if self.verbose:
-                print("\nOutput:")
-                print("-----------------")
-                for ii in range(self.noutparam):
-                    print("%s : %s %s"%(self.outparams[ii], model_out[ii], self.out_units[ii]))
-                print("")
+            # if timesteps are specified, return evolution
+            if self.timesteps is not None:
+                model_time, evol = self.get_evol(output, self.outparams)
+                model_evol = dict(zip(self.outparams, evol))
+                model_evol['Time'] = model_time
+
+        if self.verbose:
+            print("\nOutput:")
+            print("-----------------")
+            for ii in range(self.noutparam):
+                print("%s : %s %s"%(self.outparams[ii], model_final[ii], self.out_units[ii]))
+            print("")
 
         if remove == True:
             shutil.rmtree(outpath)
 
-        return model_out
+        if self.timesteps is None:
+            return model_final
+        else:
+            return model_evol
 
 
-    def quickplot_evol(self, time, evol):
-        return 0
+    def quickplot_evol(self, time, evol, ind=None):
+
+        import matplotlib.pyplot as plt
+        from matplotlib import rc
+        try:
+            rc('font', **{'family': 'serif', 'serif': ['Computer Modern']})
+            rc('text', usetex=True)
+            rc('xtick', labelsize=20)
+            rc('ytick', labelsize=20)
+        except:
+            rc('text', usetex=False)
+
+        time = np.array(time)
+        evol = np.array(evol)
+
+        if ind is None:
+            ind = np.arange(len(evol))
+        evol = evol[ind]
+        nplots = len(evol)
+
+        fig, axs = plt.subplots(nplots, 1, figsize=[4*nplots, 8], sharex=True)
+        for ii in range(nplots):
+            axs[ii].plot(time, evol[ii])
+        plt.close()
+
+        return fig

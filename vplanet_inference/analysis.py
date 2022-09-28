@@ -20,7 +20,9 @@ except:
     rc('text', usetex=False)
 
 
-import vplanet_inference as vpi
+# import vplanet_inference as vpi
+from .parameters import VplanetParameters
+from .model import VplanetModel
 
 
 __all__ = ["AnalyzeVplanetModel"]
@@ -71,23 +73,23 @@ class AnalyzeVplanetModel(object):
         with open(self.cfile) as f:
             data = yaml.load(f, Loader=SafeLoader)
 
-        inparams_fix = vpi.VplanetParameters(names=list(data["input_fix"].keys()),
+        inparams_fix = VplanetParameters(names=list(data["input_fix"].keys()),
                                              units=sort_yaml_key(data["input_fix"], "units"),
                                              true=sort_yaml_key(data["input_fix"], "true_value"),
                                              labels=sort_yaml_key(data["input_fix"], "label"))
 
-        inparams_var = vpi.VplanetParameters(names=list(data["input_var"].keys()),
+        inparams_var = VplanetParameters(names=list(data["input_var"].keys()),
                                              units=sort_yaml_key(data["input_var"], "units"),
                                              true=sort_yaml_key(data["input_var"], "true_value"),
                                              bounds=sort_yaml_key(data["input_var"], "bounds"),
                                              data=sort_yaml_key(data["input_var"], "data"),
                                              labels=sort_yaml_key(data["input_var"], "label"))
 
-        inparams_all = vpi.VplanetParameters(names=inparams_fix.names + inparams_var.names,
+        inparams_all = VplanetParameters(names=inparams_fix.names + inparams_var.names,
                                              units=inparams_fix.units + inparams_var.units,
                                              true=inparams_fix.true + inparams_var.true)
 
-        outparams = vpi.VplanetParameters(names=list(data["output"].keys()),
+        outparams = VplanetParameters(names=list(data["output"].keys()),
                                           units=sort_yaml_key(data["output"], "units"),
                                           data=sort_yaml_key(data["output"], "data"),
                                           uncertainty=sort_yaml_key(data["output"], "uncertainty"),
@@ -98,7 +100,7 @@ class AnalyzeVplanetModel(object):
             self.inpath = data["inpath"]
         else:
             self.inpath = inpath
-        self.vpm = vpi.VplanetModel(inparams_all.dict_units, inpath=self.inpath, outparams=outparams.dict_units, verbose=verbose)
+        self.vpm = VplanetModel(inparams_all.dict_units, inpath=self.inpath, outparams=outparams.dict_units, verbose=verbose)
 
         # if this is a synthetic model test, run vplanet model on true parameters
         if (outparams.data[0] is None) & (outparams.uncertainty[0] is not None) & (compute_true == True):
@@ -229,7 +231,7 @@ class AnalyzeVplanetModel(object):
         return fig
 
 
-    def variance_global_sensitivity(self, param_values=None, Y=None, nsample=1024):
+    def variance_global_sensitivity(self, param_values=None, Y=None, nsample=1024, save=False):
 
         from SALib.sample import saltelli
         from SALib.analyze import sobol
@@ -249,8 +251,9 @@ class AnalyzeVplanetModel(object):
         # save samples to npz file
         savedir = os.path.join(self.outpath, "results_sensitivity", self.config_id)
         if not os.path.exists(savedir):
-            os.makedirs(savedir)           
-        np.savez(f"{savedir}/var_global_sensitivity_sample.npz", param_values=param_values, Y=Y)
+            os.makedirs(savedir)    
+        if save == True:       
+            np.savez(f"{savedir}/var_global_sensitivity_sample.npz", param_values=param_values, Y=Y)
 
         dict_s1 = {"input": self.inparams_var.names}
         dict_sT = {"input": self.inparams_var.names}
@@ -265,17 +268,19 @@ class AnalyzeVplanetModel(object):
         table_s1[table_s1.values <= 0] = 0
         table_s1[table_s1.values > 1] = 1
         self.table_s1 = table_s1
-        table_s1.to_csv(f"{savedir}/sensitivity_table_s1.csv")
+        if save == True:
+            table_s1.to_csv(f"{savedir}/sensitivity_table_s1.csv")
 
         table_sT = pd.DataFrame(data=dict_sT).round(2)
         table_sT = table_sT.set_index("input").rename_axis(None, axis=0)
         table_sT[table_sT.values <= 0] = 0
         table_sT[table_sT.values > 1] = 1
         self.table_sT = table_sT
-        table_sT.to_csv(f"{savedir}/sensitivity_table_sT.csv")
+        if save == True:
+            table_sT.to_csv(f"{savedir}/sensitivity_table_sT.csv")
 
         self.fig_s1 = self.plot_sensitivity_table(self.table_s1)
-        self.fig_s1.savefig(f"{savedir}/sensitivity_table_s1.png", bbox_inches="tight")
-
         self.fig_sT = self.plot_sensitivity_table(self.table_sT)
-        self.fig_sT.savefig(f"{savedir}/sensitivity_table_sT.png", bbox_inches="tight")
+        if save == True:
+            self.fig_s1.savefig(f"{savedir}/sensitivity_table_s1.png", bbox_inches="tight")
+            self.fig_sT.savefig(f"{savedir}/sensitivity_table_sT.png", bbox_inches="tight")
