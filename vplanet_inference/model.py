@@ -124,7 +124,7 @@ class VplanetModel(object):
             print("\nInput:")
             print("-----------------")
             for ii in range(self.ninparam):
-                print("%s : %s %s (user)   --->   %s %s (vpl file)"%(self.inparams[ii],
+                print("%s : %s [%s] (user)   --->   %s [%s] (vpl file)"%(self.inparams[ii],
                     theta[ii], self.in_units[ii], theta_conv[ii], theta_new_unit[ii]))
             print("")
 
@@ -136,16 +136,23 @@ class VplanetModel(object):
         param_name_all = np.array([x.split('.')[1] for x in self.inparams])  # e.g. ['dStopTime', 'dRotPeriod', 'dMass', 'dRotPeriod', 'dMass']
 
         # format list of output parameters
-        key_split = []
-        for key in self.outparams:
+        key_split  = []
+        unit_split = []
+        for ii, key in enumerate(self.outparams):
             if "final" in key.split("."):
                 key_split.append(key.split(".")[1:])
+                unit_split.append([key.split(".")[1], self.out_units[ii]])
         out_name_split = np.array(key_split).T  # e.g. [['primary', 'secondary', 'secondary'], ['RotPer', 'RotPer', 'OrbPeriod']]
+        out_unit_split = np.array(unit_split).T # e.g. [['primary', 'secondary', 'secondary'], [Unit("d"), Unit("d"), Unit("d")]]
 
-        out_evol_dict = {key: [] for key in set(out_name_split[0])}
+        # save dictionary for retrieving output arrays
+        out_body_name_dict = {key: [] for key in set(out_name_split[0])}
+        out_body_unit_dict = {key: [] for key in set(out_unit_split[0])}
         for ii in range(out_name_split.shape[1]):
-            out_evol_dict[out_name_split[0][ii]].append(out_name_split[1][ii])
-        self.out_evol_dict = out_evol_dict  # e.g. {'secondary': ['RotPer', 'OrbPeriod'], 'primary': ['RotPer']}
+            out_body_name_dict[out_name_split[0][ii]].append(out_name_split[1][ii])
+            out_body_unit_dict[out_unit_split[0][ii]].append(out_unit_split[1][ii])
+        self.out_body_name_dict = out_body_name_dict  # e.g. {'secondary': ['RotPer', 'OrbPeriod'], 'primary': ['RotPer']}
+        self.out_body_unit_dict = out_body_unit_dict  # e.g. {'secondary': [Unit("d"), Unit("d")], 'primary': [Unit("d")]}
 
         for file in self.infile_list: # vpl.in, primary.in, secondary.in
             with open(os.path.join(self.inpath, file), 'r') as f:
@@ -207,7 +214,7 @@ class VplanetModel(object):
                 print(f"Created file {write_file}")
 
 
-    def get_outparam(self, output, outparams, **kwargs):
+    def get_outparam(self, output, **kwargs):
         """
         output    : (vplot object) results form a model run obtained using vplot.GetOutput()
 
@@ -218,7 +225,7 @@ class VplanetModel(object):
 
         for i in range(self.noutparam):
             base = kwargs.get('base', output.log)
-            for attr in outparams[i].split('.'):
+            for attr in self.outparams[i].split('.'):
                 base = getattr(base, attr)
 
             # Apply unit conversions to SI
@@ -233,30 +240,40 @@ class VplanetModel(object):
         return outvalues
 
     
-    def get_evol(self, output, outparams):
-
-        evol_out = []
-        evol_unit = []
+    def get_evol(self, output):
 
         """
         warning: this is going to break for outparams that aren't formatted final.body.param
         """
 
-        for bf in self.out_evol_dict.keys():
-            body_out_array = getattr(output, bf)[:]
+        evol_out = []
+
+        for bf in self.out_body_name_dict.keys():
+
+            body_outputs = getattr(output, bf)[:]
+
             # arr[0] is time, create separate array
-            time_out = body_out_array[0]
-            for arr in body_out_array[1:]:
-                evol_out.append(arr)
-                evol_unit.append(arr.unit)
-                
-        # convert units from SI, to user specified output units
-        evol_out = [evol_out[ii].to(self.out_units[ii]) for ii in range(len(evol_out))]
+            time_out = body_outputs[0]
+            body_out_array = body_outputs[1:]
+
+            body_out_units = self.out_body_unit_dict[bf]
+            body_out_names = self.out_body_name_dict[bf]
+            body_nparam = len(self.out_body_unit_dict[bf])
+
+            for ii in range(body_nparam):
+                if body_out_units[ii] is None:
+                        evol_out.append(body_out_array[ii].value)
+                else:
+                    try:
+                        evol_out.append(body_out_array[ii].to(body_out_units[ii]))
+                    except:
+                        print(f"Failed to convert parameter {bf} {body_out_names[ii]} to unit {body_out_units[ii]}")
+                        print(f"{bf} {body_out_names[ii]} array: {body_out_array[ii]}")
 
         return time_out, evol_out
 
 
-    def run_model(self, theta, remove=True, outsubpath=None):
+    def run_model(self, theta, remove=True, outsubpath=None, return_output=False):
         """
         theta     : (float, list) parameter values, corresponding to self.inparams
 
@@ -276,27 +293,33 @@ class VplanetModel(object):
         # Execute the model!
         subprocess.call(["vplanet vpl.in"], cwd=outpath, shell=True)
 
-        # if no logfile is found, it's probably because there was something wrong with the infile formatting
-        output = vplanet.get_output(outpath)
+        try:
+            output = vplanet.get_output(outpath)
+        except:
+            print("If no logfile is found, it's probably because there was something wrong with the infile formatting.")
+            print(f"Try executing 'vplanet vpl.in' in directory {outpath} to diagnose the error in vplanet.")
+
+        if return_output == True:
+            return output
 
         if self.verbose == True:
             print('Executed model %s/vpl.in %.3f s'%(outpath, time.time() - t0))
 
-            # return final values
-            outvalues = self.get_outparam(output, self.outparams)
-            model_final = outvalues
+        # return final values
+        outvalues = self.get_outparam(output)
+        model_final = outvalues
 
-            # if timesteps are specified, return evolution
-            if self.timesteps is not None:
-                model_time, evol = self.get_evol(output, self.outparams)
-                model_evol = dict(zip(self.outparams, evol))
-                model_evol['Time'] = model_time
+        # if timesteps are specified, return evolution
+        if self.timesteps is not None:
+            model_time, evol = self.get_evol(output)
+            model_evol = dict(zip(self.outparams, evol))
+            model_evol['Time'] = model_time.to(u.yr)
 
         if self.verbose:
             print("\nOutput:")
             print("-----------------")
             for ii in range(self.noutparam):
-                print("%s : %s %s"%(self.outparams[ii], model_final[ii], self.out_units[ii]))
+                print("%s : %s [%s]"%(self.outparams[ii], model_final[ii], self.out_units[ii]))
             print("")
 
         if remove == True:
