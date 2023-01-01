@@ -53,6 +53,7 @@ class AnalyzeVplanetModel(object):
                  verbose=True, 
                  compute_true=True,
                  ncore=mp.cpu_count(),
+                 vpm_kwargs={},
                  **kwargs):
 
         """
@@ -100,7 +101,12 @@ class AnalyzeVplanetModel(object):
             self.inpath = data["inpath"]
         else:
             self.inpath = inpath
-        self.vpm = VplanetModel(inparams_all.dict_units, inpath=self.inpath, outparams=outparams.dict_units, verbose=verbose)
+
+        self.vpm = VplanetModel(inparams_all.dict_units, 
+                                inpath=self.inpath, 
+                                outparams=outparams.dict_units, 
+                                verbose=verbose,
+                                **vpm_kwargs)
 
         # if this is a synthetic model test, run vplanet model on true parameters
         if (outparams.data[0] is None) & (outparams.uncertainty[0] is not None) & (compute_true == True):
@@ -126,7 +132,7 @@ class AnalyzeVplanetModel(object):
         return theta_run
 
 
-    def run_model_format(self, theta_var):
+    def run_model_format(self, theta_var, **kwargs):
 
         # format fixed theta + variable theta
         theta_run = self.format_theta(theta_var)
@@ -137,12 +143,12 @@ class AnalyzeVplanetModel(object):
         return output
 
 
-    def run_models(self, theta_var_array):
+    def run_models(self, theta_var_array, **kwargs):
 
         if self.ncore <= 1:
             outputs = np.zeros(theta_var_array.shape[0])
             for ii, tt in tqdm.tqdm(enumerate(theta_var_array)):
-                outputs[ii] = self.run_model_format(tt)
+                outputs[ii] = self.run_model_format(tt, **kwargs)
         else:
             with mp.Pool(self.ncore) as p:
                 outputs = []
