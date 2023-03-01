@@ -248,7 +248,7 @@ class VplanetModel(object):
 
         evol_out = []
 
-        for bf in self.out_body_name_dict.keys():
+        for bf in sorted(self.out_body_name_dict.keys()):
 
             body_outputs = getattr(output, bf)[:]
 
@@ -273,7 +273,8 @@ class VplanetModel(object):
         return time_out, evol_out
 
 
-    def run_model(self, theta, remove=True, outsubpath=None, return_output=False):
+    def run_model(self, theta, remove=True, outsubpath=None, return_output=False,
+                  executable_command="vplanet vpl.in"):
         """
         theta     : (float, list) parameter values, corresponding to self.inparams
 
@@ -291,7 +292,7 @@ class VplanetModel(object):
         t0 = time.time()
 
         # Execute the model!
-        subprocess.call(["vplanet vpl.in"], cwd=outpath, shell=True)
+        subprocess.call([executable_command], cwd=outpath, shell=True)
 
         try:
             output = vplanet.get_output(outpath)
