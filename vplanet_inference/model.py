@@ -20,6 +20,7 @@ class VplanetModel(object):
                  outparams=None, 
                  outpath="output/", 
                  fixsub=None,
+                 executable="vplanet",
                  vplfile="vpl.in", 
                  sys_name="system", 
                  timesteps=None, 
@@ -45,6 +46,7 @@ class VplanetModel(object):
         self.inparams = list(inparams.keys())
         self.in_units = list(inparams.values())
         self.inpath = inpath
+        self.executable = executable
         self.vplfile = vplfile
         self.sys_name = sys_name
         self.ninparam = len(inparams)
@@ -273,8 +275,7 @@ class VplanetModel(object):
         return time_out, evol_out
 
 
-    def run_model(self, theta, remove=True, outsubpath=None, return_output=False,
-                  executable_command="vplanet vpl.in"):
+    def run_model(self, theta, remove=True, outsubpath=None, return_output=False):
         """
         theta     : (float, list) parameter values, corresponding to self.inparams
 
@@ -292,7 +293,7 @@ class VplanetModel(object):
         t0 = time.time()
 
         # Execute the model!
-        subprocess.call([executable_command], cwd=outpath, shell=True)
+        subprocess.call(["{self.executable} {self.vplfile}"], cwd=outpath, shell=True)
 
         try:
             output = vplanet.get_output(outpath)
