@@ -293,7 +293,7 @@ class VplanetModel(object):
         t0 = time.time()
 
         # Execute the model!
-        subprocess.call(["{self.executable} {self.vplfile}"], cwd=outpath, shell=True)
+        subprocess.call([f"{self.executable} {self.vplfile}"], cwd=outpath, shell=True)
 
         try:
             output = vplanet.get_output(outpath)
