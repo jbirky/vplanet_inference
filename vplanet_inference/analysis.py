@@ -5,7 +5,6 @@ import seaborn as sn
 from functools import partial
 import multiprocessing as mp
 import os
-import time
 import tqdm
 import copy
 import yaml
@@ -13,21 +12,53 @@ from yaml.loader import SafeLoader
 from collections import OrderedDict
 from astropy import units as u
 
-import vplanet_inference as vpi
+from matplotlib import rc
+try:
+    rc('font', **{'family': 'serif', 'serif': ['Computer Modern']})
+    rc('text', usetex=True)
+except:
+    rc('text', usetex=False)
+
+
+# import vplanet_inference as vpi
+from .parameters import VplanetParameters
+from .model import VplanetModel
 
 
 __all__ = ["AnalyzeVplanetModel"]
+
+
+def sort_yaml_key(base, sub_key):
+    
+    sub_list = []
+    for key in base.keys():
+        try:
+            sub_val = eval(base[key][sub_key])
+        except:
+            try:
+                sub_val = float(base[key][sub_key])
+            except:
+                sub_val = None
+        sub_list.append(sub_val)
+        
+    return sub_list
 
 
 class AnalyzeVplanetModel(object):
     
     def __init__(self, 
                  cfile, 
-                 inpath=None, 
-                 outpath=".", 
+                 inpath=None,
+                 outpath=".",
                  verbose=True, 
                  compute_true=True,
-                 ncore=mp.cpu_count()):
+                 ncore=mp.cpu_count(),
+                 vpm_kwargs={},
+                 **kwargs):
+
+        """
+        Class for analyzing VPLANET models (run parameter sweeps, MCMC, sensitivity analysis, etc.) 
+        """
 
         # number of CPU cores for parallelization
         self.ncore = ncore
@@ -38,86 +69,70 @@ class AnalyzeVplanetModel(object):
         self.outpath = outpath
         if not os.path.exists(self.outpath):
             os.makedirs(self.outpath)
-    
+
         # load YAML config file
         with open(self.cfile) as f:
             data = yaml.load(f, Loader=SafeLoader)
 
-        # format fixed input parameters
-        self.inparams_fix = OrderedDict()
-        self.theta_true = OrderedDict()
+        inparams_fix = VplanetParameters(names=list(data["input_fix"].keys()),
+                                             units=sort_yaml_key(data["input_fix"], "units"),
+                                             true=sort_yaml_key(data["input_fix"], "true_value"),
+                                             labels=sort_yaml_key(data["input_fix"], "label"))
 
-        for key in data['input_fix'].keys():
-            self.inparams_fix[key] = eval(data['input_fix'][key]['units'])
-            self.theta_true[key] = float(data['input_fix'][key]['true_value'])
+        inparams_var = VplanetParameters(names=list(data["input_var"].keys()),
+                                             units=sort_yaml_key(data["input_var"], "units"),
+                                             true=sort_yaml_key(data["input_var"], "true_value"),
+                                             bounds=sort_yaml_key(data["input_var"], "bounds"),
+                                             data=sort_yaml_key(data["input_var"], "data"),
+                                             labels=sort_yaml_key(data["input_var"], "label"))
 
-        # format variable input parameters
-        self.inparams_var = OrderedDict()
-        self.bounds = []
-        self.prior_data = []
-        self.labels = []
+        inparams_all = VplanetParameters(names=inparams_fix.names + inparams_var.names,
+                                             units=inparams_fix.units + inparams_var.units,
+                                             true=inparams_fix.true + inparams_var.true)
 
-        for key in data['input_var'].keys():
-            # required:
-            self.inparams_var[key] = eval(data['input_var'][key]['units'])
-            self.labels.append(eval(data['input_var'][key]['label']))
-            self.bounds.append(eval(data['input_var'][key]['prior_bounds']))
-
-            # optional:
-            try:
-                self.theta_true[key] = float(data['input_var'][key]['true_value'])
-            except:
-                self.theta_true[key] = None 
-            try:
-                self.prior_data.append(eval(data['input_var'][key]['prior_data']))
-            except:
-                self.prior_data.append((None, None))
-
-        # format output parameters
-        self.outparams = OrderedDict()
-        self.like_data = []     # for problems with observational constraints
-        self.output_unc = []    # for problems with synthetic observations
-
-        for key in data['output'].keys():
-            self.outparams[key] = eval(data['output'][key]['units'])
-            try:
-                synthetic = True
-                self.output_unc.append(float(data['output'][key]['uncertainty']))
-            except: 
-                synthetic = False
-                try:
-                    self.like_data.append(eval(data['output'][key]['like_data']))
-                except:
-                    self.like_data = None
-
-        # combined dictionary of all input parameters
-        self.inparams_all = {**self.inparams_fix, **self.inparams_var}
+        outparams = VplanetParameters(names=list(data["output"].keys()),
+                                          units=sort_yaml_key(data["output"], "units"),
+                                          data=sort_yaml_key(data["output"], "data"),
+                                          uncertainty=sort_yaml_key(data["output"], "uncertainty"),
+                                          labels=sort_yaml_key(data["output"], "label"))
 
         # initialize vplanet model
         if inpath is None:
             self.inpath = data["inpath"]
         else:
             self.inpath = inpath
-        self.vpm = vpi.VplanetModel(self.inparams_all, inpath=self.inpath, outparams=self.outparams, verbose=verbose)
+
+        self.vpm = VplanetModel(inparams_all.dict_units, 
+                                inpath=self.inpath, 
+                                outparams=outparams.dict_units, 
+                                verbose=verbose,
+                                **vpm_kwargs)
 
         # if this is a synthetic model test, run vplanet model on true parameters
-        if (synthetic == True) & (compute_true == True):
-            self.output_true = self.vpm.run_model(np.array(list(self.theta_true.values())))
-            self.like_data = np.vstack([self.output_true, self.output_unc]).T
+        if (outparams.data[0] is None) & (outparams.uncertainty[0] is not None) & (compute_true == True):
+            output_true = self.vpm.run_model(inparams_all.true)
+            outparams.set_data(output_true)
+
+        self.inparams_fix = inparams_fix
+        self.inparams_var = inparams_var
+        self.inparams_all = inparams_all
+        self.outparams = outparams
 
 
     def format_theta(self, theta_var):
 
-        theta_run = copy.copy(self.theta_true)
-        theta_var = dict(zip(list(self.inparams_var.keys()), theta_var))
+        theta_run_dict = copy.copy(self.inparams_all.dict_true)
+        theta_var_dict = dict(zip(self.inparams_var.names, theta_var))
 
-        for key in self.inparams_var.keys():
-            theta_run[key] = theta_var[key]
+        for key in self.inparams_var.names:
+            theta_run_dict[key] = theta_var_dict[key]
 
-        return np.array(list(theta_run.values()))
+        theta_run = np.array(list(theta_run_dict.values()))
+
+        return theta_run
 
 
-    def run_model_format(self, theta_var):
+    def run_model_format(self, theta_var, **kwargs):
 
         # format fixed theta + variable theta
         theta_run = self.format_theta(theta_var)
@@ -128,12 +143,12 @@ class AnalyzeVplanetModel(object):
         return output
 
 
-    def run_models(self, theta_var_array):
+    def run_models(self, theta_var_array, **kwargs):
 
         if self.ncore <= 1:
             outputs = np.zeros(theta_var_array.shape[0])
             for ii, tt in tqdm.tqdm(enumerate(theta_var_array)):
-                outputs[ii] = self.run_model_format(tt)
+                outputs[ii] = self.run_model_format(tt, **kwargs)
         else:
             with mp.Pool(self.ncore) as p:
                 outputs = []
@@ -149,7 +164,7 @@ class AnalyzeVplanetModel(object):
         output = self.run_model_format(theta_var)
 
         # compute log likelihood
-        lnl = -0.5 * np.sum(((output - self.like_data.T[0])/self.like_data.T[1])**2)
+        lnl = -0.5 * np.sum(((output - self.outparams.data.T[0])/self.outparams.data.T[1])**2)
 
         return lnl
 
@@ -205,15 +220,32 @@ class AnalyzeVplanetModel(object):
         return None
 
 
-    def variance_global_sensitivity(self, param_values=None, Y=None, nsample=1024):
+    def plot_sensitivity_table(self, table):
+
+        # plot sensitivity tables
+        fig = plt.figure(figsize=[12,8])
+        sn.heatmap(table, yticklabels=self.inparams_var.labels, xticklabels=self.outparams.labels, 
+                   annot=True, annot_kws={"size": 18}, vmin=0, vmax=1, cmap="bone") 
+        plt.title("First order sensitivity (S1) index", fontsize=25)
+        plt.xticks(rotation=45, fontsize=18, ha='right')
+        plt.yticks(rotation=0)
+        plt.yticks(fontsize=18)
+        plt.xlabel("Final Conditions", fontsize=22)
+        plt.ylabel("Initial Conditions", fontsize=22)
+        plt.close()
+
+        return fig
+
+
+    def variance_global_sensitivity(self, param_values=None, Y=None, nsample=1024, save=False):
 
         from SALib.sample import saltelli
         from SALib.analyze import sobol
 
         problem = {
-            'num_vars': len(self.bounds),
-            'names': self.labels,
-            'bounds': self.bounds
+            "num_vars": self.inparams_var.num,
+            "names": self.inparams_var.names,
+            "bounds": self.inparams_var.bounds
         }
 
         if param_values is None:
@@ -225,48 +257,36 @@ class AnalyzeVplanetModel(object):
         # save samples to npz file
         savedir = os.path.join(self.outpath, "results_sensitivity", self.config_id)
         if not os.path.exists(savedir):
-            os.makedirs(savedir)
-        np.savez(f"{savedir}/var_global_sensitivity_sample.npz", param_values=param_values, Y=Y)
+            os.makedirs(savedir)    
+        if save == True:       
+            np.savez(f"{savedir}/var_global_sensitivity_sample.npz", param_values=param_values, Y=Y)
 
-        dict_s1 = {'input':self.inparams_var.keys()}
-        dict_sT = {'input':self.inparams_var.keys()}
+        dict_s1 = {"input": self.inparams_var.names}
+        dict_sT = {"input": self.inparams_var.names}
                         
         for ii in range(Y.shape[1]):
             res = sobol.analyze(problem, Y.T[ii])
-            dict_s1[list(self.outparams.keys())[ii]] = res['S1']
-            dict_sT[list(self.outparams.keys())[ii]] = res['ST']
+            dict_s1[self.outparams.names[ii]] = res['S1']
+            dict_sT[self.outparams.names[ii]] = res['ST']
             
-        table_s1 = pd.DataFrame(data=dict_s1)
-        table_s1 = table_s1.set_index("input").rename_axis(None, axis=0).round(2)
+        table_s1 = pd.DataFrame(data=dict_s1).round(2)
+        table_s1 = table_s1.set_index("input").rename_axis(None, axis=0)
         table_s1[table_s1.values <= 0] = 0
         table_s1[table_s1.values > 1] = 1
         self.table_s1 = table_s1
+        if save == True:
+            table_s1.to_csv(f"{savedir}/sensitivity_table_s1.csv")
 
-        table_sT = pd.DataFrame(data=dict_sT)
-        table_sT = table_sT.set_index("input").rename_axis(None, axis=0).round(2)
+        table_sT = pd.DataFrame(data=dict_sT).round(2)
+        table_sT = table_sT.set_index("input").rename_axis(None, axis=0)
         table_sT[table_sT.values <= 0] = 0
         table_sT[table_sT.values > 1] = 1
         self.table_sT = table_sT
+        if save == True:
+            table_sT.to_csv(f"{savedir}/sensitivity_table_sT.csv")
 
-        # plot sensitivity tables
-        self.fig_s1 = plt.figure(figsize=[12,8])
-        sn.heatmap(table_s1, annot=True, annot_kws={"size": 18}, vmin=0, vmax=1, cmap="bone") 
-        plt.title("First order sensitivity (S1) index", fontsize=25)
-        plt.xticks(rotation=45, fontsize=18, ha='right')
-        plt.yticks(rotation=0)
-        plt.yticks(fontsize=18)
-        plt.xlabel("Final Conditions", fontsize=22)
-        plt.ylabel("Initial Conditions", fontsize=22)
-        plt.savefig(f"{savedir}/sensitivity_table_s1.png", bbox_inches="tight")
-        plt.close()
-
-        self.fig_sT = plt.figure(figsize=[12,8])
-        sn.heatmap(table_sT, annot=True, annot_kws={"size": 18}, vmin=0, vmax=1, cmap="bone") 
-        plt.title("Total sensitivity (ST) index", fontsize=25)
-        plt.xticks(rotation=45, fontsize=18, ha='right')
-        plt.yticks(rotation=0)
-        plt.yticks(fontsize=18)
-        plt.xlabel("Final Conditions", fontsize=22)
-        plt.ylabel("Initial Conditions", fontsize=22)
-        plt.savefig(f"{savedir}/sensitivity_table_sT.png", bbox_inches="tight")
-        plt.close()
+        self.fig_s1 = self.plot_sensitivity_table(self.table_s1)
+        self.fig_sT = self.plot_sensitivity_table(self.table_sT)
+        if save == True:
+            self.fig_s1.savefig(f"{savedir}/sensitivity_table_s1.png", bbox_inches="tight")
+            self.fig_sT.savefig(f"{savedir}/sensitivity_table_sT.png", bbox_inches="tight")

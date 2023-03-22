@@ -1,4 +1,3 @@
-import vplot as vpl 
 import vplanet
 import numpy as np 
 import os
@@ -6,10 +5,9 @@ import re
 import subprocess
 import shutil
 import time
-import tqdm
 import random
 import astropy.units as u
-import multiprocessing as mp
+from collections import OrderedDict
 
 __all__ = ["VplanetModel"]
 
@@ -22,6 +20,7 @@ class VplanetModel(object):
                  outparams=None, 
                  outpath="output/", 
                  fixsub=None,
+                 executable="vplanet",
                  vplfile="vpl.in", 
                  sys_name="system", 
                  timesteps=None, 
@@ -29,6 +28,8 @@ class VplanetModel(object):
                  forward=True,
                  verbose=True):
         """
+        Class for creating and executing VPLANET infiles.
+
         params  : (str, list) variable parameter names
                   ['vpl.dStopTime', 'star.dRotPeriod', 'star.dMass', 'planet.dEcc', 'planet.dOrbPeriod']
                 
@@ -45,6 +46,7 @@ class VplanetModel(object):
         self.inparams = list(inparams.keys())
         self.in_units = list(inparams.values())
         self.inpath = inpath
+        self.executable = executable
         self.vplfile = vplfile
         self.sys_name = sys_name
         self.ninparam = len(inparams)
@@ -52,6 +54,9 @@ class VplanetModel(object):
 
         # Output parameters
         if outparams is not None:
+            # format into alphabetized ordered dictionary 
+            outparams = OrderedDict(sorted(outparams.items()))
+
             self.outparams = list(outparams.keys())
             self.out_units = list(outparams.values())
             self.noutparam = len(self.outparams)
@@ -121,15 +126,35 @@ class VplanetModel(object):
             print("\nInput:")
             print("-----------------")
             for ii in range(self.ninparam):
-                print("%s : %s %s (user)   --->   %s %s (vpl file)"%(self.inparams[ii],
+                print("%s : %s [%s] (user)   --->   %s [%s] (vpl file)"%(self.inparams[ii],
                     theta[ii], self.in_units[ii], theta_conv[ii], theta_new_unit[ii]))
             print("")
 
         if not os.path.exists(outpath):
             os.makedirs(outpath)
         
+        # format list of input parameters
         param_file_all = np.array([x.split('.')[0] for x in self.inparams])  # e.g. ['vpl', 'primary', 'primary', 'secondary', 'secondary']
         param_name_all = np.array([x.split('.')[1] for x in self.inparams])  # e.g. ['dStopTime', 'dRotPeriod', 'dMass', 'dRotPeriod', 'dMass']
+
+        # format list of output parameters
+        key_split  = []
+        unit_split = []
+        for ii, key in enumerate(self.outparams):
+            if "final" in key.split("."):
+                key_split.append(key.split(".")[1:])
+                unit_split.append([key.split(".")[1], self.out_units[ii]])
+        out_name_split = np.array(key_split).T  # e.g. [['primary', 'secondary', 'secondary'], ['RotPer', 'RotPer', 'OrbPeriod']]
+        out_unit_split = np.array(unit_split).T # e.g. [['primary', 'secondary', 'secondary'], [Unit("d"), Unit("d"), Unit("d")]]
+
+        # save dictionary for retrieving output arrays
+        out_body_name_dict = {key: [] for key in set(out_name_split[0])}
+        out_body_unit_dict = {key: [] for key in set(out_unit_split[0])}
+        for ii in range(out_name_split.shape[1]):
+            out_body_name_dict[out_name_split[0][ii]].append(out_name_split[1][ii])
+            out_body_unit_dict[out_unit_split[0][ii]].append(out_unit_split[1][ii])
+        self.out_body_name_dict = out_body_name_dict  # e.g. {'secondary': ['RotPer', 'OrbPeriod'], 'primary': ['RotPer']}
+        self.out_body_unit_dict = out_body_unit_dict  # e.g. {'secondary': [Unit("d"), Unit("d")], 'primary': [Unit("d")]}
 
         for file in self.infile_list: # vpl.in, primary.in, secondary.in
             with open(os.path.join(self.inpath, file), 'r') as f:
@@ -138,6 +163,14 @@ class VplanetModel(object):
             ind = np.where(param_file_all == file.strip('.in'))[0]
             theta_file = theta_conv[ind]
             param_name_file = param_name_all[ind]
+
+            # get saOutputOrder for evolution
+            if file.strip('.in') in out_name_split[0]:
+                output_order_vars = out_name_split[1][np.where(out_name_split[0] == file.strip('.in'))[0]]
+                output_order_str = "Time " + " ".join(output_order_vars)
+
+                # Set variables for tracking evolution
+                file_in = re.sub("%s*" % "saOutputOrder", "%s %s #" % ("saOutputOrder", output_order_str), file_in)
                 
             # iterate over all input parameters, and substitute parameters in appropriate files
             for i in range(len(theta_file)):
@@ -183,7 +216,7 @@ class VplanetModel(object):
                 print(f"Created file {write_file}")
 
 
-    def get_outparam(self, output, outparams, **kwargs):
+    def get_outparam(self, output, **kwargs):
         """
         output    : (vplot object) results form a model run obtained using vplot.GetOutput()
 
@@ -194,7 +227,7 @@ class VplanetModel(object):
 
         for i in range(self.noutparam):
             base = kwargs.get('base', output.log)
-            for attr in outparams[i].split('.'):
+            for attr in self.outparams[i].split('.'):
                 base = getattr(base, attr)
 
             # Apply unit conversions to SI
@@ -208,8 +241,41 @@ class VplanetModel(object):
 
         return outvalues
 
+    
+    def get_evol(self, output):
 
-    def run_model(self, theta, remove=True, outsubpath=None):
+        """
+        warning: this is going to break for outparams that aren't formatted final.body.param
+        """
+
+        evol_out = []
+
+        for bf in sorted(self.out_body_name_dict.keys()):
+
+            body_outputs = getattr(output, bf)[:]
+
+            # arr[0] is time, create separate array
+            time_out = body_outputs[0]
+            body_out_array = body_outputs[1:]
+
+            body_out_units = self.out_body_unit_dict[bf]
+            body_out_names = self.out_body_name_dict[bf]
+            body_nparam = len(self.out_body_unit_dict[bf])
+
+            for ii in range(body_nparam):
+                if body_out_units[ii] is None:
+                        evol_out.append(body_out_array[ii].value)
+                else:
+                    try:
+                        evol_out.append(body_out_array[ii].to(body_out_units[ii]))
+                    except:
+                        print(f"Failed to convert parameter {bf} {body_out_names[ii]} to unit {body_out_units[ii]}")
+                        print(f"{bf} {body_out_names[ii]} array: {body_out_array[ii]}")
+
+        return time_out, evol_out
+
+
+    def run_model(self, theta, remove=True, outsubpath=None, return_output=False):
         """
         theta     : (float, list) parameter values, corresponding to self.inparams
 
@@ -227,81 +293,69 @@ class VplanetModel(object):
         t0 = time.time()
 
         # Execute the model!
-        subprocess.call(["vplanet vpl.in"], cwd=outpath, shell=True)
+        subprocess.call([f"{self.executable} {self.vplfile}"], cwd=outpath, shell=True)
 
-        # if no logfile is found, it's probably because there was something wrong with the infile formatting
-        output = vplanet.get_output(outpath)
+        try:
+            output = vplanet.get_output(outpath)
+        except:
+            print("If no logfile is found, it's probably because there was something wrong with the infile formatting.")
+            print(f"Try executing 'vplanet vpl.in' in directory {outpath} to diagnose the error in vplanet.")
+
+        if return_output == True:
+            return output
 
         if self.verbose == True:
             print('Executed model %s/vpl.in %.3f s'%(outpath, time.time() - t0))
 
-        if self.outparams is None:
-            model_out = output
-        else:
-            outvalues = self.get_outparam(output, self.outparams)
-            model_out = outvalues
+        # return final values
+        outvalues = self.get_outparam(output)
+        model_final = outvalues
 
-            if self.verbose:
-                print("\nOutput:")
-                print("-----------------")
-                for ii in range(self.noutparam):
-                    print("%s : %s %s"%(self.outparams[ii], model_out[ii], self.out_units[ii]))
-                print("")
+        # if timesteps are specified, return evolution
+        if self.timesteps is not None:
+            model_time, evol = self.get_evol(output)
+            model_evol = dict(zip(self.outparams, evol))
+            model_evol['Time'] = model_time.to(u.yr)
+
+        if self.verbose:
+            print("\nOutput:")
+            print("-----------------")
+            for ii in range(self.noutparam):
+                print("%s : %s [%s]"%(self.outparams[ii], model_final[ii], self.out_units[ii]))
+            print("")
 
         if remove == True:
             shutil.rmtree(outpath)
 
-        return model_out
-
-
-    def run_models(self, theta, remove=True, outsubpath=None, ncore=mp.cpu_count()):
-
-        t0 = time.time()
-
-        if ncore <= 1:
-            outputs = np.zeros(theta.shape[0])
-            for ii, tt in tqdm.tqdm(enumerate(theta)):
-                outputs[ii] = self.run_model(tt)
+        if self.timesteps is None:
+            return model_final
         else:
-            with mp.Pool(ncore) as p:
-                outputs = np.array(p.map(self.run_model, theta))
-
-        tf = time.time()
-        print(f"Computed {len(theta)} function evaluations: {np.round(tf - t0)}s \n")
-
-        return outputs
+            return model_evol
 
 
-    def initialize_bayes(self, data=None, bounds=None):
-        """
-        data      : (float, matrix)
-                    [(rad, radSig), 
-                     ...
-                     (lum, lumSig)]
+    def quickplot_evol(self, time, evol, ind=None):
 
-        outparams : (str, list) return specified list of parameters from log file
-                    ['final.primary.Radius', ..., 'final.primary.Luminosity']
-        """
-        if data is not None:
-            self.data = data 
-        else:
-            print('Must input data!')
-            raise 
+        import matplotlib.pyplot as plt
+        from matplotlib import rc
+        try:
+            rc('font', **{'family': 'serif', 'serif': ['Computer Modern']})
+            rc('text', usetex=True)
+            rc('xtick', labelsize=20)
+            rc('ytick', labelsize=20)
+        except:
+            rc('text', usetex=False)
 
-        if bounds is not None:
-            self.bounds = bounds
-        else:
-            self.bounds = np.empty(shape=(self.ninparams, 2), dtype='object') 
+        time = np.array(time)
+        evol = np.array(evol)
 
-    
-    def lnlike(self, theta, outsubpath=None):
-        """
-        Gaussian likelihood function comparing vplanet model and given observational values/uncertainties
-        """
+        if ind is None:
+            ind = np.arange(len(evol))
+        evol = evol[ind]
+        nplots = len(evol)
 
-        ymodel = self.run_model(theta, outsubpath=outsubpath)
+        fig, axs = plt.subplots(nplots, 1, figsize=[4*nplots, 8], sharex=True)
+        for ii in range(nplots):
+            axs[ii].plot(time, evol[ii])
+        plt.close()
 
-        # Gaussian likelihood 
-        lnlike = -0.5 * np.sum(((ymodel - self.data.T[0])/self.data.T[1])**2)
-
-        return lnlike
+        return fig
