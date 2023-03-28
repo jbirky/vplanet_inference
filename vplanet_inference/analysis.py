@@ -25,7 +25,7 @@ from .parameters import VplanetParameters
 from .model import VplanetModel
 
 
-__all__ = ["AnalyzeVplanetModel"]
+__all__ = ["AnalyzeVplanetModel", "sort_yaml_key"]
 
 
 def sort_yaml_key(base, sub_key):
@@ -237,7 +237,7 @@ class AnalyzeVplanetModel(object):
         return fig
 
 
-    def variance_global_sensitivity(self, param_values=None, Y=None, nsample=1024, save=False):
+    def variance_global_sensitivity(self, param_values=None, Y=None, nsample=1024, save=False, subpath="results_sensitivity"):
 
         from SALib.sample import saltelli
         from SALib.analyze import sobol
@@ -255,7 +255,7 @@ class AnalyzeVplanetModel(object):
             Y = self.run_models(param_values)
 
         # save samples to npz file
-        savedir = os.path.join(self.outpath, "results_sensitivity", self.config_id)
+        savedir = os.path.join(self.outpath, subpath, self.config_id)
         if not os.path.exists(savedir):
             os.makedirs(savedir)    
         if save == True:       
