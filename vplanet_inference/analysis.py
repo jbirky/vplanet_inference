@@ -109,9 +109,10 @@ class AnalyzeVplanetModel(object):
                                 **vpm_kwargs)
 
         # if this is a synthetic model test, run vplanet model on true parameters
-        if (outparams.data[0] is None) & (outparams.uncertainty[0] is not None) & (compute_true == True):
+        if compute_true == True:
             output_true = self.vpm.run_model(inparams_all.true)
             outparams.set_data(output_true)
+            self.like_data = outparams.data
 
         self.inparams_fix = inparams_fix
         self.inparams_var = inparams_var
@@ -194,15 +195,17 @@ class AnalyzeVplanetModel(object):
             savedir = os.path.join(self.outpath, "results_alabi/", self.config_id)
 
         # set up prior for dynesty
-        self.ptform = partial(alabi.utility.prior_transform_normal, bounds=self.bounds, data=self.prior_data)
+        self.ptform = partial(alabi.utility.prior_transform_normal, 
+                              bounds=self.inparams_var.bounds, 
+                              data=self.inparams_var.data)
 
         # Configure MCMC
         if reload == True:
             sm = alabi.load_model_cache(savedir)
         else:
-            prior_sampler = partial(alabi.utility.prior_sampler, bounds=self.bounds, sampler='uniform')
-            sm = alabi.SurrogateModel(fn=self.lnlike, bounds=self.bounds, prior_sampler=prior_sampler,
-                                    savedir=savedir, labels=self.labels)
+            prior_sampler = partial(alabi.utility.prior_sampler, bounds=self.inparams_var.bounds, sampler='uniform')
+            sm = alabi.SurrogateModel(fn=self.lnlike, bounds=self.inparams_var.bounds, prior_sampler=prior_sampler,
+                                    savedir=savedir, labels=self.inparams_var.labels)
             sm.init_samples(ntrain=ntrain, ntest=ntest, reload=False)
             sm.init_gp(kernel=kernel, fit_amp=False, fit_mean=True, white_noise=-15)
 
