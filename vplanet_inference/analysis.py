@@ -194,11 +194,14 @@ class AnalyzeVplanetModel(object):
         elif method == "alabi":
             savedir = os.path.join(self.outpath, "results_alabi/", self.config_id)
 
+        elif method == "alabi_dynesty":
+            savedir = os.path.join(self.outpath, "results_alabi/", self.config_id)
+
         # set up prior for dynesty
         self.ptform = partial(alabi.utility.prior_transform_normal, 
                               bounds=self.inparams_var.bounds, 
                               data=self.inparams_var.data)
-
+        
         # Configure MCMC
         if reload == True:
             sm = alabi.load_model_cache(savedir)
@@ -208,7 +211,7 @@ class AnalyzeVplanetModel(object):
                                     savedir=savedir, labels=self.inparams_var.labels)
             sm.init_samples(ntrain=ntrain, ntest=ntest, reload=False)
             sm.init_gp(kernel=kernel, fit_amp=False, fit_mean=True, white_noise=-15)
-
+        
         # Run MCMC
         if method == "dynesty":
             sm.run_dynesty(like_fn="true", ptform=self.ptform, mode="static", multi_proc=True, save_iter=100)
@@ -217,6 +220,11 @@ class AnalyzeVplanetModel(object):
         elif method == "alabi":
             sm.active_train(niter=niter, algorithm="bape", gp_opt_freq=10, save_progress=True)
             sm.plot(plots=["gp_all"])
+
+        elif method == "alabi_dynesty":
+            sm.active_train(niter=niter, algorithm="bape", gp_opt_freq=10, save_progress=True)
+            sm.plot(plots=["gp_all"])
+
             sm.run_dynesty(ptform=self.ptform, mode="static", multi_proc=True, save_iter=100)
             sm.plot(plots=["dynesty_all"])
 
