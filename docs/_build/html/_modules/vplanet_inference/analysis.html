@@ -1,0 +1,449 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>vplanet_inference.analysis &mdash; vplanet_inference 0.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=a6a68382" />
+      <link rel="stylesheet" type="text/css" href="../../_static/fonts.css?v=5583d106" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=d45e8c67"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            vplanet_inference
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../quickstart.html">Quickstart</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/01_vplanet_infiles.html">Setting Up and Running VPLanet Stellar Evolution Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/02_sensitivity_analysis.html">Global Sensitivity Analysis with <code class="docutils literal notranslate"><span class="pre">vplanet_inference</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/03_mcmc_custom_likelihood.html">MCMC with VPLanet and <code class="docutils literal notranslate"><span class="pre">alabi</span></code> — Custom Likelihood Functions</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">vplanet_inference</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">vplanet_inference.analysis</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for vplanet_inference.analysis</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">seaborn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sn</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">partial</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">multiprocessing</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">mp</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">tqdm</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">copy</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">yaml</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">yaml.loader</span><span class="w"> </span><span class="kn">import</span> <span class="n">SafeLoader</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">OrderedDict</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy</span><span class="w"> </span><span class="kn">import</span> <span class="n">units</span> <span class="k">as</span> <span class="n">u</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">rc</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="n">rc</span><span class="p">(</span><span class="s1">&#39;font&#39;</span><span class="p">,</span> <span class="o">**</span><span class="p">{</span><span class="s1">&#39;family&#39;</span><span class="p">:</span> <span class="s1">&#39;serif&#39;</span><span class="p">,</span> <span class="s1">&#39;serif&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;Computer Modern&#39;</span><span class="p">]})</span>
+    <span class="n">rc</span><span class="p">(</span><span class="s1">&#39;text&#39;</span><span class="p">,</span> <span class="n">usetex</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">except</span><span class="p">:</span>
+    <span class="n">rc</span><span class="p">(</span><span class="s1">&#39;text&#39;</span><span class="p">,</span> <span class="n">usetex</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+
+<span class="c1"># import vplanet_inference as vpi</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.parameters</span><span class="w"> </span><span class="kn">import</span> <span class="n">VplanetParameters</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.model</span><span class="w"> </span><span class="kn">import</span> <span class="n">VplanetModel</span>
+
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;AnalyzeVplanetModel&quot;</span><span class="p">,</span> <span class="s2">&quot;sort_yaml_key&quot;</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="sort_yaml_key">
+<a class="viewcode-back" href="../../api.html#vplanet_inference.sort_yaml_key">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">sort_yaml_key</span><span class="p">(</span><span class="n">base</span><span class="p">,</span> <span class="n">sub_key</span><span class="p">):</span>
+    
+    <span class="n">sub_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">base</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">sub_val</span> <span class="o">=</span> <span class="nb">eval</span><span class="p">(</span><span class="n">base</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="n">sub_key</span><span class="p">])</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">sub_val</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">base</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="n">sub_key</span><span class="p">])</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="n">sub_val</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">sub_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sub_val</span><span class="p">)</span>
+        
+    <span class="k">return</span> <span class="n">sub_list</span></div>
+
+
+
+<div class="viewcode-block" id="AnalyzeVplanetModel">
+<a class="viewcode-back" href="../../api.html#vplanet_inference.AnalyzeVplanetModel">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">AnalyzeVplanetModel</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> 
+                 <span class="n">cfile</span><span class="p">,</span> 
+                 <span class="n">inpath</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">outpath</span><span class="o">=</span><span class="s2">&quot;.&quot;</span><span class="p">,</span>
+                 <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> 
+                 <span class="n">compute_true</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                 <span class="n">ncore</span><span class="o">=</span><span class="n">mp</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">(),</span>
+                 <span class="n">vpm_kwargs</span><span class="o">=</span><span class="p">{},</span>
+                 <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Class for analyzing VPLANET models (run parameter sweeps, MCMC, sensitivity analysis, etc.) </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># number of CPU cores for parallelization</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ncore</span> <span class="o">=</span> <span class="n">ncore</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cfile</span> <span class="o">=</span> <span class="n">cfile</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cfile</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.yaml&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span>
+
+        <span class="c1"># directory to save results (defaults to local)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">outpath</span> <span class="o">=</span> <span class="n">outpath</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">outpath</span><span class="p">):</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">outpath</span><span class="p">)</span>
+
+        <span class="c1"># load YAML config file</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cfile</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">Loader</span><span class="o">=</span><span class="n">SafeLoader</span><span class="p">)</span>
+
+        <span class="n">inparams_fix</span> <span class="o">=</span> <span class="n">VplanetParameters</span><span class="p">(</span><span class="n">names</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;input_fix&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">()),</span>
+                                             <span class="n">units</span><span class="o">=</span><span class="n">sort_yaml_key</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;input_fix&quot;</span><span class="p">],</span> <span class="s2">&quot;units&quot;</span><span class="p">),</span>
+                                             <span class="n">true</span><span class="o">=</span><span class="n">sort_yaml_key</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;input_fix&quot;</span><span class="p">],</span> <span class="s2">&quot;true_value&quot;</span><span class="p">),</span>
+                                             <span class="n">labels</span><span class="o">=</span><span class="n">sort_yaml_key</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;input_fix&quot;</span><span class="p">],</span> <span class="s2">&quot;label&quot;</span><span class="p">))</span>
+
+        <span class="n">inparams_var</span> <span class="o">=</span> <span class="n">VplanetParameters</span><span class="p">(</span><span class="n">names</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;input_var&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">()),</span>
+                                             <span class="n">units</span><span class="o">=</span><span class="n">sort_yaml_key</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;input_var&quot;</span><span class="p">],</span> <span class="s2">&quot;units&quot;</span><span class="p">),</span>
+                                             <span class="n">true</span><span class="o">=</span><span class="n">sort_yaml_key</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;input_var&quot;</span><span class="p">],</span> <span class="s2">&quot;true_value&quot;</span><span class="p">),</span>
+                                             <span class="n">bounds</span><span class="o">=</span><span class="n">sort_yaml_key</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;input_var&quot;</span><span class="p">],</span> <span class="s2">&quot;bounds&quot;</span><span class="p">),</span>
+                                             <span class="n">data</span><span class="o">=</span><span class="n">sort_yaml_key</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;input_var&quot;</span><span class="p">],</span> <span class="s2">&quot;data&quot;</span><span class="p">),</span>
+                                             <span class="n">labels</span><span class="o">=</span><span class="n">sort_yaml_key</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;input_var&quot;</span><span class="p">],</span> <span class="s2">&quot;label&quot;</span><span class="p">))</span>
+
+        <span class="n">inparams_all</span> <span class="o">=</span> <span class="n">VplanetParameters</span><span class="p">(</span><span class="n">names</span><span class="o">=</span><span class="n">inparams_fix</span><span class="o">.</span><span class="n">names</span> <span class="o">+</span> <span class="n">inparams_var</span><span class="o">.</span><span class="n">names</span><span class="p">,</span>
+                                             <span class="n">units</span><span class="o">=</span><span class="n">inparams_fix</span><span class="o">.</span><span class="n">units</span> <span class="o">+</span> <span class="n">inparams_var</span><span class="o">.</span><span class="n">units</span><span class="p">,</span>
+                                             <span class="n">true</span><span class="o">=</span><span class="n">inparams_fix</span><span class="o">.</span><span class="n">true</span> <span class="o">+</span> <span class="n">inparams_var</span><span class="o">.</span><span class="n">true</span><span class="p">)</span>
+
+        <span class="n">outparams</span> <span class="o">=</span> <span class="n">VplanetParameters</span><span class="p">(</span><span class="n">names</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;output&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">()),</span>
+                                          <span class="n">units</span><span class="o">=</span><span class="n">sort_yaml_key</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;output&quot;</span><span class="p">],</span> <span class="s2">&quot;units&quot;</span><span class="p">),</span>
+                                          <span class="n">data</span><span class="o">=</span><span class="n">sort_yaml_key</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;output&quot;</span><span class="p">],</span> <span class="s2">&quot;data&quot;</span><span class="p">),</span>
+                                          <span class="n">uncertainty</span><span class="o">=</span><span class="n">sort_yaml_key</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;output&quot;</span><span class="p">],</span> <span class="s2">&quot;uncertainty&quot;</span><span class="p">),</span>
+                                          <span class="n">labels</span><span class="o">=</span><span class="n">sort_yaml_key</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;output&quot;</span><span class="p">],</span> <span class="s2">&quot;label&quot;</span><span class="p">))</span>
+
+        <span class="c1"># initialize vplanet model</span>
+        <span class="k">if</span> <span class="n">inpath</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">inpath</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;inpath&quot;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">inpath</span> <span class="o">=</span> <span class="n">inpath</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">vpm</span> <span class="o">=</span> <span class="n">VplanetModel</span><span class="p">(</span><span class="n">inparams_all</span><span class="o">.</span><span class="n">dict_units</span><span class="p">,</span> 
+                                <span class="n">inpath</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">inpath</span><span class="p">,</span> 
+                                <span class="n">outparams</span><span class="o">=</span><span class="n">outparams</span><span class="o">.</span><span class="n">dict_units</span><span class="p">,</span> 
+                                <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span>
+                                <span class="o">**</span><span class="n">vpm_kwargs</span><span class="p">)</span>
+
+        <span class="c1"># if this is a synthetic model test, run vplanet model on true parameters</span>
+        <span class="k">if</span> <span class="n">compute_true</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">output_true</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">vpm</span><span class="o">.</span><span class="n">run_model</span><span class="p">(</span><span class="n">inparams_all</span><span class="o">.</span><span class="n">true</span><span class="p">)</span>
+            <span class="n">outparams</span><span class="o">.</span><span class="n">set_data</span><span class="p">(</span><span class="n">output_true</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">like_data</span> <span class="o">=</span> <span class="n">outparams</span><span class="o">.</span><span class="n">data</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">inparams_fix</span> <span class="o">=</span> <span class="n">inparams_fix</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">inparams_var</span> <span class="o">=</span> <span class="n">inparams_var</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">inparams_all</span> <span class="o">=</span> <span class="n">inparams_all</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">outparams</span> <span class="o">=</span> <span class="n">outparams</span>
+
+
+<div class="viewcode-block" id="AnalyzeVplanetModel.format_theta">
+<a class="viewcode-back" href="../../api.html#vplanet_inference.AnalyzeVplanetModel.format_theta">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">format_theta</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">theta_var</span><span class="p">):</span>
+
+        <span class="c1"># defaults to running true values</span>
+        <span class="n">theta_run_dict</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">inparams_all</span><span class="o">.</span><span class="n">dict_true</span><span class="p">)</span>
+        
+        <span class="c1"># substitute variable parameters</span>
+        <span class="n">theta_var_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">inparams_var</span><span class="o">.</span><span class="n">names</span><span class="p">,</span> <span class="n">theta_var</span><span class="p">))</span>
+
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">inparams_var</span><span class="o">.</span><span class="n">names</span><span class="p">:</span>
+            <span class="n">theta_run_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">theta_var_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+
+        <span class="n">theta_run</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">theta_run_dict</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span>
+
+        <span class="k">return</span> <span class="n">theta_run</span></div>
+
+
+
+<div class="viewcode-block" id="AnalyzeVplanetModel.run_model_format">
+<a class="viewcode-back" href="../../api.html#vplanet_inference.AnalyzeVplanetModel.run_model_format">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">run_model_format</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">theta_var</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+
+        <span class="c1"># format fixed theta + variable theta</span>
+        <span class="n">theta_run</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">format_theta</span><span class="p">(</span><span class="n">theta_var</span><span class="p">)</span>
+
+        <span class="c1"># run model</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">vpm</span><span class="o">.</span><span class="n">run_model</span><span class="p">(</span><span class="n">theta_run</span><span class="p">,</span> <span class="n">remove</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">output</span></div>
+
+
+
+<div class="viewcode-block" id="AnalyzeVplanetModel.run_models">
+<a class="viewcode-back" href="../../api.html#vplanet_inference.AnalyzeVplanetModel.run_models">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">run_models</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">theta_var_array</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ncore</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">outputs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">theta_var_array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="k">for</span> <span class="n">ii</span><span class="p">,</span> <span class="n">tt</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="o">.</span><span class="n">tqdm</span><span class="p">(</span><span class="nb">enumerate</span><span class="p">(</span><span class="n">theta_var_array</span><span class="p">)):</span>
+                <span class="n">outputs</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_model_format</span><span class="p">(</span><span class="n">tt</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">with</span> <span class="n">mp</span><span class="o">.</span><span class="n">Pool</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ncore</span><span class="p">)</span> <span class="k">as</span> <span class="n">p</span><span class="p">:</span>
+                <span class="n">outputs</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="o">.</span><span class="n">tqdm</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">imap</span><span class="p">(</span><span class="n">func</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">run_model_format</span><span class="p">,</span> <span class="n">iterable</span><span class="o">=</span><span class="n">theta_var_array</span><span class="p">),</span> <span class="n">total</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">theta_var_array</span><span class="p">)):</span>
+                    <span class="n">outputs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+                <span class="n">outputs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">outputs</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">outputs</span></div>
+
+
+
+<div class="viewcode-block" id="AnalyzeVplanetModel.lnlike">
+<a class="viewcode-back" href="../../api.html#vplanet_inference.AnalyzeVplanetModel.lnlike">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">lnlike</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">theta_var</span><span class="p">):</span>
+
+        <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_model_format</span><span class="p">(</span><span class="n">theta_var</span><span class="p">)</span>
+
+        <span class="c1"># compute log likelihood</span>
+        <span class="n">lnl</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(((</span><span class="n">output</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">outparams</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">T</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">outparams</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">T</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">lnl</span></div>
+
+
+
+<div class="viewcode-block" id="AnalyzeVplanetModel.run_mcmc">
+<a class="viewcode-back" href="../../api.html#vplanet_inference.AnalyzeVplanetModel.run_mcmc">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">run_mcmc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;dynesty&quot;</span><span class="p">,</span> 
+                       <span class="n">reload</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> 
+                       <span class="n">kernel</span><span class="o">=</span><span class="s2">&quot;ExpSquaredKernel&quot;</span><span class="p">,</span>
+                       <span class="n">ntrain</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> 
+                       <span class="n">ntest</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> 
+                       <span class="n">niter</span><span class="o">=</span><span class="mi">500</span><span class="p">):</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">like_data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;No likelihood data specified.&quot;</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">import</span><span class="w"> </span><span class="nn">alabi</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Dependency &#39;alabi&#39; not installed. To install alabi run: </span><span class="se">\n\n</span><span class="s2">&quot;</span> <span class="o">+</span> 
+                            <span class="s2">&quot;git clone https://github.com/jbirky/alabi </span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span>
+                            <span class="s2">&quot;cd alabi </span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span>
+                            <span class="s2">&quot;python setup.py install&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;dynesty&quot;</span><span class="p">:</span>
+            <span class="n">savedir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">outpath</span><span class="p">,</span> <span class="s2">&quot;results_dynesty/&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_id</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;alabi&quot;</span><span class="p">:</span>
+            <span class="n">savedir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">outpath</span><span class="p">,</span> <span class="s2">&quot;results_alabi/&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_id</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;alabi_dynesty&quot;</span><span class="p">:</span>
+            <span class="n">savedir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">outpath</span><span class="p">,</span> <span class="s2">&quot;results_alabi/&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_id</span><span class="p">)</span>
+
+        <span class="c1"># set up prior for dynesty</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ptform</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">alabi</span><span class="o">.</span><span class="n">utility</span><span class="o">.</span><span class="n">prior_transform_normal</span><span class="p">,</span> 
+                              <span class="n">bounds</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">inparams_var</span><span class="o">.</span><span class="n">bounds</span><span class="p">,</span> 
+                              <span class="n">data</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">inparams_var</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+        
+        <span class="c1"># Configure MCMC</span>
+        <span class="k">if</span> <span class="n">reload</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">sm</span> <span class="o">=</span> <span class="n">alabi</span><span class="o">.</span><span class="n">load_model_cache</span><span class="p">(</span><span class="n">savedir</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">prior_sampler</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">alabi</span><span class="o">.</span><span class="n">utility</span><span class="o">.</span><span class="n">prior_sampler</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">inparams_var</span><span class="o">.</span><span class="n">bounds</span><span class="p">,</span> <span class="n">sampler</span><span class="o">=</span><span class="s1">&#39;uniform&#39;</span><span class="p">)</span>
+            <span class="n">sm</span> <span class="o">=</span> <span class="n">alabi</span><span class="o">.</span><span class="n">SurrogateModel</span><span class="p">(</span><span class="n">fn</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">lnlike</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">inparams_var</span><span class="o">.</span><span class="n">bounds</span><span class="p">,</span> <span class="n">prior_sampler</span><span class="o">=</span><span class="n">prior_sampler</span><span class="p">,</span>
+                                    <span class="n">savedir</span><span class="o">=</span><span class="n">savedir</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">inparams_var</span><span class="o">.</span><span class="n">labels</span><span class="p">)</span>
+            <span class="n">sm</span><span class="o">.</span><span class="n">init_samples</span><span class="p">(</span><span class="n">ntrain</span><span class="o">=</span><span class="n">ntrain</span><span class="p">,</span> <span class="n">ntest</span><span class="o">=</span><span class="n">ntest</span><span class="p">,</span> <span class="n">reload</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="n">sm</span><span class="o">.</span><span class="n">init_gp</span><span class="p">(</span><span class="n">kernel</span><span class="o">=</span><span class="n">kernel</span><span class="p">,</span> <span class="n">fit_amp</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">fit_mean</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">white_noise</span><span class="o">=-</span><span class="mi">15</span><span class="p">)</span>
+        
+        <span class="c1"># Run MCMC</span>
+        <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;dynesty&quot;</span><span class="p">:</span>
+            <span class="n">sm</span><span class="o">.</span><span class="n">run_dynesty</span><span class="p">(</span><span class="n">like_fn</span><span class="o">=</span><span class="s2">&quot;true&quot;</span><span class="p">,</span> <span class="n">ptform</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ptform</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;static&quot;</span><span class="p">,</span> <span class="n">multi_proc</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">save_iter</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+            <span class="n">sm</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">plots</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;dynesty_all&quot;</span><span class="p">])</span>
+
+        <span class="k">elif</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;alabi&quot;</span><span class="p">:</span>
+            <span class="n">sm</span><span class="o">.</span><span class="n">active_train</span><span class="p">(</span><span class="n">niter</span><span class="o">=</span><span class="n">niter</span><span class="p">,</span> <span class="n">algorithm</span><span class="o">=</span><span class="s2">&quot;bape&quot;</span><span class="p">,</span> <span class="n">gp_opt_freq</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">save_progress</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">sm</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">plots</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;gp_all&quot;</span><span class="p">])</span>
+
+        <span class="k">elif</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;alabi_dynesty&quot;</span><span class="p">:</span>
+            <span class="n">sm</span><span class="o">.</span><span class="n">active_train</span><span class="p">(</span><span class="n">niter</span><span class="o">=</span><span class="n">niter</span><span class="p">,</span> <span class="n">algorithm</span><span class="o">=</span><span class="s2">&quot;bape&quot;</span><span class="p">,</span> <span class="n">gp_opt_freq</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">save_progress</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">sm</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">plots</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;gp_all&quot;</span><span class="p">])</span>
+
+            <span class="n">sm</span><span class="o">.</span><span class="n">run_dynesty</span><span class="p">(</span><span class="n">ptform</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ptform</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;static&quot;</span><span class="p">,</span> <span class="n">multi_proc</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">save_iter</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+            <span class="n">sm</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">plots</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;dynesty_all&quot;</span><span class="p">])</span>
+
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+
+<div class="viewcode-block" id="AnalyzeVplanetModel.plot_sensitivity_table">
+<a class="viewcode-back" href="../../api.html#vplanet_inference.AnalyzeVplanetModel.plot_sensitivity_table">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">plot_sensitivity_table</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table</span><span class="p">):</span>
+
+        <span class="c1"># plot sensitivity tables</span>
+        <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">[</span><span class="mi">12</span><span class="p">,</span><span class="mi">8</span><span class="p">])</span>
+        <span class="n">sn</span><span class="o">.</span><span class="n">heatmap</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">yticklabels</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">inparams_var</span><span class="o">.</span><span class="n">labels</span><span class="p">,</span> <span class="n">xticklabels</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">outparams</span><span class="o">.</span><span class="n">labels</span><span class="p">,</span> 
+                   <span class="n">annot</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">annot_kws</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;size&quot;</span><span class="p">:</span> <span class="mi">18</span><span class="p">},</span> <span class="n">vmin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;bone&quot;</span><span class="p">)</span> 
+        <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;First order sensitivity (S1) index&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">25</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">xticks</span><span class="p">(</span><span class="n">rotation</span><span class="o">=</span><span class="mi">45</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">18</span><span class="p">,</span> <span class="n">ha</span><span class="o">=</span><span class="s1">&#39;right&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">yticks</span><span class="p">(</span><span class="n">rotation</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">yticks</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">18</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Final Conditions&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">22</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Initial Conditions&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">22</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">fig</span></div>
+
+
+
+<div class="viewcode-block" id="AnalyzeVplanetModel.variance_global_sensitivity">
+<a class="viewcode-back" href="../../api.html#vplanet_inference.AnalyzeVplanetModel.variance_global_sensitivity">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">variance_global_sensitivity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">param_values</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">Y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">nsample</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span> <span class="n">save</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">subpath</span><span class="o">=</span><span class="s2">&quot;results_sensitivity&quot;</span><span class="p">):</span>
+
+        <span class="kn">from</span><span class="w"> </span><span class="nn">SALib.sample</span><span class="w"> </span><span class="kn">import</span> <span class="n">saltelli</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">SALib.analyze</span><span class="w"> </span><span class="kn">import</span> <span class="n">sobol</span>
+
+        <span class="n">problem</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;num_vars&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">inparams_var</span><span class="o">.</span><span class="n">num</span><span class="p">,</span>
+            <span class="s2">&quot;names&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">inparams_var</span><span class="o">.</span><span class="n">names</span><span class="p">,</span>
+            <span class="s2">&quot;bounds&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">inparams_var</span><span class="o">.</span><span class="n">bounds</span>
+        <span class="p">}</span>
+
+        <span class="k">if</span> <span class="n">param_values</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">param_values</span> <span class="o">=</span> <span class="n">saltelli</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">problem</span><span class="p">,</span> <span class="n">nsample</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">Y</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">Y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_models</span><span class="p">(</span><span class="n">param_values</span><span class="p">)</span>
+
+        <span class="c1"># save samples to npz file</span>
+        <span class="n">savedir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">outpath</span><span class="p">,</span> <span class="n">subpath</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_id</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">savedir</span><span class="p">):</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">savedir</span><span class="p">)</span>    
+        <span class="k">if</span> <span class="n">save</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>       
+            <span class="n">np</span><span class="o">.</span><span class="n">savez</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">savedir</span><span class="si">}</span><span class="s2">/var_global_sensitivity_sample.npz&quot;</span><span class="p">,</span> <span class="n">param_values</span><span class="o">=</span><span class="n">param_values</span><span class="p">,</span> <span class="n">Y</span><span class="o">=</span><span class="n">Y</span><span class="p">)</span>
+
+        <span class="n">dict_s1</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;input&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">inparams_var</span><span class="o">.</span><span class="n">names</span><span class="p">}</span>
+        <span class="n">dict_sT</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;input&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">inparams_var</span><span class="o">.</span><span class="n">names</span><span class="p">}</span>
+                        
+        <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="n">sobol</span><span class="o">.</span><span class="n">analyze</span><span class="p">(</span><span class="n">problem</span><span class="p">,</span> <span class="n">Y</span><span class="o">.</span><span class="n">T</span><span class="p">[</span><span class="n">ii</span><span class="p">])</span>
+            <span class="n">dict_s1</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">outparams</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="n">ii</span><span class="p">]]</span> <span class="o">=</span> <span class="n">res</span><span class="p">[</span><span class="s1">&#39;S1&#39;</span><span class="p">]</span>
+            <span class="n">dict_sT</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">outparams</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="n">ii</span><span class="p">]]</span> <span class="o">=</span> <span class="n">res</span><span class="p">[</span><span class="s1">&#39;ST&#39;</span><span class="p">]</span>
+            
+        <span class="n">table_s1</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">dict_s1</span><span class="p">)</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">table_s1</span> <span class="o">=</span> <span class="n">table_s1</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s2">&quot;input&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">rename_axis</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">table_s1</span><span class="p">[</span><span class="n">table_s1</span><span class="o">.</span><span class="n">values</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">table_s1</span><span class="p">[</span><span class="n">table_s1</span><span class="o">.</span><span class="n">values</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">table_s1</span> <span class="o">=</span> <span class="n">table_s1</span>
+        <span class="k">if</span> <span class="n">save</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">table_s1</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">savedir</span><span class="si">}</span><span class="s2">/sensitivity_table_s1.csv&quot;</span><span class="p">)</span>
+
+        <span class="n">table_sT</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">dict_sT</span><span class="p">)</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">table_sT</span> <span class="o">=</span> <span class="n">table_sT</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s2">&quot;input&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">rename_axis</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">table_sT</span><span class="p">[</span><span class="n">table_sT</span><span class="o">.</span><span class="n">values</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">table_sT</span><span class="p">[</span><span class="n">table_sT</span><span class="o">.</span><span class="n">values</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">table_sT</span> <span class="o">=</span> <span class="n">table_sT</span>
+        <span class="k">if</span> <span class="n">save</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">table_sT</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">savedir</span><span class="si">}</span><span class="s2">/sensitivity_table_sT.csv&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">fig_s1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">plot_sensitivity_table</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">table_s1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fig_sT</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">plot_sensitivity_table</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">table_sT</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">save</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fig_s1</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">savedir</span><span class="si">}</span><span class="s2">/sensitivity_table_s1.png&quot;</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s2">&quot;tight&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fig_sT</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">savedir</span><span class="si">}</span><span class="s2">/sensitivity_table_sT.png&quot;</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s2">&quot;tight&quot;</span><span class="p">)</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Jessica Birky.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

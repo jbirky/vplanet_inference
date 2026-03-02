@@ -1,0 +1,961 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MCMC with VPLanet and alabi &mdash; vplanet_inference 0.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=a6a68382" />
+      <link rel="stylesheet" type="text/css" href="../_static/fonts.css?v=5583d106" />
+      <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=d45e8c67"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="API Reference" href="../api.html" />
+    <link rel="prev" title="Global Sensitivity Analysis with vplanet_inference" href="02_sensitivity_analysis.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            vplanet_inference
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quickstart.html">Quickstart</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="index.html">Tutorial Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="01_vplanet_infiles.html">Setting Up and Running VPLanet Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="02_sensitivity_analysis.html">Global Sensitivity Analysis with <code class="docutils literal notranslate"><span class="pre">vplanet_inference</span></code></a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">MCMC with VPLanet and <code class="docutils literal notranslate"><span class="pre">alabi</span></code></a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#Problem:-inferring-TRAPPIST-1-stellar-properties">Problem: inferring TRAPPIST-1 stellar properties</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#1.-Configure-the-VPLanet-Forward-Model">1. Configure the VPLanet Forward Model</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#Sanity-check:-single-run-at-known-TRAPPIST-1-values">Sanity check: single run at known TRAPPIST-1 values</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#2.-Observational-Data-and-Priors">2. Observational Data and Priors</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#3.-Custom-Likelihood-and-Prior-Functions">3. Custom Likelihood and Prior Functions</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#3.1-Custom-Log-Likelihood">3.1 Custom Log-Likelihood</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#3.2-Log-Prior">3.2 Log-Prior</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#3.3-Log-Posterior">3.3 Log-Posterior</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#4.-Option-A-—-Direct-MCMC-with-dynesty">4. Option A — Direct MCMC with <code class="docutils literal notranslate"><span class="pre">dynesty</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#5.-Option-B-—-Direct-MCMC-with-emcee">5. Option B — Direct MCMC with <code class="docutils literal notranslate"><span class="pre">emcee</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#6.-Option-C-—-Surrogate-MCMC-with-alabi">6. Option C — Surrogate MCMC with <code class="docutils literal notranslate"><span class="pre">alabi</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#Installation">Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Workflow">Workflow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#6.1-Setting-Up-the-Prior-Sampler-and-Transform">6.1 Setting Up the Prior Sampler and Transform</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#6.2-Initialising-the-Surrogate-Model">6.2 Initialising the Surrogate Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#6.3-Active-Learning">6.3 Active Learning</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#6.4-MCMC-on-the-Surrogate">6.4 MCMC on the Surrogate</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#6.5-Reloading-a-Saved-Model">6.5 Reloading a Saved Model</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Summary">Summary</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../api.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">vplanet_inference</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">MCMC with VPLanet and <code class="docutils literal notranslate"><span class="pre">alabi</span></code></li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/tutorials/03_mcmc_custom_likelihood.ipynb.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="MCMC-with-VPLanet-and-alabi">
+<h1>MCMC with VPLanet and <code class="docutils literal notranslate"><span class="pre">alabi</span></code><a class="headerlink" href="#MCMC-with-VPLanet-and-alabi" title="Link to this heading"></a></h1>
+<p>This tutorial demonstrates how to run <strong>Bayesian parameter inference</strong> on a VPLanet forward model using a <strong>custom likelihood function</strong> and the <code class="docutils literal notranslate"><span class="pre">alabi</span></code> surrogate-model framework.</p>
+<p>Evaluating a VPLanet model can take seconds to minutes per call. Running a standard MCMC sampler (e.g. <code class="docutils literal notranslate"><span class="pre">emcee</span></code> or <code class="docutils literal notranslate"><span class="pre">dynesty</span></code>) directly on the forward model requires millions of evaluations, which is computationally prohibitive. <code class="docutils literal notranslate"><span class="pre">alabi</span></code> addresses this by:</p>
+<ol class="arabic simple">
+<li><p>Building a <strong>Gaussian Process surrogate</strong> of the log-posterior surface using a small number of active-learning iterations.</p></li>
+<li><p>Running MCMC on the <strong>fast surrogate</strong> instead of the expensive forward model.</p></li>
+</ol>
+<p>We also show how to run MCMC <strong>directly</strong> using <code class="docutils literal notranslate"><span class="pre">dynesty</span></code> or <code class="docutils literal notranslate"><span class="pre">emcee</span></code> — useful for fast models or as a baseline comparison.</p>
+<section id="Problem:-inferring-TRAPPIST-1-stellar-properties">
+<h2>Problem: inferring TRAPPIST-1 stellar properties<a class="headerlink" href="#Problem:-inferring-TRAPPIST-1-stellar-properties" title="Link to this heading"></a></h2>
+<p>We fit four stellar parameters of TRAPPIST-1 using observed luminosity and XUV luminosity:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter</p></th>
+<th class="head"><p>Symbol</p></th>
+<th class="head"><p>Prior range</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Stellar mass</p></td>
+<td><p><span class="math notranslate nohighlight">\(m_\star\)</span></p></td>
+<td><p><span class="math notranslate nohighlight">\([0.07, 0.11]\, M_\odot\)</span></p></td>
+</tr>
+<tr class="row-odd"><td><p>XUV saturation fraction</p></td>
+<td><p><span class="math notranslate nohighlight">\(f_{\rm sat}\)</span></p></td>
+<td><p><span class="math notranslate nohighlight">\([-5, -1]\, {\rm dex}\)</span></p></td>
+</tr>
+<tr class="row-even"><td><p>XUV saturation timescale</p></td>
+<td><p><span class="math notranslate nohighlight">\(t_{\rm sat}\)</span></p></td>
+<td><p><span class="math notranslate nohighlight">\([0.1, 12]\, {\rm Gyr}\)</span></p></td>
+</tr>
+<tr class="row-odd"><td><p>XUV power-law exponent</p></td>
+<td><p><span class="math notranslate nohighlight">\(\beta_{\rm XUV}\)</span></p></td>
+<td><p><span class="math notranslate nohighlight">\([-2, 0]\)</span></p></td>
+</tr>
+</tbody>
+</table>
+<p>The age is constrained by a Gaussian prior <span class="math notranslate nohighlight">\(t_{\rm age} = 7.6 \pm 2.2\, {\rm Gyr}\)</span>.</p>
+<hr class="docutils" />
+<p><strong>Dependencies:</strong> <code class="docutils literal notranslate"><span class="pre">vplanet_inference</span></code>, <code class="docutils literal notranslate"><span class="pre">numpy</span></code>, <code class="docutils literal notranslate"><span class="pre">astropy</span></code>, <code class="docutils literal notranslate"><span class="pre">dynesty</span></code>, <code class="docutils literal notranslate"><span class="pre">emcee</span></code>, <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code></p>
+<p><strong>Optional (for surrogate MCMC):</strong> <code class="docutils literal notranslate"><span class="pre">alabi</span></code> (see installation note below)</p>
+<p><strong>References:</strong></p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://doi.org/10.3847/1538-4357/abded5">Birky et al. (2021)</a> — <code class="docutils literal notranslate"><span class="pre">alabi</span></code> method paper</p></li>
+<li><p><a class="reference external" href="https://doi.org/10.1093/mnras/staa278">Speagle (2020)</a> — <code class="docutils literal notranslate"><span class="pre">dynesty</span></code> nested sampling</p></li>
+<li><p><a class="reference external" href="https://doi.org/10.1086/670067">Foreman-Mackey et al. (2013)</a> — <code class="docutils literal notranslate"><span class="pre">emcee</span></code> affine-invariant MCMC</p></li>
+<li><p><a class="reference external" href="https://virtualplanetarylaboratory.github.io/vplanet/stellar.html">VPLanet stellar module</a></p></li>
+</ul>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">astropy.units</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">u</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">partial</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">multiprocessing</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">mp</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+<span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">)</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">vplanet_inference</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">vpi</span>
+</pre></div>
+</div>
+</div>
+<section id="1.-Configure-the-VPLanet-Forward-Model">
+<h3>1. Configure the VPLanet Forward Model<a class="headerlink" href="#1.-Configure-the-VPLanet-Forward-Model" title="Link to this heading"></a></h3>
+<p>We use the bundled <code class="docutils literal notranslate"><span class="pre">stellar</span></code> infiles — a single low-mass star with the <code class="docutils literal notranslate"><span class="pre">stellar</span></code> module activated. The model outputs bolometric luminosity and XUV luminosity at the end of the simulation.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">INFILE_PATH</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">vpi</span><span class="o">.</span><span class="n">INFILE_DIR</span><span class="p">,</span> <span class="s2">&quot;stellar&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Infile path: </span><span class="si">{</span><span class="n">INFILE_PATH</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Files:&quot;</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">INFILE_PATH</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Input parameters: what to vary and in what units</span>
+<span class="c1"># theta = [mass, log(fsat), tsat, age, beta]</span>
+<span class="n">inparams</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;star.dMass&quot;</span><span class="p">:</span>       <span class="n">u</span><span class="o">.</span><span class="n">Msun</span><span class="p">,</span>
+    <span class="s2">&quot;star.dSatXUVFrac&quot;</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">dex</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">dimensionless_unscaled</span><span class="p">),</span>  <span class="c1"># log scale</span>
+    <span class="s2">&quot;star.dSatXUVTime&quot;</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">Gyr</span><span class="p">,</span>
+    <span class="s2">&quot;vpl.dStopTime&quot;</span><span class="p">:</span>    <span class="n">u</span><span class="o">.</span><span class="n">Gyr</span><span class="p">,</span>
+    <span class="s2">&quot;star.dXUVBeta&quot;</span><span class="p">:</span>    <span class="o">-</span><span class="n">u</span><span class="o">.</span><span class="n">dimensionless_unscaled</span><span class="p">,</span>         <span class="c1"># stored negative in vpl</span>
+<span class="p">}</span>
+
+<span class="c1"># Output parameters: what to collect from the log file</span>
+<span class="n">outparams</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;final.star.Luminosity&quot;</span><span class="p">:</span>  <span class="n">u</span><span class="o">.</span><span class="n">Lsun</span><span class="p">,</span>
+    <span class="s2">&quot;final.star.LXUVStellar&quot;</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">Lsun</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="n">vpm</span> <span class="o">=</span> <span class="n">vpi</span><span class="o">.</span><span class="n">VplanetModel</span><span class="p">(</span>
+    <span class="n">inparams</span><span class="o">=</span><span class="n">inparams</span><span class="p">,</span>
+    <span class="n">outparams</span><span class="o">=</span><span class="n">outparams</span><span class="p">,</span>
+    <span class="n">inpath</span><span class="o">=</span><span class="n">INFILE_PATH</span><span class="p">,</span>
+    <span class="n">outpath</span><span class="o">=</span><span class="s2">&quot;output/mcmc&quot;</span><span class="p">,</span>
+    <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Model inputs :&quot;</span><span class="p">,</span> <span class="n">vpm</span><span class="o">.</span><span class="n">inparams</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Model outputs:&quot;</span><span class="p">,</span> <span class="n">vpm</span><span class="o">.</span><span class="n">outparams</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</section>
+</section>
+<section id="Sanity-check:-single-run-at-known-TRAPPIST-1-values">
+<h2>Sanity check: single run at known TRAPPIST-1 values<a class="headerlink" href="#Sanity-check:-single-run-at-known-TRAPPIST-1-values" title="Link to this heading"></a></h2>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Approximate TRAPPIST-1 values (Burgasser &amp; Mamajek 2017; Wheatley et al. 2017)</span>
+<span class="n">theta_true</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
+    <span class="mf">0.089</span><span class="p">,</span>   <span class="c1"># mass [Msun]</span>
+    <span class="o">-</span><span class="mf">2.92</span><span class="p">,</span>   <span class="c1"># log(fsat) [dex]</span>
+    <span class="mf">1.0</span><span class="p">,</span>     <span class="c1"># tsat [Gyr]</span>
+    <span class="mf">7.6</span><span class="p">,</span>     <span class="c1"># age [Gyr]</span>
+    <span class="o">-</span><span class="mf">1.18</span><span class="p">,</span>   <span class="c1"># beta (stored negative)</span>
+<span class="p">])</span>
+
+<span class="n">result_true</span> <span class="o">=</span> <span class="n">vpm</span><span class="o">.</span><span class="n">run_model</span><span class="p">(</span><span class="n">theta_true</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Model output at TRAPPIST-1 parameters:&quot;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="n">unit</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">vpm</span><span class="o">.</span><span class="n">outparams</span><span class="p">,</span> <span class="n">result_true</span><span class="p">,</span> <span class="n">vpm</span><span class="o">.</span><span class="n">out_units</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="n">name</span><span class="si">:</span><span class="s2">&lt;35s</span><span class="si">}</span><span class="s2"> = </span><span class="si">{</span><span class="n">val</span><span class="si">:</span><span class="s2">.4e</span><span class="si">}</span><span class="s2"> [</span><span class="si">{</span><span class="n">unit</span><span class="si">}</span><span class="s2">]&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<section id="2.-Observational-Data-and-Priors">
+<h3>2. Observational Data and Priors<a class="headerlink" href="#2.-Observational-Data-and-Priors" title="Link to this heading"></a></h3>
+<p>We constrain the inference with two observational measurements:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Observable</p></th>
+<th class="head"><p>Symbol</p></th>
+<th class="head"><p>Value</p></th>
+<th class="head"><p>Reference</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Bolometric luminosity</p></td>
+<td><p><span class="math notranslate nohighlight">\(L_{\rm bol}\)</span></p></td>
+<td><p><span class="math notranslate nohighlight">\((5.22 \pm 0.19) \times 10^{-4}\, L_\odot\)</span></p></td>
+<td><p>Gillon et al. (2017)</p></td>
+</tr>
+<tr class="row-odd"><td><p>XUV-to-bol. ratio</p></td>
+<td><p><span class="math notranslate nohighlight">\(L_{\rm XUV}/L_{\rm bol}\)</span></p></td>
+<td><p><span class="math notranslate nohighlight">\((7.5 \pm 1.5) \times 10^{-4}\)</span></p></td>
+<td><p>Wheatley et al. (2017)</p></td>
+</tr>
+</tbody>
+</table>
+<p>Five parameters have the following priors:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter</p></th>
+<th class="head"><p>Prior</p></th>
+<th class="head"><p>Values</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><span class="math notranslate nohighlight">\(m_\star\)</span></p></td>
+<td><p>Uniform</p></td>
+<td><p><span class="math notranslate nohighlight">\([0.07, 0.11]\, M_\odot\)</span></p></td>
+</tr>
+<tr class="row-odd"><td><p><span class="math notranslate nohighlight">\(\log f_{\rm sat}\)</span></p></td>
+<td><p>Gaussian</p></td>
+<td><p><span class="math notranslate nohighlight">\(-2.92 \pm 0.26\)</span></p></td>
+</tr>
+<tr class="row-even"><td><p><span class="math notranslate nohighlight">\(t_{\rm sat}\)</span></p></td>
+<td><p>Uniform</p></td>
+<td><p><span class="math notranslate nohighlight">\([0.1, 12]\, {\rm Gyr}\)</span></p></td>
+</tr>
+<tr class="row-odd"><td><p>Age</p></td>
+<td><p>Gaussian</p></td>
+<td><p><span class="math notranslate nohighlight">\(7.6 \pm 2.2\, {\rm Gyr}\)</span></p></td>
+</tr>
+<tr class="row-even"><td><p><span class="math notranslate nohighlight">\(\beta_{\rm XUV}\)</span></p></td>
+<td><p>Gaussian</p></td>
+<td><p><span class="math notranslate nohighlight">\(-1.18 \pm 0.31\)</span></p></td>
+</tr>
+</tbody>
+</table>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Observational data: shape (n_obs, 2) = [[mean, std], ...]</span>
+<span class="c1"># We observe Lbol and Lxuv/Lbol (not Lxuv directly)</span>
+<span class="n">like_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
+    <span class="p">[</span><span class="mf">5.22e-4</span><span class="p">,</span> <span class="mf">0.19e-4</span><span class="p">],</span>   <span class="c1"># Lbol [Lsun]</span>
+    <span class="p">[</span><span class="mf">7.5e-4</span><span class="p">,</span>  <span class="mf">1.5e-4</span><span class="p">],</span>    <span class="c1"># Lxuv/Lbol [dimensionless]</span>
+<span class="p">])</span>
+
+<span class="c1"># Prior configuration: (mean, sigma) for Gaussian; None for Uniform</span>
+<span class="c1"># Order matches inparams: [mass, log_fsat, tsat, age, beta]</span>
+<span class="n">prior_data</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">(</span><span class="kc">None</span><span class="p">,</span>   <span class="kc">None</span><span class="p">),</span>   <span class="c1"># mass — uniform</span>
+    <span class="p">(</span><span class="o">-</span><span class="mf">2.92</span><span class="p">,</span>  <span class="mf">0.26</span><span class="p">),</span>   <span class="c1"># log(fsat) — Gaussian</span>
+    <span class="p">(</span><span class="kc">None</span><span class="p">,</span>   <span class="kc">None</span><span class="p">),</span>   <span class="c1"># tsat — uniform</span>
+    <span class="p">(</span><span class="mf">7.6</span><span class="p">,</span>    <span class="mf">2.2</span><span class="p">),</span>    <span class="c1"># age — Gaussian</span>
+    <span class="p">(</span><span class="o">-</span><span class="mf">1.18</span><span class="p">,</span>  <span class="mf">0.31</span><span class="p">),</span>   <span class="c1"># beta — Gaussian</span>
+<span class="p">]</span>
+
+<span class="c1"># Hard bounds (uniform prior limits for all parameters)</span>
+<span class="n">bounds</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">(</span><span class="mf">0.07</span><span class="p">,</span> <span class="mf">0.11</span><span class="p">),</span>     <span class="c1"># mass [Msun]</span>
+    <span class="p">(</span><span class="o">-</span><span class="mf">5.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">),</span>     <span class="c1"># log(fsat)</span>
+    <span class="p">(</span><span class="mf">0.1</span><span class="p">,</span>  <span class="mf">12.0</span><span class="p">),</span>     <span class="c1"># tsat [Gyr]</span>
+    <span class="p">(</span><span class="mf">0.1</span><span class="p">,</span>  <span class="mf">12.0</span><span class="p">),</span>     <span class="c1"># age [Gyr]</span>
+    <span class="p">(</span><span class="o">-</span><span class="mf">2.0</span><span class="p">,</span>  <span class="mf">0.0</span><span class="p">),</span>     <span class="c1"># beta</span>
+<span class="p">]</span>
+
+<span class="n">labels</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="sa">r</span><span class="s2">&quot;$m_\star\,[M_\odot]$&quot;</span><span class="p">,</span>
+    <span class="sa">r</span><span class="s2">&quot;$\log f_{\rm sat}$&quot;</span><span class="p">,</span>
+    <span class="sa">r</span><span class="s2">&quot;$t_{\rm sat}\,[{\rm Gyr}]$&quot;</span><span class="p">,</span>
+    <span class="sa">r</span><span class="s2">&quot;Age [Gyr]&quot;</span><span class="p">,</span>
+    <span class="sa">r</span><span class="s2">&quot;$\beta_{\rm XUV}$&quot;</span><span class="p">,</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="3.-Custom-Likelihood-and-Prior-Functions">
+<h3>3. Custom Likelihood and Prior Functions<a class="headerlink" href="#3.-Custom-Likelihood-and-Prior-Functions" title="Link to this heading"></a></h3>
+<p>The likelihood compares model predictions to observations assuming Gaussian errors:</p>
+<div class="math notranslate nohighlight">
+\[\ln \mathcal{L}(\theta) = -\frac{1}{2}
+\sum_k \left(\frac{y_k^{\rm model}(\theta) - y_k^{\rm obs}}{\sigma_k^{\rm obs}}\right)^2\]</div>
+<p>Note that the model returns <span class="math notranslate nohighlight">\(L_{\rm bol}\)</span> and <span class="math notranslate nohighlight">\(L_{\rm XUV}\)</span> as separate quantities, but the observation constrains <span class="math notranslate nohighlight">\(L_{\rm XUV}/L_{\rm bol}\)</span>. This transformation is applied inside <code class="docutils literal notranslate"><span class="pre">lnlike</span></code>.</p>
+</section>
+</section>
+<section id="3.1-Custom-Log-Likelihood">
+<h2>3.1 Custom Log-Likelihood<a class="headerlink" href="#3.1-Custom-Log-Likelihood" title="Link to this heading"></a></h2>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">lnlike</span><span class="p">(</span><span class="n">theta</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Log-likelihood comparing VPLanet outputs to observations.</span>
+
+<span class="sd">    theta : array-like, shape (5,)</span>
+<span class="sd">        [mass (Msun), log_fsat, tsat (Gyr), age (Gyr), beta]</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    float : log-likelihood value (−inf if model fails)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">vpm</span><span class="o">.</span><span class="n">run_model</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">theta</span><span class="p">))</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="k">return</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+
+    <span class="n">lbol</span> <span class="o">=</span> <span class="n">out</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>   <span class="c1"># final.star.Luminosity  [Lsun]</span>
+    <span class="n">lxuv</span> <span class="o">=</span> <span class="n">out</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>   <span class="c1"># final.star.LXUVStellar [Lsun]</span>
+
+    <span class="c1"># Guard against non-physical outputs</span>
+    <span class="k">if</span> <span class="n">lbol</span> <span class="o">&lt;=</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">lxuv</span> <span class="o">&lt;=</span> <span class="mi">0</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">lbol</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">lxuv</span><span class="p">):</span>
+        <span class="k">return</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+
+    <span class="c1"># Model observables: [Lbol, Lxuv/Lbol]</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">lbol</span><span class="p">,</span> <span class="n">lxuv</span> <span class="o">/</span> <span class="n">lbol</span><span class="p">])</span>
+
+    <span class="c1"># Gaussian log-likelihood</span>
+    <span class="n">lnl</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(((</span><span class="n">model</span> <span class="o">-</span> <span class="n">like_data</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="n">like_data</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">lnl</span>
+
+
+<span class="c1"># Test: likelihood at true parameters</span>
+<span class="n">lnl_true</span> <span class="o">=</span> <span class="n">lnlike</span><span class="p">(</span><span class="n">theta_true</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ln L at true parameters: </span><span class="si">{</span><span class="n">lnl_true</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="3.2-Log-Prior">
+<h2>3.2 Log-Prior<a class="headerlink" href="#3.2-Log-Prior" title="Link to this heading"></a></h2>
+<p>We combine Gaussian and uniform priors. Parameters with <code class="docutils literal notranslate"><span class="pre">(None,</span> <span class="pre">None)</span></code> in <code class="docutils literal notranslate"><span class="pre">prior_data</span></code> get a flat (uniform) prior within <code class="docutils literal notranslate"><span class="pre">bounds</span></code>.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">lnprior</span><span class="p">(</span><span class="n">theta</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Log-prior: uniform bounds + Gaussian constraints where specified.</span>
+
+<span class="sd">    Returns −inf if any parameter is outside its hard bounds.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">lnp</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="p">(</span><span class="n">lo</span><span class="p">,</span> <span class="n">hi</span><span class="p">),</span> <span class="n">gauss</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">bounds</span><span class="p">,</span> <span class="n">prior_data</span><span class="p">)):</span>
+        <span class="c1"># Hard bounds (uniform component)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">lo</span> <span class="o">&lt;</span> <span class="n">val</span> <span class="o">&lt;</span> <span class="n">hi</span><span class="p">):</span>
+            <span class="k">return</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+        <span class="c1"># Gaussian component</span>
+        <span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span> <span class="o">=</span> <span class="n">gauss</span>
+        <span class="k">if</span> <span class="n">mu</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">lnp</span> <span class="o">+=</span> <span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="p">((</span><span class="n">val</span> <span class="o">-</span> <span class="n">mu</span><span class="p">)</span> <span class="o">/</span> <span class="n">sigma</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
+    <span class="k">return</span> <span class="n">lnp</span>
+
+
+<span class="c1"># Test: prior at true parameters</span>
+<span class="n">lnp_true</span> <span class="o">=</span> <span class="n">lnprior</span><span class="p">(</span><span class="n">theta_true</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ln prior at true parameters: </span><span class="si">{</span><span class="n">lnp_true</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="3.3-Log-Posterior">
+<h2>3.3 Log-Posterior<a class="headerlink" href="#3.3-Log-Posterior" title="Link to this heading"></a></h2>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">lnpost</span><span class="p">(</span><span class="n">theta</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Log-posterior = log-likelihood + log-prior.&quot;&quot;&quot;</span>
+    <span class="n">lnp</span> <span class="o">=</span> <span class="n">lnprior</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">lnp</span><span class="p">):</span>
+        <span class="k">return</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+    <span class="k">return</span> <span class="n">lnlike</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span> <span class="o">+</span> <span class="n">lnp</span>
+
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ln posterior at true parameters: </span><span class="si">{</span><span class="n">lnpost</span><span class="p">(</span><span class="n">theta_true</span><span class="p">)</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<section id="4.-Option-A-—-Direct-MCMC-with-dynesty">
+<h3>4. Option A — Direct MCMC with <code class="docutils literal notranslate"><span class="pre">dynesty</span></code><a class="headerlink" href="#4.-Option-A-—-Direct-MCMC-with-dynesty" title="Link to this heading"></a></h3>
+<p>For a quick test or for fast models, you can run <code class="docutils literal notranslate"><span class="pre">dynesty</span></code> nested sampling directly on the VPLanet forward model (no surrogate needed).</p>
+<p><code class="docutils literal notranslate"><span class="pre">dynesty</span></code> requires a <strong>prior transform</strong> <span class="math notranslate nohighlight">\(\pi^{-1}: [0,1]^d \to \theta\)</span> that maps the unit hypercube to the prior distribution.</p>
+<blockquote>
+<div><p><strong>Note:</strong> Direct nested sampling on VPLanet is only feasible for simple models with short simulation times (&lt; 1 s per call). For realistic stellar/tidal evolution simulations (seconds to minutes per call), use the <code class="docutils literal notranslate"><span class="pre">alabi</span></code> surrogate approach in Section 5.</p>
+</div></blockquote>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">dynesty</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dynesty</span><span class="w"> </span><span class="kn">import</span> <span class="n">plotting</span> <span class="k">as</span> <span class="n">dyplot</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.special</span><span class="w"> </span><span class="kn">import</span> <span class="n">ndtri</span>  <span class="c1"># inverse normal CDF</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">prior_transform</span><span class="p">(</span><span class="n">u_vec</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Map unit-hypercube samples u ∈ [0,1]^d to the parameter prior.</span>
+
+<span class="sd">    For uniform priors: theta = lo + u * (hi - lo)</span>
+<span class="sd">    For Gaussian priors (truncated to [lo, hi]): theta = mu + sigma * Phi^{-1}(u)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">theta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">bounds</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">u_i</span><span class="p">,</span> <span class="p">(</span><span class="n">lo</span><span class="p">,</span> <span class="n">hi</span><span class="p">),</span> <span class="n">gauss</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">u_vec</span><span class="p">,</span> <span class="n">bounds</span><span class="p">,</span> <span class="n">prior_data</span><span class="p">)):</span>
+        <span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span> <span class="o">=</span> <span class="n">gauss</span>
+        <span class="k">if</span> <span class="n">mu</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># Uniform prior</span>
+            <span class="n">theta</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">lo</span> <span class="o">+</span> <span class="n">u_i</span> <span class="o">*</span> <span class="p">(</span><span class="n">hi</span> <span class="o">-</span> <span class="n">lo</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Gaussian prior truncated to [lo, hi]</span>
+            <span class="c1"># Map [0,1] -&gt; CDF of truncated normal</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.stats</span><span class="w"> </span><span class="kn">import</span> <span class="n">norm</span>
+            <span class="n">cdf_lo</span> <span class="o">=</span> <span class="n">norm</span><span class="o">.</span><span class="n">cdf</span><span class="p">(</span><span class="n">lo</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="n">mu</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="n">sigma</span><span class="p">)</span>
+            <span class="n">cdf_hi</span> <span class="o">=</span> <span class="n">norm</span><span class="o">.</span><span class="n">cdf</span><span class="p">(</span><span class="n">hi</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="n">mu</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="n">sigma</span><span class="p">)</span>
+            <span class="n">theta</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">norm</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="n">cdf_lo</span> <span class="o">+</span> <span class="n">u_i</span> <span class="o">*</span> <span class="p">(</span><span class="n">cdf_hi</span> <span class="o">-</span> <span class="n">cdf_lo</span><span class="p">),</span> <span class="n">loc</span><span class="o">=</span><span class="n">mu</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="n">sigma</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">theta</span>
+
+
+<span class="c1"># Quick test of prior transform</span>
+<span class="n">u_test</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">bounds</span><span class="p">),</span> <span class="mf">0.5</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Prior transform at u=0.5 (median of prior):&quot;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">prior_transform</span><span class="p">(</span><span class="n">u_test</span><span class="p">)):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">val</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Likelihood function for dynesty (takes only theta, returns ln-likelihood)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">lnlike_dynesty</span><span class="p">(</span><span class="n">theta</span><span class="p">):</span>
+    <span class="n">lnp</span> <span class="o">=</span> <span class="n">lnprior</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">lnp</span><span class="p">):</span>
+        <span class="k">return</span> <span class="o">-</span><span class="mf">1e300</span>
+    <span class="n">lnl</span> <span class="o">=</span> <span class="n">lnlike</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">lnl</span><span class="p">):</span>
+        <span class="k">return</span> <span class="o">-</span><span class="mf">1e300</span>
+    <span class="k">return</span> <span class="n">lnl</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Run static nested sampling</span>
+<span class="c1"># nlive=50 is very small (use ≥200 for production); this is just for illustration</span>
+<span class="n">sampler</span> <span class="o">=</span> <span class="n">dynesty</span><span class="o">.</span><span class="n">NestedSampler</span><span class="p">(</span>
+    <span class="n">loglikelihood</span><span class="o">=</span><span class="n">lnlike_dynesty</span><span class="p">,</span>
+    <span class="n">prior_transform</span><span class="o">=</span><span class="n">prior_transform</span><span class="p">,</span>
+    <span class="n">ndim</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">bounds</span><span class="p">),</span>
+    <span class="n">nlive</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">sampler</span><span class="o">.</span><span class="n">run_nested</span><span class="p">(</span><span class="n">print_progress</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">results_dynesty</span> <span class="o">=</span> <span class="n">sampler</span><span class="o">.</span><span class="n">results</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Total likelihood calls: </span><span class="si">{</span><span class="n">results_dynesty</span><span class="o">.</span><span class="n">ncall</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;log Evidence: </span><span class="si">{</span><span class="n">results_dynesty</span><span class="o">.</span><span class="n">logz</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> ± </span><span class="si">{</span><span class="n">results_dynesty</span><span class="o">.</span><span class="n">logzerr</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Corner plot of posterior samples</span>
+<span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">dyplot</span><span class="o">.</span><span class="n">cornerplot</span><span class="p">(</span>
+    <span class="n">results_dynesty</span><span class="p">,</span>
+    <span class="n">labels</span><span class="o">=</span><span class="n">labels</span><span class="p">,</span>
+    <span class="n">show_titles</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">title_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;fontsize&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">},</span>
+    <span class="n">label_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;fontsize&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">},</span>
+    <span class="n">truths</span><span class="o">=</span><span class="n">theta_true</span><span class="p">,</span>
+    <span class="n">fig</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">bounds</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">bounds</span><span class="p">),</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">)),</span>
+<span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="s2">&quot;dynesty posterior — TRAPPIST-1 stellar parameters&quot;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mf">1.01</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Extract posterior samples and compute parameter summaries</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dynesty</span><span class="w"> </span><span class="kn">import</span> <span class="n">utils</span> <span class="k">as</span> <span class="n">dyfunc</span>
+
+<span class="n">samples_eq</span><span class="p">,</span> <span class="n">weights</span> <span class="o">=</span> <span class="n">results_dynesty</span><span class="o">.</span><span class="n">samples</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">results_dynesty</span><span class="o">.</span><span class="n">logwt</span> <span class="o">-</span> <span class="n">results_dynesty</span><span class="o">.</span><span class="n">logz</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+<span class="n">samples_dynesty</span> <span class="o">=</span> <span class="n">dyfunc</span><span class="o">.</span><span class="n">resample_equal</span><span class="p">(</span><span class="n">results_dynesty</span><span class="o">.</span><span class="n">samples</span><span class="p">,</span> <span class="n">weights</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Posterior summaries (median ± 1-sigma):&quot;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">label</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">labels</span><span class="p">):</span>
+    <span class="n">lo</span><span class="p">,</span> <span class="n">med</span><span class="p">,</span> <span class="n">hi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">samples_dynesty</span><span class="p">[:,</span> <span class="n">i</span><span class="p">],</span> <span class="p">[</span><span class="mi">16</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">84</span><span class="p">])</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">med</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2"> +</span><span class="si">{</span><span class="n">hi</span><span class="o">-</span><span class="n">med</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2"> -</span><span class="si">{</span><span class="n">med</span><span class="o">-</span><span class="n">lo</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="5.-Option-B-—-Direct-MCMC-with-emcee">
+<h3>5. Option B — Direct MCMC with <code class="docutils literal notranslate"><span class="pre">emcee</span></code><a class="headerlink" href="#5.-Option-B-—-Direct-MCMC-with-emcee" title="Link to this heading"></a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">emcee</span></code> uses an ensemble of walkers and is simpler to set up than nested sampling. It requires the <strong>log-posterior</strong> directly (no prior transform needed).</p>
+<blockquote>
+<div><p><strong>Tip:</strong> Initialize walkers in a small ball around the known maximum-likelihood estimate for faster convergence.</p>
+</div></blockquote>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">emcee</span>
+
+<span class="n">N_WALKERS</span> <span class="o">=</span> <span class="mi">20</span>
+<span class="n">N_STEPS</span>   <span class="o">=</span> <span class="mi">500</span>   <span class="c1"># increase to ≥2000 for production</span>
+<span class="n">N_DIM</span>     <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">bounds</span><span class="p">)</span>
+
+<span class="c1"># Initialize walkers in a small Gaussian ball around the nominal parameters</span>
+<span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
+<span class="n">theta_init</span> <span class="o">=</span> <span class="n">theta_true</span> <span class="o">+</span> <span class="mf">1e-3</span> <span class="o">*</span> <span class="n">rng</span><span class="o">.</span><span class="n">standard_normal</span><span class="p">((</span><span class="n">N_WALKERS</span><span class="p">,</span> <span class="n">N_DIM</span><span class="p">))</span>
+
+<span class="c1"># Clip to within bounds</span>
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">lo</span><span class="p">,</span> <span class="n">hi</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">bounds</span><span class="p">):</span>
+    <span class="n">theta_init</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">theta_init</span><span class="p">[:,</span> <span class="n">i</span><span class="p">],</span> <span class="n">lo</span> <span class="o">+</span> <span class="mf">1e-6</span><span class="p">,</span> <span class="n">hi</span> <span class="o">-</span> <span class="mf">1e-6</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Running emcee: </span><span class="si">{</span><span class="n">N_WALKERS</span><span class="si">}</span><span class="s2"> walkers × </span><span class="si">{</span><span class="n">N_STEPS</span><span class="si">}</span><span class="s2"> steps = </span><span class="si">{</span><span class="n">N_WALKERS</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">N_STEPS</span><span class="si">}</span><span class="s2"> total calls&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Parallelise with multiprocessing</span>
+<span class="k">with</span> <span class="n">mp</span><span class="o">.</span><span class="n">Pool</span><span class="p">(</span><span class="n">mp</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">())</span> <span class="k">as</span> <span class="n">pool</span><span class="p">:</span>
+    <span class="n">sampler_emcee</span> <span class="o">=</span> <span class="n">emcee</span><span class="o">.</span><span class="n">EnsembleSampler</span><span class="p">(</span>
+        <span class="n">N_WALKERS</span><span class="p">,</span>
+        <span class="n">N_DIM</span><span class="p">,</span>
+        <span class="n">lnpost</span><span class="p">,</span>
+        <span class="n">pool</span><span class="o">=</span><span class="n">pool</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">sampler_emcee</span><span class="o">.</span><span class="n">run_mcmc</span><span class="p">(</span><span class="n">theta_init</span><span class="p">,</span> <span class="n">N_STEPS</span><span class="p">,</span> <span class="n">progress</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Discard burn-in and thin the chain</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="n">tau</span> <span class="o">=</span> <span class="n">sampler_emcee</span><span class="o">.</span><span class="n">get_autocorr_time</span><span class="p">(</span><span class="n">quiet</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">burn</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">tau</span><span class="p">))</span>
+    <span class="n">thin</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">tau</span><span class="p">)))</span>
+<span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+    <span class="n">burn</span> <span class="o">=</span> <span class="n">N_STEPS</span> <span class="o">//</span> <span class="mi">4</span>
+    <span class="n">thin</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Note: autocorrelation estimation failed (chain too short). Using fallback burn-in.&quot;</span><span class="p">)</span>
+
+<span class="n">flat_samples</span> <span class="o">=</span> <span class="n">sampler_emcee</span><span class="o">.</span><span class="n">get_chain</span><span class="p">(</span><span class="n">discard</span><span class="o">=</span><span class="n">burn</span><span class="p">,</span> <span class="n">thin</span><span class="o">=</span><span class="n">thin</span><span class="p">,</span> <span class="n">flat</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Burn-in: </span><span class="si">{</span><span class="n">burn</span><span class="si">}</span><span class="s2"> steps, thin: </span><span class="si">{</span><span class="n">thin</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Posterior samples: </span><span class="si">{</span><span class="n">flat_samples</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Trace plot: walker trajectories over time</span>
+<span class="n">chain</span> <span class="o">=</span> <span class="n">sampler_emcee</span><span class="o">.</span><span class="n">get_chain</span><span class="p">()</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">N_DIM</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span> <span class="n">sharex</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">label</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">axes</span><span class="p">,</span> <span class="n">labels</span><span class="p">)):</span>
+    <span class="k">for</span> <span class="n">walker</span> <span class="ow">in</span> <span class="n">chain</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">T</span><span class="p">:</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">walker</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;steelblue&quot;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="n">theta_true</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;red&quot;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s2">&quot;--&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;true&quot;</span> <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">burn</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;k&quot;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s2">&quot;:&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;burn-in&quot;</span> <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">9</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Step&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="s2">&quot;emcee walker traces — TRAPPIST-1&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">11</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Corner plot using matplotlib</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">corner</span>
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">corner</span><span class="o">.</span><span class="n">corner</span><span class="p">(</span>
+        <span class="n">flat_samples</span><span class="p">,</span>
+        <span class="n">labels</span><span class="o">=</span><span class="n">labels</span><span class="p">,</span>
+        <span class="n">truths</span><span class="o">=</span><span class="n">theta_true</span><span class="p">,</span>
+        <span class="n">quantiles</span><span class="o">=</span><span class="p">[</span><span class="mf">0.16</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.84</span><span class="p">],</span>
+        <span class="n">show_titles</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">title_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;fontsize&quot;</span><span class="p">:</span> <span class="mi">9</span><span class="p">},</span>
+    <span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="s2">&quot;emcee posterior — TRAPPIST-1 stellar parameters&quot;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mf">1.01</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">11</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Install &#39;corner&#39; for a corner plot: pip install corner&quot;</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Posterior summaries (median ± 1-sigma):&quot;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">label</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">labels</span><span class="p">):</span>
+    <span class="n">lo</span><span class="p">,</span> <span class="n">med</span><span class="p">,</span> <span class="n">hi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">flat_samples</span><span class="p">[:,</span> <span class="n">i</span><span class="p">],</span> <span class="p">[</span><span class="mi">16</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">84</span><span class="p">])</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">med</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2"> +</span><span class="si">{</span><span class="n">hi</span><span class="o">-</span><span class="n">med</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2"> -</span><span class="si">{</span><span class="n">med</span><span class="o">-</span><span class="n">lo</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="6.-Option-C-—-Surrogate-MCMC-with-alabi">
+<h3>6. Option C — Surrogate MCMC with <code class="docutils literal notranslate"><span class="pre">alabi</span></code><a class="headerlink" href="#6.-Option-C-—-Surrogate-MCMC-with-alabi" title="Link to this heading"></a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">alabi</span></code> (<strong>A</strong>ctive <strong>L</strong>earning <strong>A</strong>pproach for <strong>B</strong>ayesian <strong>I</strong>nference) accelerates inference by replacing the expensive forward model with a Gaussian Process surrogate trained on a small number of strategically chosen model evaluations.</p>
+</section>
+</section>
+<section id="Installation">
+<h2>Installation<a class="headerlink" href="#Installation" title="Link to this heading"></a></h2>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/jbirky/alabi
+<span class="nb">cd</span><span class="w"> </span>alabi
+pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.
+</pre></div>
+</div>
+</section>
+<section id="Workflow">
+<h2>Workflow<a class="headerlink" href="#Workflow" title="Link to this heading"></a></h2>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Initial samples  →  Fit GP  →  Active learning (BAPE)  →  Dynesty/emcee on surrogate
+</pre></div>
+</div>
+<p>The <strong>BAPE</strong> (Bayesian Active Posterior Estimation) algorithm selects the next point to evaluate by maximising the expected information gain about the posterior, concentrating model evaluations in regions of high posterior probability.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">alabi</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">alabi</span><span class="w"> </span><span class="kn">import</span> <span class="n">SurrogateModel</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">alabi</span><span class="w"> </span><span class="kn">import</span> <span class="n">utility</span> <span class="k">as</span> <span class="n">ut</span>
+    <span class="n">ALABI_AVAILABLE</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;alabi version: </span><span class="si">{</span><span class="n">alabi</span><span class="o">.</span><span class="n">__version__</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="n">ALABI_AVAILABLE</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="nb">print</span><span class="p">(</span>
+        <span class="s2">&quot;alabi is not installed. To install:</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="s2">&quot;  git clone https://github.com/jbirky/alabi</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="s2">&quot;  cd alabi &amp;&amp; pip install -e .</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">The cells below show the alabi workflow but will be skipped.&quot;</span>
+    <span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="6.1-Setting-Up-the-Prior-Sampler-and-Transform">
+<h2>6.1 Setting Up the Prior Sampler and Transform<a class="headerlink" href="#6.1-Setting-Up-the-Prior-Sampler-and-Transform" title="Link to this heading"></a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">alabi</span></code> needs two functions:</p>
+<ul class="simple">
+<li><p><strong>``prior_sampler``</strong>: draws random samples from the prior (for seeding GP training data)</p></li>
+<li><p><strong>``prior_transform``</strong>: maps the unit hypercube to the prior (for dynesty)</p></li>
+</ul>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">ALABI_AVAILABLE</span><span class="p">:</span>
+    <span class="c1"># alabi uses its own prior utilities</span>
+    <span class="c1"># prior_data and bounds must match the parameter ordering of theta</span>
+
+    <span class="c1"># Sampler for drawing training/test points from the prior</span>
+    <span class="n">prior_sampler_alabi</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span>
+        <span class="n">ut</span><span class="o">.</span><span class="n">prior_sampler_normal</span><span class="p">,</span>
+        <span class="n">prior_data</span><span class="o">=</span><span class="n">prior_data</span><span class="p">,</span>
+        <span class="n">bounds</span><span class="o">=</span><span class="n">bounds</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Prior transform for dynesty</span>
+    <span class="n">prior_transform_alabi</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span>
+        <span class="n">ut</span><span class="o">.</span><span class="n">prior_transform_normal</span><span class="p">,</span>
+        <span class="n">bounds</span><span class="o">=</span><span class="n">bounds</span><span class="p">,</span>
+        <span class="n">data</span><span class="o">=</span><span class="n">prior_data</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Log-prior for emcee</span>
+    <span class="n">lnprior_alabi</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span>
+        <span class="n">ut</span><span class="o">.</span><span class="n">lnprior_normal</span><span class="p">,</span>
+        <span class="n">bounds</span><span class="o">=</span><span class="n">bounds</span><span class="p">,</span>
+        <span class="n">data</span><span class="o">=</span><span class="n">prior_data</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Test</span>
+    <span class="n">sample</span> <span class="o">=</span> <span class="n">prior_sampler_alabi</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Three prior samples:&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">sample</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="6.2-Initialising-the-Surrogate-Model">
+<h2>6.2 Initialising the Surrogate Model<a class="headerlink" href="#6.2-Initialising-the-Surrogate-Model" title="Link to this heading"></a></h2>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">ALABI_AVAILABLE</span><span class="p">:</span>
+    <span class="n">SAVEDIR</span> <span class="o">=</span> <span class="s2">&quot;output/alabi_trappist&quot;</span>
+
+    <span class="n">sm</span> <span class="o">=</span> <span class="n">SurrogateModel</span><span class="p">(</span>
+        <span class="n">fn</span><span class="o">=</span><span class="n">lnpost</span><span class="p">,</span>                     <span class="c1"># function to emulate (log-posterior)</span>
+        <span class="n">bounds</span><span class="o">=</span><span class="n">bounds</span><span class="p">,</span>                 <span class="c1"># hard parameter bounds</span>
+        <span class="n">prior_sampler</span><span class="o">=</span><span class="n">prior_sampler_alabi</span><span class="p">,</span>
+        <span class="n">savedir</span><span class="o">=</span><span class="n">SAVEDIR</span><span class="p">,</span>
+        <span class="n">labels</span><span class="o">=</span><span class="n">labels</span><span class="p">,</span>
+        <span class="n">scale</span><span class="o">=</span><span class="s2">&quot;nlog&quot;</span><span class="p">,</span>                  <span class="c1"># nlog = negative log (for a log-posterior)</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Draw initial training and test sets from the prior</span>
+    <span class="n">sm</span><span class="o">.</span><span class="n">init_samples</span><span class="p">(</span><span class="n">ntrain</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">ntest</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">reload</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="c1"># Fit an initial GP to the training data</span>
+    <span class="n">sm</span><span class="o">.</span><span class="n">init_gp</span><span class="p">(</span>
+        <span class="n">kernel</span><span class="o">=</span><span class="s2">&quot;ExpSquaredKernel&quot;</span><span class="p">,</span>
+        <span class="n">fit_amp</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">fit_mean</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">white_noise</span><span class="o">=-</span><span class="mi">15</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Surrogate model initialized.&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Training set size: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">sm</span><span class="o">.</span><span class="n">training_x</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="6.3-Active-Learning">
+<h2>6.3 Active Learning<a class="headerlink" href="#6.3-Active-Learning" title="Link to this heading"></a></h2>
+<p>The surrogate is improved iteratively using the <strong>BAPE</strong> algorithm. Each iteration selects the point with maximum expected information gain, evaluates the true forward model there, and updates the GP.</p>
+<p>For a production run, use <code class="docutils literal notranslate"><span class="pre">niter=500</span></code>; here we use a small number for demonstration.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">ALABI_AVAILABLE</span><span class="p">:</span>
+    <span class="n">sm</span><span class="o">.</span><span class="n">active_train</span><span class="p">(</span>
+        <span class="n">niter</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span>           <span class="c1"># number of active-learning iterations (use 500+ in production)</span>
+        <span class="n">algorithm</span><span class="o">=</span><span class="s2">&quot;bape&quot;</span><span class="p">,</span>  <span class="c1"># Bayesian Active Posterior Estimation</span>
+        <span class="n">gp_opt_freq</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>    <span class="c1"># re-optimise GP hyperparameters every 10 iterations</span>
+        <span class="n">save_progress</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Plot GP diagnostics (training set, test predictions, residuals)</span>
+    <span class="n">sm</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">plots</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;gp_all&quot;</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="6.4-MCMC-on-the-Surrogate">
+<h2>6.4 MCMC on the Surrogate<a class="headerlink" href="#6.4-MCMC-on-the-Surrogate" title="Link to this heading"></a></h2>
+<p>Once the surrogate is trained, we run <code class="docutils literal notranslate"><span class="pre">dynesty</span></code> on the <strong>GP emulator</strong> instead of the expensive forward model. This is orders of magnitude faster.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">ALABI_AVAILABLE</span><span class="p">:</span>
+    <span class="c1"># Static nested sampling on the GP surrogate</span>
+    <span class="n">sm</span><span class="o">.</span><span class="n">run_dynesty</span><span class="p">(</span>
+        <span class="n">ptform</span><span class="o">=</span><span class="n">prior_transform_alabi</span><span class="p">,</span>
+        <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;static&quot;</span><span class="p">,</span>
+        <span class="n">multi_proc</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">save_iter</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Plot corner plot and run statistics</span>
+    <span class="n">sm</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">plots</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;dynesty_all&quot;</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">ALABI_AVAILABLE</span><span class="p">:</span>
+    <span class="c1"># You can also run emcee on the surrogate for a different sampling approach</span>
+    <span class="n">sm</span><span class="o">.</span><span class="n">run_emcee</span><span class="p">(</span>
+        <span class="n">lnprior</span><span class="o">=</span><span class="n">lnprior_alabi</span><span class="p">,</span>
+        <span class="n">nwalkers</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span>
+        <span class="n">nsteps</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span>    <span class="c1"># surrogate calls are fast, so we can afford many steps</span>
+        <span class="n">opt_init</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">sm</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">plots</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;emcee_corner&quot;</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="6.5-Reloading-a-Saved-Model">
+<h2>6.5 Reloading a Saved Model<a class="headerlink" href="#6.5-Reloading-a-Saved-Model" title="Link to this heading"></a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">alabi</span></code> automatically saves the training set and GP model to <code class="docutils literal notranslate"><span class="pre">savedir</span></code> at each iteration. You can reload a completed run without re-training:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">ALABI_AVAILABLE</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">SAVEDIR</span><span class="p">):</span>
+    <span class="n">sm_reload</span> <span class="o">=</span> <span class="n">alabi</span><span class="o">.</span><span class="n">cache_utils</span><span class="o">.</span><span class="n">load_model_cache</span><span class="p">(</span><span class="n">SAVEDIR</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Reloaded model from </span><span class="si">{</span><span class="n">SAVEDIR</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Training set size: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">sm_reload</span><span class="o">.</span><span class="n">training_x</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<section id="Summary">
+<h3>Summary<a class="headerlink" href="#Summary" title="Link to this heading"></a></h3>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Task</p></th>
+<th class="head"><p>Code</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Define custom likelihood</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">def</span> <span class="pre">lnlike(theta):</span> <span class="pre">out</span> <span class="pre">=</span> <span class="pre">vpm.run_model(theta);</span> <span class="pre">return</span> <span class="pre">-0.5</span> <span class="pre">*</span> <span class="pre">chi2</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>Combine with prior</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">def</span> <span class="pre">lnpost(theta):</span> <span class="pre">return</span> <span class="pre">lnlike(theta)</span> <span class="pre">+</span> <span class="pre">lnprior(theta)</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>Run <code class="docutils literal notranslate"><span class="pre">dynesty</span></code> (direct)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">NestedSampler(lnlike,</span> <span class="pre">prior_transform,</span> <span class="pre">ndim).run_nested()</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>Run <code class="docutils literal notranslate"><span class="pre">emcee</span></code> (direct)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">EnsembleSampler(nwalk,</span> <span class="pre">ndim,</span> <span class="pre">lnpost,</span> <span class="pre">pool=pool).run_mcmc(init,</span> <span class="pre">nsteps)</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>Run <code class="docutils literal notranslate"><span class="pre">alabi</span></code> surrogate</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">SurrogateModel(fn=lnpost,</span> <span class="pre">...).init_samples().init_gp().active_train()</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>MCMC on surrogate</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">sm.run_dynesty(ptform=...)</span></code> or <code class="docutils literal notranslate"><span class="pre">sm.run_emcee(lnprior=...)</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>Reload saved run</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">alabi.cache_utils.load_model_cache(savedir)</span></code></p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Key takeaways:</strong></p>
+<ul class="simple">
+<li><p>Write your own <code class="docutils literal notranslate"><span class="pre">lnlike</span></code> to handle any transformation of model outputs to observables</p></li>
+<li><p>Always guard against failed model runs (<code class="docutils literal notranslate"><span class="pre">try/except</span></code>, finite checks)</p></li>
+<li><p>For slow models, <code class="docutils literal notranslate"><span class="pre">alabi</span></code> active learning dramatically reduces the number of VPLanet calls needed</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">alabi</span></code> is model-agnostic — the same <code class="docutils literal notranslate"><span class="pre">SurrogateModel</span></code> interface works with any Python callable</p></li>
+</ul>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="02_sensitivity_analysis.html" class="btn btn-neutral float-left" title="Global Sensitivity Analysis with vplanet_inference" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../api.html" class="btn btn-neutral float-right" title="API Reference" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Jessica Birky.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

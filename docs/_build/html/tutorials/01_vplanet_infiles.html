@@ -1,0 +1,1201 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Setting Up and Running VPLanet Models &mdash; vplanet_inference 0.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=a6a68382" />
+      <link rel="stylesheet" type="text/css" href="../_static/fonts.css?v=5583d106" />
+      <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=d45e8c67"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Global Sensitivity Analysis with vplanet_inference" href="02_sensitivity_analysis.html" />
+    <link rel="prev" title="Tutorial Overview" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            vplanet_inference
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quickstart.html">Quickstart</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="index.html">Tutorial Overview</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Setting Up and Running VPLanet Models</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#1.-VPLanet-Input-Files:-The-Manual-Way">1. VPLanet Input Files: The Manual Way</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#1.1-The-Primary-Input-File-(vpl.in)">1.1 The Primary Input File (<code class="docutils literal notranslate"><span class="pre">vpl.in</span></code>)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#1.2-Body-Files-(star.in)">1.2 Body Files (<code class="docutils literal notranslate"><span class="pre">star.in</span></code>)</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#The-saOutputOrder-option">The <code class="docutils literal notranslate"><span class="pre">saOutputOrder</span></code> option</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#2.-Running-VPLanet-from-the-Command-Line">2. Running VPLanet from the Command Line</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#3.-Understanding-VPLanet-Output-Files">3. Understanding VPLanet Output Files</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#3.1-The-Log-File">3.1 The Log File</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#3.2-The-Forward-File">3.2 The Forward File</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#4.-Running-the-Same-Model-Through-vplanet_inference">4. Running the Same Model Through <code class="docutils literal notranslate"><span class="pre">vplanet_inference</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#4.1-Declaring-Input-Parameters-(inparams)">4.1 Declaring Input Parameters (<code class="docutils literal notranslate"><span class="pre">inparams</span></code>)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#4.2-Declaring-Output-Parameters-(outparams)">4.2 Declaring Output Parameters (<code class="docutils literal notranslate"><span class="pre">outparams</span></code>)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#4.3-Running-a-Single-Model">4.3 Running a Single Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#4.4-Varying-Input-Parameters">4.4 Varying Input Parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#4.5-Tracking-Time-Evolution">4.5 Tracking Time Evolution</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#Summary">Summary</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="02_sensitivity_analysis.html">Global Sensitivity Analysis with <code class="docutils literal notranslate"><span class="pre">vplanet_inference</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="03_mcmc_custom_likelihood.html">MCMC with VPLanet and <code class="docutils literal notranslate"><span class="pre">alabi</span></code></a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../api.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">vplanet_inference</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Setting Up and Running VPLanet Models</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/tutorials/01_vplanet_infiles.ipynb.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="Setting-Up-and-Running-VPLanet-Models">
+<h1>Setting Up and Running VPLanet Models<a class="headerlink" href="#Setting-Up-and-Running-VPLanet-Models" title="Link to this heading"></a></h1>
+<p>This tutorial walks through the full workflow for running a VPLanet stellar evolution simulation:</p>
+<ol class="arabic simple">
+<li><p><strong>Understanding VPLanet input files</strong> — the primary control file (<code class="docutils literal notranslate"><span class="pre">vpl.in</span></code>) and body files (<code class="docutils literal notranslate"><span class="pre">star.in</span></code>)</p></li>
+<li><p><strong>Running VPLanet from the command line</strong> — a minimal working example using the <code class="docutils literal notranslate"><span class="pre">stellar</span></code> module</p></li>
+<li><p><strong>Reading VPLanet output files</strong> — the log file and time-series forward file</p></li>
+<li><p><strong>Running the same model through ``vplanet_inference``</strong> — a Python interface with unit-aware parameter substitution</p></li>
+</ol>
+<p>The example models a low-mass star (0.09 M☉, similar in mass to TRAPPIST-1) and tracks how its luminosity, XUV luminosity, radius, effective temperature, and rotation period evolve over 8 Gyr.</p>
+<hr class="docutils" />
+<p><strong>References:</strong></p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://virtualplanetarylaboratory.github.io/vplanet/">VPLanet documentation</a></p></li>
+<li><p><a class="reference external" href="https://github.com/VirtualPlanetaryLaboratory/vplanet">VPLanet GitHub repository</a></p></li>
+<li><p><a class="reference external" href="https://github.com/jbirky/vplanet_inference">vplanet_inference GitHub repository</a></p></li>
+</ul>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">vplanet_inference</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">vpi</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">astropy.units</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">u</span>
+
+<span class="c1"># vpi.INFILE_DIR points to the bundled template infile directory</span>
+<span class="n">INFILE_PATH</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">vpi</span><span class="o">.</span><span class="n">INFILE_DIR</span><span class="p">,</span> <span class="s2">&quot;stellar/&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Infile directory: </span><span class="si">{</span><span class="n">INFILE_PATH</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Infile directory: /home/jbirky/Tresorit/packages/vplanet_inference/infiles/stellar/
+</pre></div></div>
+</div>
+<section id="1.-VPLanet-Input-Files:-The-Manual-Way">
+<h2>1. VPLanet Input Files: The Manual Way<a class="headerlink" href="#1.-VPLanet-Input-Files:-The-Manual-Way" title="Link to this heading"></a></h2>
+<p>A VPLanet simulation requires at minimum two types of input files:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>File</p></th>
+<th class="head"><p>Purpose</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><strong>``vpl.in``</strong></p></td>
+<td><p>Primary control file — system-level settings (units, timing, bodies, output)</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>``&lt;body&gt;.in``</strong></p></td>
+<td><p>One file per body — physics modules, initial conditions, and body-level parameters</p></td>
+</tr>
+</tbody>
+</table>
+<p>VPLanet uses a consistent <strong>option naming convention</strong> based on the leading character(s) of each option name:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Prefix</p></th>
+<th class="head"><p>Data type</p></th>
+<th class="head"><p>Example</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">b</span></code></p></td>
+<td><p>Boolean (0 or 1)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">bDoForward</span> <span class="pre">1</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">i</span></code></p></td>
+<td><p>Integer</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">iVerbose</span> <span class="pre">0</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">d</span></code></p></td>
+<td><p>Double (float)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">dMass</span> <span class="pre">0.09</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">s</span></code></p></td>
+<td><p>String</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">sStellarModel</span> <span class="pre">baraffe</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">sa</span></code></p></td>
+<td><p>String array (multiple values)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">saBodyFiles</span> <span class="pre">star.in</span> <span class="pre">planet.in</span></code></p></td>
+</tr>
+</tbody>
+</table>
+<p>Everything after a <code class="docutils literal notranslate"><span class="pre">#</span></code> on a line is a comment and is ignored by the parser. Option names are case-sensitive and must be spelled exactly as documented.</p>
+<p>See the <a class="reference external" href="https://virtualplanetarylaboratory.github.io/vplanet/options.html">VPLanet input options reference</a> for a complete listing of all available parameters.</p>
+<section id="1.1-The-Primary-Input-File-(vpl.in)">
+<h3>1.1 The Primary Input File (<code class="docutils literal notranslate"><span class="pre">vpl.in</span></code>)<a class="headerlink" href="#1.1-The-Primary-Input-File-(vpl.in)" title="Link to this heading"></a></h3>
+<p>The primary file sets system-wide options and lists the body files to load. It must always be named <strong>``vpl.in``</strong> and be present in the simulation directory.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">INFILE_PATH</span><span class="p">,</span> <span class="s2">&quot;vpl.in&quot;</span><span class="p">))</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+# Primary input file for Trappist system
+sSystemName     Trappist                        # System Name
+iVerbose        0                       # Verbosity level
+bOverwrite      1                       # Allow file overwrites?
+
+# All space after a # is ignored, as is white space
+# The first lowercase letter(s) denote the cast: b=boolean, i=int, d=double,
+# s=string. An &#34;a&#34; indicates an array and multiple arguments are allowed/expected.
+
+# List of &#34;body files&#34; that contain body-specific parameters
+saBodyFiles     star.in # The host star
+
+# Array options can continue to the next line with a terminating &#34;$&#34;. The $ can be
+# at the end of the string or not. Comments are allowed afterwards.
+
+# Input/Output Units
+sUnitMass       solar           # Options: gram, kg, Earth, Neptune, Jupiter, solar
+sUnitLength     aU              # Options: cm, m, km, Earth, Jupiter, solar, AU
+sUnitTime       YEAR            # Options: sec, day, year, Myr, Gyr
+sUnitAngle      d               # Options: deg, rad
+sUnitTemp       K
+
+# Units specified in the primary input file are propagated into the bodies. Otherwise
+# specifiy units on a per body basis in the body files.
+# Most string arguments can be in any case and need only be unambiguous.
+
+# Input/Output
+bDoLog          1               # Write a log file?
+iDigits         6               # Maximum number of digits to right of decimal
+dMinValue       1e-10           # Minimum value of eccentricity/obliquity
+
+# Option names must be exact in spelling and case.
+
+# Evolution Parameters
+bDoForward      1               # Perform a forward evolution?
+bVarDt          1               # Use variable timestepping?
+dEta            1.0e-2          # Coefficient for variable timestepping
+dStopTime       8.0e9           # Stop time for evolution
+dOutputTime     1.0e7           # Output timesteps (assuming in body files)
+
+# Some options are only permitted in the primary file, some are forbidden.
+# That should really be documented!
+
+</pre></div></div>
+</div>
+<p><strong>Key options explained:</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Option</p></th>
+<th class="head"><p>Value</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">sSystemName</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">Trappist</span></code></p></td>
+<td><p>Prefix for all output files (e.g. <code class="docutils literal notranslate"><span class="pre">Trappist.log</span></code>, <code class="docutils literal notranslate"><span class="pre">Trappist.star.forward</span></code>)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">iVerbose</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">0</span></code></p></td>
+<td><p>Verbosity level printed to terminal (0 = silent, 5 = maximum)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">bOverwrite</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">1</span></code></p></td>
+<td><p>Allow output files to be overwritten on re-runs</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">saBodyFiles</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">star.in</span></code></p></td>
+<td><p>Space-separated list of body input files to load</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">sUnitMass</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">solar</span></code></p></td>
+<td><p>Mass unit for input/output (<code class="docutils literal notranslate"><span class="pre">gram</span></code>, <code class="docutils literal notranslate"><span class="pre">kg</span></code>, <code class="docutils literal notranslate"><span class="pre">Earth</span></code>, <code class="docutils literal notranslate"><span class="pre">Neptune</span></code>, <code class="docutils literal notranslate"><span class="pre">Jupiter</span></code>, <code class="docutils literal notranslate"><span class="pre">solar</span></code>)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">sUnitLength</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">AU</span></code></p></td>
+<td><p>Length unit (<code class="docutils literal notranslate"><span class="pre">cm</span></code>, <code class="docutils literal notranslate"><span class="pre">m</span></code>, <code class="docutils literal notranslate"><span class="pre">km</span></code>, <code class="docutils literal notranslate"><span class="pre">Earth</span></code>, <code class="docutils literal notranslate"><span class="pre">Jupiter</span></code>, <code class="docutils literal notranslate"><span class="pre">solar</span></code>, <code class="docutils literal notranslate"><span class="pre">AU</span></code>)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">sUnitTime</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">YEAR</span></code></p></td>
+<td><p>Time unit (<code class="docutils literal notranslate"><span class="pre">sec</span></code>, <code class="docutils literal notranslate"><span class="pre">day</span></code>, <code class="docutils literal notranslate"><span class="pre">year</span></code>, <code class="docutils literal notranslate"><span class="pre">Myr</span></code>, <code class="docutils literal notranslate"><span class="pre">Gyr</span></code>)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">sUnitAngle</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">d</span></code></p></td>
+<td><p>Angle unit (<code class="docutils literal notranslate"><span class="pre">d</span></code> = degrees, <code class="docutils literal notranslate"><span class="pre">rad</span></code> = radians)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">bDoLog</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">1</span></code></p></td>
+<td><p>Write a <code class="docutils literal notranslate"><span class="pre">.log</span></code> file summarising initial and final state</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">bDoForward</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">1</span></code></p></td>
+<td><p>Run the simulation forward in time</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">bVarDt</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">1</span></code></p></td>
+<td><p>Use adaptive (variable) timestepping</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">dEta</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">1e-2</span></code></p></td>
+<td><p>Coefficient controlling adaptive timestep size (smaller = more accurate, slower)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">dStopTime</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">8e9</span></code></p></td>
+<td><p>Simulation end time in <code class="docutils literal notranslate"><span class="pre">sUnitTime</span></code> units (here: 8 Gyr)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">dOutputTime</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">1e7</span></code></p></td>
+<td><p>Interval at which time-series data are written (here: every 10 Myr)</p></td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<div><p><strong>VPLanet docs:</strong> <a class="reference external" href="https://virtualplanetarylaboratory.github.io/vplanet/options.html#primary-input-file">Primary input file options</a></p>
+</div></blockquote>
+</section>
+<section id="1.2-Body-Files-(star.in)">
+<h3>1.2 Body Files (<code class="docutils literal notranslate"><span class="pre">star.in</span></code>)<a class="headerlink" href="#1.2-Body-Files-(star.in)" title="Link to this heading"></a></h3>
+<p>Each body in the simulation — star, planet, or moon — has its own <code class="docutils literal notranslate"><span class="pre">.in</span></code> file. The <strong>``saModules``</strong> option activates the VPLanet physics modules for that body; each module introduces additional parameters specific to that physics.</p>
+<p>Here we use the <code class="docutils literal notranslate"><span class="pre">stellar</span></code> module, which models stellar evolution using the <a class="reference external" href="https://doi.org/10.1051/0004-6361/201425481">Baraffe et al. (2015)</a> pre-main-sequence grids and the <a class="reference external" href="https://doi.org/10.1088/2041-8205/799/2/L23">Matt et al. (2015)</a> magnetic braking prescription.</p>
+<p>See the <a class="reference external" href="https://virtualplanetarylaboratory.github.io/vplanet/modules.html">VPLanet modules reference</a> for the full list of available modules and their options.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">INFILE_PATH</span><span class="p">,</span> <span class="s2">&quot;star.in&quot;</span><span class="p">))</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+# Host star parameters
+sName           star                  # Body name
+saModules       stellar               # Active modules
+
+# Physical properties
+dMass           0.09                  # Mass in Msun
+dRotPeriod      -1.0                  # Rotation period, negative -&gt; days
+dAge            1.0e6                 # Initial age [yr]
+
+# STELLAR parameters
+sStellarModel     baraffe             # Stellar evolution model
+bHaltEndBaraffeGrid 0                 # Don&#39;t end sim when we reach end of grid
+sMagBrakingModel  matt                # Magnetic braking model
+dSatXUVFrac       1.0e-3              # XUV Saturation fraction
+dSatXUVTime       -1.0                # XUV Saturation timescale, negative-&gt; in Gyr
+dXUVBeta          1.23                # XUV decay power law exponent
+
+saOutputOrder   Time -Luminosity -LXUVStellar -Radius Temperature -RotPer # Outputs
+
+</pre></div></div>
+</div>
+<p><strong>Key options explained:</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Option</p></th>
+<th class="head"><p>Value</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">sName</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">star</span></code></p></td>
+<td><p>Name of this body; must match the filename without <code class="docutils literal notranslate"><span class="pre">.in</span></code>. Used to label output files</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">saModules</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">stellar</span></code></p></td>
+<td><p>Physics modules active for this body</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">dMass</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">0.09</span></code></p></td>
+<td><p>Stellar mass in <code class="docutils literal notranslate"><span class="pre">sUnitMass</span></code> units (here: 0.09 M☉)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">dRotPeriod</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">-1.0</span></code></p></td>
+<td><p>Initial rotation period. <strong>Negative value</strong> → units are days regardless of <code class="docutils literal notranslate"><span class="pre">sUnitTime</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">dAge</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">1e6</span></code></p></td>
+<td><p>Starting age in <code class="docutils literal notranslate"><span class="pre">sUnitTime</span></code> (here: 1 Myr — the simulation starts at this age)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">sStellarModel</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">baraffe</span></code></p></td>
+<td><p>Stellar evolution grid (<code class="docutils literal notranslate"><span class="pre">baraffe</span></code>, <code class="docutils literal notranslate"><span class="pre">solar</span></code>, <code class="docutils literal notranslate"><span class="pre">proxima</span></code>, <code class="docutils literal notranslate"><span class="pre">none</span></code>)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">sMagBrakingModel</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">matt</span></code></p></td>
+<td><p>Magnetic braking prescription (<code class="docutils literal notranslate"><span class="pre">matt</span></code>, <code class="docutils literal notranslate"><span class="pre">reiners</span></code>, <code class="docutils literal notranslate"><span class="pre">skumanich</span></code>, <code class="docutils literal notranslate"><span class="pre">none</span></code>)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">dSatXUVFrac</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">1e-3</span></code></p></td>
+<td><p>XUV saturation luminosity as a fraction of bolometric luminosity</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">dSatXUVTime</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">-1.0</span></code></p></td>
+<td><p>XUV saturation timescale. <strong>Negative value</strong> → units are Gyr</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">dXUVBeta</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">1.23</span></code></p></td>
+<td><p>Power-law exponent for XUV decay after saturation</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">saOutputOrder</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">Time</span> <span class="pre">-Luminosity</span> <span class="pre">...</span></code></p></td>
+<td><p>Variables written to the time-series <code class="docutils literal notranslate"><span class="pre">.forward</span></code> file</p></td>
+</tr>
+</tbody>
+</table>
+<section id="The-saOutputOrder-option">
+<h4>The <code class="docutils literal notranslate"><span class="pre">saOutputOrder</span></code> option<a class="headerlink" href="#The-saOutputOrder-option" title="Link to this heading"></a></h4>
+<p>This controls what columns appear in the <code class="docutils literal notranslate"><span class="pre">.forward</span></code> output file. A <strong>negative sign prefix</strong> (<code class="docutils literal notranslate"><span class="pre">-Luminosity</span></code>) instructs VPLanet to output that quantity in custom units rather than the system-wide units set in <code class="docutils literal notranslate"><span class="pre">vpl.in</span></code>:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>saOutputOrder   Time -Luminosity -LXUVStellar -Radius Temperature -RotPer
+</pre></div>
+</div>
+<p>The actual units used for each column are reported in the log file’s <code class="docutils literal notranslate"><span class="pre">Output</span> <span class="pre">Order:</span></code> line.</p>
+<p>To check what the custom units are for a vplanet output, run the following line in the command line:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>vplanet<span class="w"> </span>-h
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+<section id="2.-Running-VPLanet-from-the-Command-Line">
+<h2>2. Running VPLanet from the Command Line<a class="headerlink" href="#2.-Running-VPLanet-from-the-Command-Line" title="Link to this heading"></a></h2>
+<p>Once <code class="docutils literal notranslate"><span class="pre">vpl.in</span></code> and the body files are in place, run the simulation by navigating to the infile directory and calling:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>/path/to/infiles/stellar/
+vplanet<span class="w"> </span>vpl.in
+</pre></div>
+</div>
+<p>The argument <code class="docutils literal notranslate"><span class="pre">vpl.in</span></code> is required — it tells VPLanet which primary input file to use. From this notebook, we can do the same thing with <code class="docutils literal notranslate"><span class="pre">subprocess</span></code>:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">result</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+    <span class="p">[</span><span class="s2">&quot;vplanet&quot;</span><span class="p">,</span> <span class="s2">&quot;vpl.in&quot;</span><span class="p">],</span>
+    <span class="n">cwd</span><span class="o">=</span><span class="n">INFILE_PATH</span><span class="p">,</span>
+    <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">text</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">returncode</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;VPLanet finished successfully.&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">stdout</span> <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">stdout</span> <span class="k">else</span> <span class="s2">&quot;(no terminal output — iVerbose is set to 0)&quot;</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;VPLanet encountered an error:&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+VPLanet finished successfully.
+(no terminal output — iVerbose is set to 0)
+</pre></div></div>
+</div>
+<p>With <code class="docutils literal notranslate"><span class="pre">iVerbose</span> <span class="pre">0</span></code>, VPLanet produces no terminal output on a successful run. Setting <code class="docutils literal notranslate"><span class="pre">iVerbose</span> <span class="pre">5</span></code> in <code class="docutils literal notranslate"><span class="pre">vpl.in</span></code> will print detailed progress messages.</p>
+<p>All simulation output is written to files — described in the next section.</p>
+</section>
+<section id="3.-Understanding-VPLanet-Output-Files">
+<h2>3. Understanding VPLanet Output Files<a class="headerlink" href="#3.-Understanding-VPLanet-Output-Files" title="Link to this heading"></a></h2>
+<p>After a successful run, VPLanet creates the following output files in the simulation directory. The filenames are prefixed with <code class="docutils literal notranslate"><span class="pre">sSystemName</span></code> (here: <code class="docutils literal notranslate"><span class="pre">Trappist</span></code>):</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>File</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">Trappist.log</span></code></p></td>
+<td><p>Human-readable log with the initial and final state of every quantity, in SI units</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">Trappist.star.forward</span></code></p></td>
+<td><p>Time-series data for the <code class="docutils literal notranslate"><span class="pre">star</span></code> body (columns defined by <code class="docutils literal notranslate"><span class="pre">saOutputOrder</span></code>)</p></td>
+</tr>
+</tbody>
+</table>
+<p>If you had multiple bodies (e.g. a planet named <code class="docutils literal notranslate"><span class="pre">planet</span></code>), there would be a separate <code class="docutils literal notranslate"><span class="pre">Trappist.planet.forward</span></code> file for each one.</p>
+<section id="3.1-The-Log-File">
+<h3>3.1 The Log File<a class="headerlink" href="#3.1-The-Log-File" title="Link to this heading"></a></h3>
+<p>The log file (<code class="docutils literal notranslate"><span class="pre">Trappist.log</span></code>) is written in SI units regardless of the <code class="docutils literal notranslate"><span class="pre">sUnitMass</span></code>/<code class="docutils literal notranslate"><span class="pre">sUnitLength</span></code>/<code class="docutils literal notranslate"><span class="pre">sUnitTime</span></code> settings in <code class="docutils literal notranslate"><span class="pre">vpl.in</span></code>. It is divided into four sections:</p>
+<ol class="arabic simple">
+<li><p><strong>Header</strong> — executable path, VPLanet version, input files used, and internal unit system</p></li>
+<li><p><strong>Formatting</strong> — integration method, timestep information</p></li>
+<li><p><strong>Initial system properties</strong> — complete state of every body at <code class="docutils literal notranslate"><span class="pre">t</span> <span class="pre">=</span> <span class="pre">dAge</span></code></p></li>
+<li><p><strong>Final system properties</strong> — complete state of every body at <code class="docutils literal notranslate"><span class="pre">t</span> <span class="pre">=</span> <span class="pre">dAge</span> <span class="pre">+</span> <span class="pre">dStopTime</span></code></p></li>
+</ol>
+<p>The log file is the most reliable place to read initial and final values for any quantity, including quantities not listed in <code class="docutils literal notranslate"><span class="pre">saOutputOrder</span></code>. The <code class="docutils literal notranslate"><span class="pre">Output</span> <span class="pre">Order:</span></code> line near the end of each body’s section also confirms the column order and units of the <code class="docutils literal notranslate"><span class="pre">.forward</span></code> file.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">log_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">INFILE_PATH</span><span class="p">,</span> <span class="s2">&quot;Trappist.log&quot;</span><span class="p">)</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">log_path</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+-------- Log file Trappist.log -------
+
+Executable: /home/jbirky/anaconda3/envs/vpi/bin/vplanet
+Version: Unknown
+System Name: Trappist
+Primary Input File: vpl.in
+Body File #1: star.in
+Allow files to be overwitten: Yes
+Mass Units: Grams
+Length Units: Meters
+Time Units: Seconds
+Angle Units: Radians
+
+------- FORMATTING -----
+Verbosity Level: 0
+Crossover Decade for Scientific Notation: 4
+Number of Digits After Decimal: 6
+Integration Method: Runge-Kutta4
+Direction: Forward
+Time Step: 3.155760e+07
+Stop Time: 2.524608e+17
+Output Interval: 3.155760e+14
+Use Variable Timestep: Yes
+dEta: 0.010000
+Minimum Value of ecc and obl: 1.000000e-10
+
+
+---- INITIAL SYSTEM PROPERTIES ----
+(Age) System Age [sec]: 3.155760e+13
+(Time) Simulation Time [sec]: 0.000000
+(TotAngMom) Total Angular Momentum [kg*m^2/sec]: 1.149304e+42
+(TotEnergy) Total System Energy [kg*m^2/sec^2]: -1.877809e+39
+(PotEnergy) Body&#39;s non-orbital Potential Energy [kg*m^2/sec^2]: -1.919599e+39
+(KinEnergy) Body&#39;s non-orbital Kinetic Energy [kg*m^2/sec^2]: 4.178988e+37
+(DeltaTime) Average Timestep Over Last Output Interval [sec]: 0.000000
+
+----- BODY: star ----
+Active Modules: STELLAR
+Module Bit Sum: 65
+Color: 000000
+(Mass) Mass [kg]: 1.789574e+29
+(Radius) Radius [Rearth]: 104.749856
+(RadGyra) Radius of Gyration/Moment of Inertia Constant []: 0.444800
+(RotAngMom) Rotational Angular Momentum [kg*m^2/sec]: 1.149304e+42
+(RotVel) Rotational Velocity [m/sec]: 4.858597e+04
+(BodyType) Type of Body (0 == planet) []: 0.000000
+(RotRate) Rotational Frequency [/sec]: 7.272205e-05
+(RotPer) Rotational Period [days]: 1.000000
+(Density) Average Density [kg/m^3]: 143.260634
+(HZLimitDryRunaway) Semi-major axis of Dry Runaway HZ Limit [m]: 3.305062e+10
+(HZLimRecVenus) Recent Venus HZ Limit [m]: 2.977014e+10
+(HZLimRunaway) Runaway Greenhouse HZ Limit [m]: 3.916594e+10
+(HZLimMoistGreenhouse) Moist Greenhouse HZ Limit [m]: 3.939084e+10
+(HZLimMaxGreenhouse) Maximum Greenhouse HZ Limit [m]: 7.572440e+10
+(HZLimEarlyMars) Early Mars HZ Limit [m]: 8.258537e+10
+(Instellation) Orbit-averaged INcident STELLar radiATION [kg/sec^3]: -1.000000
+(CriticalSemiMajorAxis) Holman &amp; Wiegert (1999) P-type Critical Semi-major Axis [m]: -1.000000
+(LXUVTot) Total XUV Luminosity [kg/sec^3]: 2.278648e+22
+(LostEnergy) Body&#39;s Total Lost Energy [kg*m^2/sec^2]: 5.562685e-309
+(LostAngMom) Lost Angular Momentum due to Magnetic Braking [kg*m^2/sec]: 5.562685e-309
+(EscapeVelocity) Escape Velocity [m/sec]: 1.890905e+05
+----- STELLAR PARAMETERS (star)------
+(Luminosity) Luminosity [LSUN]: 0.059247
+(LXUVStellar) Base X-ray/XUV Luminosity [LSUN]: 5.924722e-05
+(Temperature) Effective Temperature [K]: 2907.334487
+(LXUVFrac) Fraction of luminosity in XUV []: 0.001000
+(RossbyNumber) Rossby Number []: 0.014106
+(DRotPerDtStellar) Time Rate of Change of Rotation Period in STELLAR []: -8.292795e-11
+(WindTorque) Stellar Wind Torque []: 4.662997e+26
+
+Output Order: Time[year] Luminosity[LSUN] LXUVStellar[LSUN] Radius[Rearth] Temperature[K] RotPer[days]
+Grid Output Order:
+
+
+
+---- FINAL SYSTEM PROPERTIES ----
+(Age) System Age [sec]: 2.524924e+17
+(Time) Simulation Time [sec]: 2.524608e+17
+(TotAngMom) Total Angular Momentum [kg*m^2/sec]: 1.123683e+42
+(TotEnergy) Total System Energy [kg*m^2/sec^2]: -1.904483e+39
+(PotEnergy) Body&#39;s non-orbital Potential Energy [kg*m^2/sec^2]: -1.631379e+40
+(KinEnergy) Body&#39;s non-orbital Kinetic Energy [kg*m^2/sec^2]: 3.864917e+32
+(DeltaTime) Average Timestep Over Last Output Interval [sec]: 3.155760e+14
+
+----- BODY: star ----
+Active Modules: STELLAR
+Module Bit Sum: 65
+Color: 000000
+(Mass) Mass [kg]: 1.789574e+29
+(Radius) Radius [Rearth]: 12.325630
+(RadGyra) Radius of Gyration/Moment of Inertia Constant []: 0.465000
+(RotAngMom) Rotational Angular Momentum [kg*m^2/sec]: 4.299455e+38
+(RotVel) Rotational Velocity [m/sec]: 141.337450
+(BodyType) Type of Body (0 == planet) []: 0.000000
+(RotRate) Rotational Frequency [/sec]: 1.797864e-06
+(RotPer) Rotational Period [days]: 40.449143
+(Density) Average Density [kg/m^3]: 8.793460e+04
+(HZLimitDryRunaway) Semi-major axis of Dry Runaway HZ Limit [m]: 3.208822e+09
+(HZLimRecVenus) Recent Venus HZ Limit [m]: 2.902371e+09
+(HZLimRunaway) Runaway Greenhouse HZ Limit [m]: 3.813333e+09
+(HZLimMoistGreenhouse) Moist Greenhouse HZ Limit [m]: 3.840324e+09
+(HZLimMaxGreenhouse) Maximum Greenhouse HZ Limit [m]: 7.457113e+09
+(HZLimEarlyMars) Early Mars HZ Limit [m]: 8.132979e+09
+(Instellation) Orbit-averaged INcident STELLar radiATION [kg/sec^3]: -1.000000
+(CriticalSemiMajorAxis) Holman &amp; Wiegert (1999) P-type Critical Semi-major Axis [m]: -1.000000
+(LXUVTot) Total XUV Luminosity [kg/sec^3]: 1.663956e+19
+(LostEnergy) Body&#39;s Total Lost Energy [kg*m^2/sec^2]: 1.440930e+40
+(LostAngMom) Lost Angular Momentum due to Magnetic Braking [kg*m^2/sec]: 1.123253e+42
+(EscapeVelocity) Escape Velocity [m/sec]: 5.512414e+05
+----- STELLAR PARAMETERS (star)------
+(Luminosity) Luminosity [LSUN]: 0.000558
+(LXUVStellar) Base X-ray/XUV Luminosity [LSUN]: 4.326459e-08
+(Temperature) Effective Temperature [K]: 2645.001971
+(LXUVFrac) Fraction of luminosity in XUV []: 7.746982e-05
+(RossbyNumber) Rossby Number []: 0.498844
+(DRotPerDtStellar) Time Rate of Change of Rotation Period in STELLAR []: 2.326653e-11
+(WindTorque) Stellar Wind Torque []: 2.862345e+21
+
+Output Order: Time[year] Luminosity[LSUN] LXUVStellar[LSUN] Radius[Rearth] Temperature[K] RotPer[days]
+Grid Output Order:
+
+</pre></div></div>
+</div>
+</section>
+<section id="3.2-The-Forward-File">
+<h3>3.2 The Forward File<a class="headerlink" href="#3.2-The-Forward-File" title="Link to this heading"></a></h3>
+<p>The forward file (<code class="docutils literal notranslate"><span class="pre">Trappist.star.forward</span></code>) contains one row per output timestep (<code class="docutils literal notranslate"><span class="pre">dOutputTime</span></code>), with columns corresponding to the variables in <code class="docutils literal notranslate"><span class="pre">saOutputOrder</span></code>.</p>
+<p>For this example:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>saOutputOrder   Time -Luminosity -LXUVStellar -Radius Temperature -RotPer
+</pre></div>
+</div>
+<p>The actual units for each column are confirmed in the log file:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Output Order: Time[year] Luminosity[LSUN] LXUVStellar[LSUN] Radius[Rearth] Temperature[K] RotPer[days]
+</pre></div>
+</div>
+<p>The file is plain whitespace-delimited ASCII — easy to read with <code class="docutils literal notranslate"><span class="pre">numpy.loadtxt</span></code>.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">forward_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">INFILE_PATH</span><span class="p">,</span> <span class="s2">&quot;Trappist.star.forward&quot;</span><span class="p">)</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="n">forward_path</span><span class="p">)</span>
+
+<span class="c1"># Assign columns based on the Output Order line from the log file</span>
+<span class="n">time_yr</span>     <span class="o">=</span> <span class="n">data</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>   <span class="c1"># Time [yr]</span>
+<span class="n">luminosity</span>  <span class="o">=</span> <span class="n">data</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>   <span class="c1"># Luminosity [L_sun]</span>
+<span class="n">lxuv</span>        <span class="o">=</span> <span class="n">data</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span>   <span class="c1"># XUV Luminosity [L_sun]</span>
+<span class="n">radius</span>      <span class="o">=</span> <span class="n">data</span><span class="p">[:,</span> <span class="mi">3</span><span class="p">]</span>   <span class="c1"># Radius [R_earth]</span>
+<span class="n">temperature</span> <span class="o">=</span> <span class="n">data</span><span class="p">[:,</span> <span class="mi">4</span><span class="p">]</span>   <span class="c1"># Effective temperature [K]</span>
+<span class="n">rot_period</span>  <span class="o">=</span> <span class="n">data</span><span class="p">[:,</span> <span class="mi">5</span><span class="p">]</span>   <span class="c1"># Rotation period [days]</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Timesteps recorded : </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">time_yr</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Time range         : </span><span class="si">{</span><span class="n">time_yr</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">:</span><span class="s2">.2e</span><span class="si">}</span><span class="s2"> – </span><span class="si">{</span><span class="n">time_yr</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">:</span><span class="s2">.2e</span><span class="si">}</span><span class="s2"> yr&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Luminosity         : </span><span class="si">{</span><span class="n">luminosity</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2"> → </span><span class="si">{</span><span class="n">luminosity</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2"> L_sun&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Radius             : </span><span class="si">{</span><span class="n">radius</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">  → </span><span class="si">{</span><span class="n">radius</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">  R_earth&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Rotation period    : </span><span class="si">{</span><span class="n">rot_period</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">  → </span><span class="si">{</span><span class="n">rot_period</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">  days&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Timesteps recorded : 801
+Time range         : 0.00e+00 – 8.00e+09 yr
+Luminosity         : 0.0592 → 0.000558 L_sun
+Radius             : 104.75  → 12.33  R_earth
+Rotation period    : 1.00  → 40.45  days
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">time_gyr</span> <span class="o">=</span> <span class="n">time_yr</span> <span class="o">/</span> <span class="mf">1e9</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">7</span><span class="p">),</span> <span class="n">sharex</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">semilogy</span><span class="p">(</span><span class="n">time_gyr</span><span class="p">,</span> <span class="n">luminosity</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;Luminosity [$L_\odot$]&quot;</span><span class="p">)</span>
+
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">semilogy</span><span class="p">(</span><span class="n">time_gyr</span><span class="p">,</span> <span class="n">lxuv</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;XUV Luminosity [$L_\odot$]&quot;</span><span class="p">)</span>
+
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">semilogy</span><span class="p">(</span><span class="n">time_gyr</span><span class="p">,</span> <span class="n">radius</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;Radius [$R_\oplus$]&quot;</span><span class="p">)</span>
+
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">time_gyr</span><span class="p">,</span> <span class="n">rot_period</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Rotation Period [days]&quot;</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">ax</span> <span class="ow">in</span> <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Time [Gyr]&quot;</span><span class="p">)</span>
+
+<span class="n">fig</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;VPLanet Stellar Evolution: 0.09 $M_\odot$ Star&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">13</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/tutorials_01_vplanet_infiles_17_0.png" src="../_images/tutorials_01_vplanet_infiles_17_0.png" />
+</div>
+</div>
+</section>
+</section>
+<section id="4.-Running-the-Same-Model-Through-vplanet_inference">
+<h2>4. Running the Same Model Through <code class="docutils literal notranslate"><span class="pre">vplanet_inference</span></code><a class="headerlink" href="#4.-Running-the-Same-Model-Through-vplanet_inference" title="Link to this heading"></a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">vplanet_inference</span></code> wraps VPLanet in a Python interface that handles:</p>
+<ul class="simple">
+<li><p><strong>Unit conversion</strong> — specify parameters in convenient astronomical units via <code class="docutils literal notranslate"><span class="pre">astropy.units</span></code>; <code class="docutils literal notranslate"><span class="pre">vplanet_inference</span></code> automatically converts everything to SI before substituting into the infiles.
+This means you don’t have to worry about performing any unit conversions manually or setting the <code class="docutils literal notranslate"><span class="pre">vpl</span></code> file units to be consistent with your input values–you just have to specify your value with astropy units!</p></li>
+<li><p><strong>Parameter substitution</strong> — values are injected into template infiles at runtime; the template files are never modified</p></li>
+<li><p><strong>Output extraction</strong> — final-state scalar values or time-series arrays are returned as NumPy arrays in the units you request</p></li>
+</ul>
+<p>The central class is <code class="docutils literal notranslate"><span class="pre">VplanetModel</span></code>. You configure it once — specifying which parameters to vary and which outputs to collect — then call <code class="docutils literal notranslate"><span class="pre">run_model(theta)</span></code> with a parameter vector.</p>
+<section id="4.1-Declaring-Input-Parameters-(inparams)">
+<h3>4.1 Declaring Input Parameters (<code class="docutils literal notranslate"><span class="pre">inparams</span></code>)<a class="headerlink" href="#4.1-Declaring-Input-Parameters-(inparams)" title="Link to this heading"></a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">inparams</span></code> is a dict that maps parameter names to <code class="docutils literal notranslate"><span class="pre">astropy</span></code> units:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">inparams</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;&lt;body_name&gt;.&lt;OptionName&gt;&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">astropy</span> <span class="n">unit</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="o">...</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>Use <strong>``”vpl.&lt;OptionName&gt;”``</strong> for parameters in <code class="docutils literal notranslate"><span class="pre">vpl.in</span></code></p></li>
+<li><p>Use <strong>``”&lt;body_name&gt;.&lt;OptionName&gt;”``</strong> for parameters in a body file, where <code class="docutils literal notranslate"><span class="pre">&lt;body_name&gt;</span></code> matches the filename without <code class="docutils literal notranslate"><span class="pre">.in</span></code> (e.g. <code class="docutils literal notranslate"><span class="pre">&quot;star.dMass&quot;</span></code> for <code class="docutils literal notranslate"><span class="pre">star.in</span></code>)</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">&lt;OptionName&gt;</span></code> must match the VPLanet option name exactly (e.g. <code class="docutils literal notranslate"><span class="pre">dMass</span></code>, <code class="docutils literal notranslate"><span class="pre">dStopTime</span></code>)</p></li>
+</ul>
+<p>When you call <code class="docutils literal notranslate"><span class="pre">run_model(theta)</span></code>, the values in <code class="docutils literal notranslate"><span class="pre">theta</span></code> are interpreted in the declared units and converted to SI before being written to the infiles.</p>
+</section>
+<section id="4.2-Declaring-Output-Parameters-(outparams)">
+<h3>4.2 Declaring Output Parameters (<code class="docutils literal notranslate"><span class="pre">outparams</span></code>)<a class="headerlink" href="#4.2-Declaring-Output-Parameters-(outparams)" title="Link to this heading"></a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">outparams</span></code> is a dict that maps output quantity names to the <code class="docutils literal notranslate"><span class="pre">astropy</span></code> units you want back:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">outparams</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;final.&lt;body_name&gt;.&lt;Quantity&gt;&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">astropy</span> <span class="n">unit</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="c1"># or</span>
+    <span class="s2">&quot;initial.&lt;body_name&gt;.&lt;Quantity&gt;&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">astropy</span> <span class="n">unit</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="o">...</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">&lt;Quantity&gt;</span></code> names match VPLanet output variable names — the same names used in <code class="docutils literal notranslate"><span class="pre">saOutputOrder</span></code> and listed in the <a class="reference external" href="https://virtualplanetarylaboratory.github.io/vplanet/output.html">output variables reference</a></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">final.*</span></code> reads from the <strong>Final System Properties</strong> section of the log file</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">initial.*</span></code> reads from the <strong>Initial System Properties</strong> section</p></li>
+</ul>
+<p><strong>Note:</strong> <code class="docutils literal notranslate"><span class="pre">VplanetModel</span></code> sorts <code class="docutils literal notranslate"><span class="pre">outparams</span></code> alphabetically internally. The output array from <code class="docutils literal notranslate"><span class="pre">run_model()</span></code> follows this same sorted order, accessible via <code class="docutils literal notranslate"><span class="pre">vpm.outparams</span></code>.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Input parameters: which options to vary and what units the values are supplied in</span>
+<span class="n">inparams</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;star.dMass&quot;</span><span class="p">:</span>    <span class="n">u</span><span class="o">.</span><span class="n">Msun</span><span class="p">,</span>   <span class="c1"># stellar mass [solar masses]</span>
+    <span class="s2">&quot;vpl.dStopTime&quot;</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">Gyr</span><span class="p">,</span>   <span class="c1"># simulation stop time [Gyr]</span>
+<span class="p">}</span>
+
+<span class="c1"># Output parameters: which final-state quantities to collect and what units to return them in</span>
+<span class="n">outparams</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;final.star.Luminosity&quot;</span><span class="p">:</span>  <span class="n">u</span><span class="o">.</span><span class="n">Lsun</span><span class="p">,</span>   <span class="c1"># final bolometric luminosity [L_sun]</span>
+    <span class="s2">&quot;final.star.Radius&quot;</span><span class="p">:</span>      <span class="n">u</span><span class="o">.</span><span class="n">Rsun</span><span class="p">,</span>   <span class="c1"># final stellar radius [R_sun]</span>
+    <span class="s2">&quot;final.star.Temperature&quot;</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">K</span><span class="p">,</span>      <span class="c1"># final effective temperature [K]</span>
+    <span class="s2">&quot;final.star.RotPer&quot;</span><span class="p">:</span>      <span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">,</span>    <span class="c1"># final rotation period [days]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<p>We can check if our units are consistent with what <code class="docutils literal notranslate"><span class="pre">vplanet</span></code> expects by running:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">vpi</span><span class="o">.</span><span class="n">check_units</span><span class="p">(</span><span class="n">inparams</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+
+Parameter      User unit             VPLanet unit          Status
+-----------------------------------------------------------------------------
+star.dMass     solMass               earthMass             OK
+vpl.dStopTime  Gyr                   yr                    OK
+
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+{&#39;consistent&#39;: [(&#39;star.dMass&#39;, Unit(&#34;solMass&#34;), Unit(&#34;earthMass&#34;)),
+  (&#39;vpl.dStopTime&#39;, Unit(&#34;Gyr&#34;), Unit(&#34;yr&#34;))],
+ &#39;inconsistent&#39;: [],
+ &#39;unknown&#39;: []}
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">vpi</span><span class="o">.</span><span class="n">check_units</span><span class="p">(</span><span class="n">outparams</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+
+Parameter               User unit             VPLanet unit          Status
+--------------------------------------------------------------------------------------
+final.star.Luminosity   solLum                solLum                OK
+final.star.Radius       solRad                earthRad              OK
+final.star.RotPer       d                     d                     OK
+final.star.Temperature  K                     (not in vplanet -H)   unknown
+
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+{&#39;consistent&#39;: [(&#39;final.star.Luminosity&#39;, Unit(&#34;solLum&#34;), Unit(&#34;solLum&#34;)),
+  (&#39;final.star.Radius&#39;, Unit(&#34;solRad&#34;), Unit(&#34;earthRad&#34;)),
+  (&#39;final.star.RotPer&#39;, Unit(&#34;d&#34;), Unit(&#34;d&#34;))],
+ &#39;inconsistent&#39;: [],
+ &#39;unknown&#39;: [(&#39;final.star.Temperature&#39;, Unit(&#34;K&#34;))]}
+</pre></div></div>
+</div>
+<p>Note: if a parameter is marked with status “unknown”, set the units to SI units. Ill specified parameters will return as “inconsistent”, for example:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">vpi</span><span class="o">.</span><span class="n">check_units</span><span class="p">({</span><span class="s2">&quot;Luminosity&quot;</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">m</span><span class="p">,</span> <span class="s2">&quot;RotPer&quot;</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">Lsun</span><span class="p">})</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+
+Parameter   User unit             VPLanet unit          Status
+--------------------------------------------------------------------------
+Luminosity  m                     solLum                INCONSISTENT ✗
+RotPer      solLum                d                     INCONSISTENT ✗
+
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">ValueError</span>                                Traceback (most recent call last)
+Cell <span class="ansi-green-fg">In[13], line 1</span>
+<span class="ansi-green-fg">----&gt; 1</span> <span class="ansi-yellow-bg">vpi</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">.</span><span class="ansi-yellow-bg">check_units</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">{</span><span class="ansi-yellow-bg" style="color: rgb(175,0,0)">&#34;</span><span class="ansi-yellow-bg" style="color: rgb(175,0,0)">Luminosity</span><span class="ansi-yellow-bg" style="color: rgb(175,0,0)">&#34;</span><span class="ansi-yellow-bg">:</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">u</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">.</span><span class="ansi-yellow-bg">m</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg" style="color: rgb(175,0,0)">&#34;</span><span class="ansi-yellow-bg" style="color: rgb(175,0,0)">RotPer</span><span class="ansi-yellow-bg" style="color: rgb(175,0,0)">&#34;</span><span class="ansi-yellow-bg">:</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">u</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">.</span><span class="ansi-yellow-bg">Lsun</span><span class="ansi-yellow-bg">}</span><span class="ansi-yellow-bg">)</span>
+
+File <span class="ansi-green-fg">~/Tresorit/packages/vplanet_inference/vplanet_inference/parameters.py:351</span>, in <span class="ansi-cyan-fg">check_units</span><span class="ansi-blue-fg">(inparams, outparams)</span>
+<span class="ansi-green-intense-fg ansi-bold">    345</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">for</span> key, u_unit, vp_unit <span class="ansi-bold" style="color: rgb(175,0,255)">in</span> inconsistent:
+<span class="ansi-green-intense-fg ansi-bold">    346</span>         lines<span style="color: rgb(98,98,98)">.</span>append(
+<span class="ansi-green-intense-fg ansi-bold">    347</span>             <span style="color: rgb(175,0,0)">f</span><span style="color: rgb(175,0,0)">&#34;</span><span style="color: rgb(175,0,0)">  </span><span class="ansi-bold" style="color: rgb(175,95,135)">{</span>key<span class="ansi-bold" style="color: rgb(175,95,135)">}</span><span style="color: rgb(175,0,0)">: user supplied </span><span class="ansi-bold" style="color: rgb(175,95,135)">{</span>u_unit<span class="ansi-bold" style="color: rgb(175,95,135)">!r}</span><span style="color: rgb(175,0,0)">, </span><span style="color: rgb(175,0,0)">&#34;</span>
+<span class="ansi-green-intense-fg ansi-bold">    348</span>             <span style="color: rgb(175,0,0)">f</span><span style="color: rgb(175,0,0)">&#34;</span><span style="color: rgb(175,0,0)">vplanet default unit has dimension </span><span style="color: rgb(175,0,0)">&#39;</span><span class="ansi-bold" style="color: rgb(175,95,135)">{</span>vp_unit<span style="color: rgb(98,98,98)">.</span>physical_type<span class="ansi-bold" style="color: rgb(175,95,135)">}</span><span style="color: rgb(175,0,0)">&#39;</span><span style="color: rgb(175,0,0)"> </span><span style="color: rgb(175,0,0)">&#34;</span>
+<span class="ansi-green-intense-fg ansi-bold">    349</span>             <span style="color: rgb(175,0,0)">f</span><span style="color: rgb(175,0,0)">&#34;</span><span style="color: rgb(175,0,0)">(e.g. </span><span class="ansi-bold" style="color: rgb(175,95,135)">{</span>vp_unit<span class="ansi-bold" style="color: rgb(175,95,135)">}</span><span style="color: rgb(175,0,0)">)</span><span style="color: rgb(175,0,0)">&#34;</span>
+<span class="ansi-green-intense-fg ansi-bold">    350</span>         )
+<span class="ansi-green-fg">--&gt; 351</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> <span class="ansi-bold" style="color: rgb(215,95,95)">ValueError</span>(<span style="color: rgb(175,0,0)">&#34;</span><span class="ansi-bold" style="color: rgb(175,95,0)">\n</span><span style="color: rgb(175,0,0)">&#34;</span><span style="color: rgb(98,98,98)">.</span>join(lines))
+<span class="ansi-green-intense-fg ansi-bold">    353</span> <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> {<span style="color: rgb(175,0,0)">&#34;</span><span style="color: rgb(175,0,0)">consistent</span><span style="color: rgb(175,0,0)">&#34;</span>: consistent, <span style="color: rgb(175,0,0)">&#34;</span><span style="color: rgb(175,0,0)">inconsistent</span><span style="color: rgb(175,0,0)">&#34;</span>: inconsistent, <span style="color: rgb(175,0,0)">&#34;</span><span style="color: rgb(175,0,0)">unknown</span><span style="color: rgb(175,0,0)">&#34;</span>: unknown}
+
+<span class="ansi-red-fg">ValueError</span>: The following parameters have incompatible units:
+
+  Luminosity: user supplied Unit(&#34;m&#34;), vplanet default unit has dimension &#39;power/radiant flux&#39; (e.g. solLum)
+  RotPer: user supplied Unit(&#34;solLum&#34;), vplanet default unit has dimension &#39;time&#39; (e.g. d)
+</pre></div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Initialise the model, pointing it at the stellar template infiles</span>
+<span class="n">vpm</span> <span class="o">=</span> <span class="n">vpi</span><span class="o">.</span><span class="n">VplanetModel</span><span class="p">(</span>
+    <span class="n">inparams</span><span class="o">=</span><span class="n">inparams</span><span class="p">,</span>
+    <span class="n">outparams</span><span class="o">=</span><span class="n">outparams</span><span class="p">,</span>
+    <span class="n">inpath</span><span class="o">=</span><span class="n">INFILE_PATH</span><span class="p">,</span>
+    <span class="n">outpath</span><span class="o">=</span><span class="s2">&quot;output/&quot;</span><span class="p">,</span>      <span class="c1"># temporary directory for each model run (deleted after)</span>
+    <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>           <span class="c1"># print parameter values and unit conversions</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="4.3-Running-a-Single-Model">
+<h3>4.3 Running a Single Model<a class="headerlink" href="#4.3-Running-a-Single-Model" title="Link to this heading"></a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">run_model(theta)</span></code> accepts a 1-D array <code class="docutils literal notranslate"><span class="pre">theta</span></code> with one entry per <code class="docutils literal notranslate"><span class="pre">inparams</span></code> key, in the same order as declared. It returns a 1-D NumPy array of output values in the units declared in <code class="docutils literal notranslate"><span class="pre">outparams</span></code>, sorted alphabetically by output name.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># theta = [dMass (Msun), dStopTime (Gyr)]</span>
+<span class="n">theta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.09</span><span class="p">,</span> <span class="mf">8.0</span><span class="p">])</span>
+
+<span class="n">result</span> <span class="o">=</span> <span class="n">vpm</span><span class="o">.</span><span class="n">run_model</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+
+Input:
+-----------------
+star.dMass : 0.09 [solMass] (user)   ---&gt;   1.789568883628246e+29 [kg] (vpl file)
+vpl.dStopTime : 8.0 [Gyr] (user)   ---&gt;   2.524608e+17 [s] (vpl file)
+
+Created file output//260827543537879/vpl.in
+Created file output//260827543537879/star.in
+Executed model output//260827543537879/vpl.in 7.884 s
+
+Output:
+-----------------
+final.star.Luminosity : 0.0005610869905956113 [solLum]
+final.star.Radius : 0.11299965502371712 [solRad]
+final.star.Temperature : 2644.995292 [K]
+final.star.RotPer : 47.06512731481481 [d]
+
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># vpm.outparams and vpm.out_units reflect the internal sorted order</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Output:&quot;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">unit</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">vpm</span><span class="o">.</span><span class="n">outparams</span><span class="p">,</span> <span class="n">vpm</span><span class="o">.</span><span class="n">out_units</span><span class="p">,</span> <span class="n">result</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="n">name</span><span class="si">:</span><span class="s2">&lt;35s</span><span class="si">}</span><span class="s2"> = </span><span class="si">{</span><span class="n">value</span><span class="si">:</span><span class="s2">.5g</span><span class="si">}</span><span class="s2"> [</span><span class="si">{</span><span class="n">unit</span><span class="si">}</span><span class="s2">]&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Output:
+  final.star.Luminosity               = 0.00056109 [solLum]
+  final.star.Radius                   = 0.113 [solRad]
+  final.star.Temperature              = 2645 [K]
+  final.star.RotPer                   = 47.065 [d]
+</pre></div></div>
+</div>
+</section>
+<section id="4.4-Varying-Input-Parameters">
+<h3>4.4 Varying Input Parameters<a class="headerlink" href="#4.4-Varying-Input-Parameters" title="Link to this heading"></a></h3>
+<p>Because <code class="docutils literal notranslate"><span class="pre">theta</span></code> is just a NumPy array, it is straightforward to sweep over parameter values or feed in samples from a prior distribution. The example below compares three different stellar masses:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">masses</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.09</span><span class="p">,</span> <span class="mf">0.10</span><span class="p">,</span> <span class="mf">0.12</span><span class="p">]</span>   <span class="c1"># stellar masses [M_sun] — must be within the Baraffe grid (~0.08–1.4 M_sun)</span>
+<span class="n">stop_time</span> <span class="o">=</span> <span class="mf">8.0</span>                <span class="c1"># Gyr</span>
+
+<span class="n">vpm_sweep</span> <span class="o">=</span> <span class="n">vpi</span><span class="o">.</span><span class="n">VplanetModel</span><span class="p">(</span>
+    <span class="n">inparams</span><span class="o">=</span><span class="n">inparams</span><span class="p">,</span>
+    <span class="n">outparams</span><span class="o">=</span><span class="n">outparams</span><span class="p">,</span>
+    <span class="n">inpath</span><span class="o">=</span><span class="n">INFILE_PATH</span><span class="p">,</span>
+    <span class="n">outpath</span><span class="o">=</span><span class="s2">&quot;output/&quot;</span><span class="p">,</span>
+    <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="s1">&#39;Mass [Msun]&#39;</span><span class="si">:</span><span class="s2">&gt;12</span><span class="si">}</span><span class="s2">  </span><span class="si">{</span><span class="s1">&#39;Lum [Lsun]&#39;</span><span class="si">:</span><span class="s2">&gt;12</span><span class="si">}</span><span class="s2">  </span><span class="si">{</span><span class="s1">&#39;Rad [Rsun]&#39;</span><span class="si">:</span><span class="s2">&gt;12</span><span class="si">}</span><span class="s2">  </span><span class="si">{</span><span class="s1">&#39;Teff [K]&#39;</span><span class="si">:</span><span class="s2">&gt;10</span><span class="si">}</span><span class="s2">  </span><span class="si">{</span><span class="s1">&#39;Prot [d]&#39;</span><span class="si">:</span><span class="s2">&gt;10</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">masses</span><span class="p">:</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="n">vpm_sweep</span><span class="o">.</span><span class="n">run_model</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">m</span><span class="p">,</span> <span class="n">stop_time</span><span class="p">]))</span>
+    <span class="n">lum</span><span class="p">,</span> <span class="n">rad</span><span class="p">,</span> <span class="n">teff</span><span class="p">,</span> <span class="n">rotper</span> <span class="o">=</span> <span class="n">res</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">m</span><span class="si">:</span><span class="s2">&gt;12.2f</span><span class="si">}</span><span class="s2">  </span><span class="si">{</span><span class="n">lum</span><span class="si">:</span><span class="s2">&gt;12.6f</span><span class="si">}</span><span class="s2">  </span><span class="si">{</span><span class="n">rad</span><span class="si">:</span><span class="s2">&gt;12.5f</span><span class="si">}</span><span class="s2">  </span><span class="si">{</span><span class="n">teff</span><span class="si">:</span><span class="s2">&gt;10.1f</span><span class="si">}</span><span class="s2">  </span><span class="si">{</span><span class="n">rotper</span><span class="si">:</span><span class="s2">&gt;10.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+ Mass [Msun]    Lum [Lsun]    Rad [Rsun]    Teff [K]    Prot [d]
+        0.09      0.000561       0.11300      2645.0       47.07
+        0.10      0.000873       0.12400      2812.0       47.55
+        0.12      0.001503       0.14500      2983.0       48.50
+</pre></div></div>
+</div>
+</section>
+<section id="4.5-Tracking-Time-Evolution">
+<h3>4.5 Tracking Time Evolution<a class="headerlink" href="#4.5-Tracking-Time-Evolution" title="Link to this heading"></a></h3>
+<p>Pass <code class="docutils literal notranslate"><span class="pre">timesteps</span></code> (an <code class="docutils literal notranslate"><span class="pre">astropy</span></code> Quantity) to record outputs at regular intervals throughout the simulation. When <code class="docutils literal notranslate"><span class="pre">timesteps</span></code> is set, <code class="docutils literal notranslate"><span class="pre">run_model()</span></code> returns a <strong>dict</strong> keyed by output parameter name:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;Time&quot;</span><span class="p">:</span>                      <span class="o">&lt;</span><span class="n">Quantity</span> <span class="n">array</span> <span class="p">[</span><span class="n">yr</span><span class="p">]</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">&quot;final.star.Luminosity&quot;</span><span class="p">:</span>     <span class="o">&lt;</span><span class="n">Quantity</span> <span class="n">array</span> <span class="p">[</span><span class="n">Lsun</span><span class="p">]</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">&quot;final.star.Radius&quot;</span><span class="p">:</span>         <span class="o">&lt;</span><span class="n">Quantity</span> <span class="n">array</span> <span class="p">[</span><span class="n">Rsun</span><span class="p">]</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="o">...</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">vpm_evol</span> <span class="o">=</span> <span class="n">vpi</span><span class="o">.</span><span class="n">VplanetModel</span><span class="p">(</span>
+    <span class="n">inparams</span><span class="o">=</span><span class="n">inparams</span><span class="p">,</span>
+    <span class="n">outparams</span><span class="o">=</span><span class="n">outparams</span><span class="p">,</span>
+    <span class="n">inpath</span><span class="o">=</span><span class="n">INFILE_PATH</span><span class="p">,</span>
+    <span class="n">outpath</span><span class="o">=</span><span class="s2">&quot;output/&quot;</span><span class="p">,</span>
+    <span class="n">timesteps</span><span class="o">=</span><span class="mf">1e7</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">yr</span><span class="p">,</span>   <span class="c1"># record output every 10 Myr</span>
+    <span class="n">time_init</span><span class="o">=</span><span class="mf">1e6</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">yr</span><span class="p">,</span>   <span class="c1"># starting age (sets dAge in the body file)</span>
+    <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">evol</span> <span class="o">=</span> <span class="n">vpm_evol</span><span class="o">.</span><span class="n">run_model</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Dict keys returned:&quot;</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="n">evol</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Number of timesteps:&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">evol</span><span class="p">[</span><span class="s2">&quot;Time&quot;</span><span class="p">]))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Dict keys returned: [&#39;final.star.Luminosity&#39;, &#39;final.star.Radius&#39;, &#39;final.star.Temperature&#39;, &#39;final.star.RotPer&#39;, &#39;Time&#39;]
+Number of timesteps: 801
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[21]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">time_gyr</span> <span class="o">=</span> <span class="n">evol</span><span class="p">[</span><span class="s2">&quot;Time&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">Gyr</span><span class="p">)</span><span class="o">.</span><span class="n">value</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">7</span><span class="p">),</span> <span class="n">sharex</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">semilogy</span><span class="p">(</span><span class="n">time_gyr</span><span class="p">,</span> <span class="n">evol</span><span class="p">[</span><span class="s2">&quot;final.star.Luminosity&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;Luminosity [$L_\odot$]&quot;</span><span class="p">)</span>
+
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">time_gyr</span><span class="p">,</span> <span class="n">evol</span><span class="p">[</span><span class="s2">&quot;final.star.Radius&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;Radius [$R_\odot$]&quot;</span><span class="p">)</span>
+
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">time_gyr</span><span class="p">,</span> <span class="n">evol</span><span class="p">[</span><span class="s2">&quot;final.star.Temperature&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Effective Temperature [K]&quot;</span><span class="p">)</span>
+
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">time_gyr</span><span class="p">,</span> <span class="n">evol</span><span class="p">[</span><span class="s2">&quot;final.star.RotPer&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Rotation Period [days]&quot;</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">ax</span> <span class="ow">in</span> <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Time [Gyr]&quot;</span><span class="p">)</span>
+
+<span class="n">fig</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span>
+    <span class="sa">r</span><span class="s2">&quot;vplanet\_inference: 0.09 $M_\odot$ Stellar Evolution&quot;</span><span class="p">,</span>
+    <span class="n">fontsize</span><span class="o">=</span><span class="mi">13</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/tutorials_01_vplanet_infiles_33_0.png" src="../_images/tutorials_01_vplanet_infiles_33_0.png" />
+</div>
+</div>
+</section>
+</section>
+<section id="Summary">
+<h2>Summary<a class="headerlink" href="#Summary" title="Link to this heading"></a></h2>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Task</p></th>
+<th class="head"><p>How</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Set up input files</p></td>
+<td><p>Edit <code class="docutils literal notranslate"><span class="pre">vpl.in</span></code> (system settings) and <code class="docutils literal notranslate"><span class="pre">&lt;body&gt;.in</span></code> (body parameters + <code class="docutils literal notranslate"><span class="pre">saModules</span></code>)</p></td>
+</tr>
+<tr class="row-odd"><td><p>Run from command line</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">cd</span> <span class="pre">&lt;infile_dir&gt;</span></code> → <code class="docutils literal notranslate"><span class="pre">vplanet</span> <span class="pre">vpl.in</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>Read log file</p></td>
+<td><p>Open <code class="docutils literal notranslate"><span class="pre">&lt;SystemName&gt;.log</span></code> for initial/final values of all quantities (SI units)</p></td>
+</tr>
+<tr class="row-odd"><td><p>Read forward file</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">np.loadtxt(&quot;&lt;SystemName&gt;.&lt;body&gt;.forward&quot;)</span></code> — columns match <code class="docutils literal notranslate"><span class="pre">saOutputOrder</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>Run from Python</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">VplanetModel(inparams,</span> <span class="pre">outparams,</span> <span class="pre">inpath=...)</span></code> → <code class="docutils literal notranslate"><span class="pre">run_model(theta)</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>Specify input units</p></td>
+<td><p>Values in <code class="docutils literal notranslate"><span class="pre">inparams</span></code> dict use <code class="docutils literal notranslate"><span class="pre">astropy.units</span></code>; converted to SI automatically</p></td>
+</tr>
+<tr class="row-even"><td><p>Specify output units</p></td>
+<td><p>Values in <code class="docutils literal notranslate"><span class="pre">outparams</span></code> dict use <code class="docutils literal notranslate"><span class="pre">astropy.units</span></code>; results returned in those units</p></td>
+</tr>
+<tr class="row-odd"><td><p>Vary parameters</p></td>
+<td><p>Change entries in <code class="docutils literal notranslate"><span class="pre">theta</span></code>; no need to edit any files</p></td>
+</tr>
+<tr class="row-even"><td><p>Track time evolution</p></td>
+<td><p>Pass <code class="docutils literal notranslate"><span class="pre">timesteps=&lt;Quantity&gt;</span></code> to <code class="docutils literal notranslate"><span class="pre">VplanetModel</span></code>; <code class="docutils literal notranslate"><span class="pre">run_model()</span></code> returns a dict of arrays</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Next steps:</strong></p>
+<ul class="simple">
+<li><p>Explore other VPLanet modules (tidal evolution, atmospheric escape, orbital dynamics) in the <a class="reference external" href="https://virtualplanetarylaboratory.github.io/vplanet/modules.html">VPLanet module documentation</a></p></li>
+<li><p>Run parameter sweeps and Bayesian inference using <code class="docutils literal notranslate"><span class="pre">vplanet_inference.AnalyzeVplanetModel</span></code> (see the <strong>Quickstart</strong> section of the documentation)</p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="Tutorial Overview" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="02_sensitivity_analysis.html" class="btn btn-neutral float-right" title="Global Sensitivity Analysis with vplanet_inference" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Jessica Birky.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

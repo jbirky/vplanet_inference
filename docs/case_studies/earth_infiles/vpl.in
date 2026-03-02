@@ -1,0 +1,22 @@
+# Primary input file: Earth interior evolution
+sSystemName     earth
+iVerbose        0
+bOverwrite      1
+
+saBodyFiles     sun.in earth.in
+
+sUnitMass       solar
+sUnitLength     aU
+sUnitTime       YEARS
+sUnitAngle      d
+sUnitTemp       K
+
+bDoLog          1
+iDigits         6
+dMinValue       1e-10
+
+bDoForward      1
+bVarDt          1
+dEta            0.1
+dStopTime       1.420092e+17
+dOutputTime     3.155760e+15

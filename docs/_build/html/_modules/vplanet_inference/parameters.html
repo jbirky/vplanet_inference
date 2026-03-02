@@ -1,0 +1,843 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>vplanet_inference.parameters &mdash; vplanet_inference 0.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=a6a68382" />
+      <link rel="stylesheet" type="text/css" href="../../_static/fonts.css?v=5583d106" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=d45e8c67"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            vplanet_inference
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../quickstart.html">Quickstart</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/index.html">Tutorial Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/01_vplanet_infiles.html">Setting Up and Running VPLanet Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/02_sensitivity_analysis.html">Global Sensitivity Analysis with <code class="docutils literal notranslate"><span class="pre">vplanet_inference</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/03_mcmc_custom_likelihood.html">MCMC with VPLanet and <code class="docutils literal notranslate"><span class="pre">alabi</span></code></a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">vplanet_inference</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">vplanet_inference.parameters</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for vplanet_inference.parameters</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">urllib.request</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">astropy.units</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">u</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;VplanetParameters&quot;</span><span class="p">,</span> <span class="s2">&quot;get_vplanet_units&quot;</span><span class="p">,</span> <span class="s2">&quot;get_vplanet_units_source&quot;</span><span class="p">,</span> <span class="s2">&quot;check_units&quot;</span><span class="p">]</span>
+
+
+<span class="c1"># Mapping from vplanet unit strings (as they appear in `vplanet -H`) to</span>
+<span class="c1"># astropy units.  `None` means the unit is a custom VPLanet constant that</span>
+<span class="c1"># has no standard astropy equivalent.</span>
+<span class="n">_VPLANET_UNIT_MAP</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="c1"># --- dimensionless / no unit ---</span>
+    <span class="s2">&quot;nd&quot;</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">dimensionless_unscaled</span><span class="p">,</span>
+    <span class="s2">&quot;no unit&quot;</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">dimensionless_unscaled</span><span class="p">,</span>
+    <span class="s2">&quot;null&quot;</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">dimensionless_unscaled</span><span class="p">,</span>
+    <span class="s2">&quot;None&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="s2">&quot;No negative behavior&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="c1"># --- temperature ---</span>
+    <span class="s2">&quot;K&quot;</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">K</span><span class="p">,</span>
+    <span class="s2">&quot;Kelvin&quot;</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">K</span><span class="p">,</span>
+    <span class="s2">&quot;Celsius&quot;</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">deg_C</span><span class="p">,</span>
+    <span class="c1"># --- time ---</span>
+    <span class="s2">&quot;sec&quot;</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">s</span><span class="p">,</span>
+    <span class="s2">&quot;Seconds&quot;</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">s</span><span class="p">,</span>
+    <span class="s2">&quot;days&quot;</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">,</span>
+    <span class="s2">&quot;Days&quot;</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">,</span>
+    <span class="s2">&quot;year&quot;</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">yr</span><span class="p">,</span>
+    <span class="s2">&quot;years&quot;</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">yr</span><span class="p">,</span>
+    <span class="s2">&quot;Years&quot;</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">yr</span><span class="p">,</span>
+    <span class="s2">&quot;Myr&quot;</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">Myr</span><span class="p">,</span>
+    <span class="s2">&quot;Gyr&quot;</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">Gyr</span><span class="p">,</span>
+    <span class="s2">&quot;1 Gyr&quot;</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">Gyr</span><span class="p">,</span>
+    <span class="c1"># --- length / distance ---</span>
+    <span class="s2">&quot;m&quot;</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">m</span><span class="p">,</span>
+    <span class="s2">&quot;meters&quot;</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">m</span><span class="p">,</span>
+    <span class="s2">&quot;km&quot;</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">km</span><span class="p">,</span>
+    <span class="s2">&quot;au&quot;</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">AU</span><span class="p">,</span>
+    <span class="s2">&quot;AU&quot;</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">AU</span><span class="p">,</span>
+    <span class="s2">&quot;Rearth&quot;</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">R_earth</span><span class="p">,</span>
+    <span class="c1"># --- mass ---</span>
+    <span class="s2">&quot;kg&quot;</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">kg</span><span class="p">,</span>
+    <span class="s2">&quot;amu&quot;</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">u</span><span class="p">,</span>
+    <span class="s2">&quot;Mearth&quot;</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">M_earth</span><span class="p">,</span>
+    <span class="c1"># --- luminosity ---</span>
+    <span class="s2">&quot;LSUN&quot;</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">L_sun</span><span class="p">,</span>
+    <span class="s2">&quot;Solar Luminosity (LSUN)&quot;</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">L_sun</span><span class="p">,</span>
+    <span class="c1"># --- power ---</span>
+    <span class="s2">&quot;TW&quot;</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">TW</span><span class="p">,</span>
+    <span class="s2">&quot;PW&quot;</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">PW</span><span class="p">,</span>
+    <span class="s2">&quot;ergs&quot;</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">erg</span><span class="p">,</span>
+    <span class="c1"># --- pressure ---</span>
+    <span class="s2">&quot;bar&quot;</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">bar</span><span class="p">,</span>
+    <span class="s2">&quot;bars&quot;</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">bar</span><span class="p">,</span>
+    <span class="s2">&quot;Pa&quot;</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">Pa</span><span class="p">,</span>
+    <span class="s2">&quot;GPa&quot;</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">GPa</span><span class="p">,</span>
+    <span class="c1"># --- angle ---</span>
+    <span class="s2">&quot;deg&quot;</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">deg</span><span class="p">,</span>
+    <span class="s2">&quot;Deg&quot;</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">deg</span><span class="p">,</span>
+    <span class="s2">&quot;Degrees&quot;</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">deg</span><span class="p">,</span>
+    <span class="s2">&quot;rad&quot;</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">rad</span><span class="p">,</span>
+    <span class="c1"># --- compound units ---</span>
+    <span class="s2">&quot;W/m^2&quot;</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">W</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">m</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span>
+    <span class="s2">&quot;W/m/K&quot;</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">W</span> <span class="o">/</span> <span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">m</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">K</span><span class="p">),</span>
+    <span class="s2">&quot;kg/m^2&quot;</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">kg</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">m</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span>
+    <span class="s2">&quot;kg/m^3&quot;</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">kg</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">m</span><span class="o">**</span><span class="mi">3</span><span class="p">,</span>
+    <span class="s2">&quot;kg/s&quot;</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">kg</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">s</span><span class="p">,</span>
+    <span class="s2">&quot;kg/m^2/s&quot;</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">kg</span> <span class="o">/</span> <span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">m</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">s</span><span class="p">),</span>
+    <span class="s2">&quot;kg*m^2/s&quot;</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">kg</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">m</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">s</span><span class="p">,</span>
+    <span class="s2">&quot;m/s&quot;</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">m</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">s</span><span class="p">,</span>
+    <span class="s2">&quot;m/s^2&quot;</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">m</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">s</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span>
+    <span class="s2">&quot;km/s&quot;</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">km</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">s</span><span class="p">,</span>
+    <span class="s2">&quot;m^2/s&quot;</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">m</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">s</span><span class="p">,</span>
+    <span class="s2">&quot;m^2/s^3&quot;</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">m</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">s</span><span class="o">**</span><span class="mi">3</span><span class="p">,</span>
+    <span class="s2">&quot;m/K&quot;</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">m</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">K</span><span class="p">,</span>
+    <span class="s2">&quot;K/s&quot;</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">K</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">s</span><span class="p">,</span>
+    <span class="s2">&quot;J / K kg&quot;</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">J</span> <span class="o">/</span> <span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">K</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">kg</span><span class="p">),</span>
+    <span class="s2">&quot;AU/Gyr&quot;</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">AU</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">Gyr</span><span class="p">,</span>
+    <span class="s2">&quot;deg/Gyr&quot;</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">deg</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">Gyr</span><span class="p">,</span>
+    <span class="s2">&quot;deg/year&quot;</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">deg</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">yr</span><span class="p">,</span>
+    <span class="s2">&quot;deg/yr&quot;</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">deg</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">yr</span><span class="p">,</span>
+    <span class="s2">&quot;days/Gyr&quot;</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">Gyr</span><span class="p">,</span>
+    <span class="s2">&quot;days/Myr&quot;</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">Myr</span><span class="p">,</span>
+    <span class="s2">&quot;Mearth/Myr&quot;</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">M_earth</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">Myr</span><span class="p">,</span>
+    <span class="s2">&quot;TW/Gyr&quot;</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">TW</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">Gyr</span><span class="p">,</span>
+    <span class="c1"># --- rate units ---</span>
+    <span class="s2">&quot;1/day&quot;</span><span class="p">:</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">,</span>
+    <span class="s2">&quot;/day&quot;</span><span class="p">:</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">,</span>
+    <span class="s2">&quot;/Day&quot;</span><span class="p">:</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">,</span>
+    <span class="s2">&quot;1/year&quot;</span><span class="p">:</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">yr</span><span class="p">,</span>
+    <span class="s2">&quot;/Year&quot;</span><span class="p">:</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">yr</span><span class="p">,</span>
+    <span class="s2">&quot;1/Gyr&quot;</span><span class="p">:</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">Gyr</span><span class="p">,</span>
+    <span class="s2">&quot;/Gyr&quot;</span><span class="p">:</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">Gyr</span><span class="p">,</span>
+    <span class="s2">&quot;1/day 1/log10(erg)&quot;</span><span class="p">:</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">,</span>   <span class="c1"># approximate; log10(erg) is dimensionless</span>
+    <span class="c1"># --- water content ---</span>
+    <span class="s2">&quot;TO&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>                          <span class="c1"># Terrestrial Oceans — no astropy equivalent</span>
+    <span class="s2">&quot;Terrestrial Oceans (TO)&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="c1"># --- VPLanet-specific Earth constants (no astropy equivalent) ---</span>
+    <span class="s2">&quot;EarthDensity&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="s2">&quot;Primordial Earth&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="s2">&quot;Primordial Earth Units&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="s2">&quot;Primoridal Earth Units&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>      <span class="c1"># typo present in vplanet source</span>
+    <span class="s2">&quot;Primordial Earth 26Al Number&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="s2">&quot;Initial Primordial Earth Number&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="s2">&quot;EMAGMOM&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="s2">&quot;EMAGPAUSERAD&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="s2">&quot;EMASSIC&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="s2">&quot;EMASSIC_CHI&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="s2">&quot;EMASSOC&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="s2">&quot;EMASSOC_CHI&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="s2">&quot;EPRESSWIND&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="s2">&quot;m/orbit&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="c1"># Mapping from vplanet Dimension(s) strings to representative astropy units.</span>
+<span class="c1"># Used as a fallback for input options that have no &quot;Custom unit&quot; row.</span>
+<span class="n">_VPLANET_DIMENSION_MAP</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;nd&quot;</span><span class="p">:</span>                           <span class="n">u</span><span class="o">.</span><span class="n">dimensionless_unscaled</span><span class="p">,</span>
+    <span class="s2">&quot;angle&quot;</span><span class="p">:</span>                        <span class="n">u</span><span class="o">.</span><span class="n">rad</span><span class="p">,</span>
+    <span class="s2">&quot;angle/time&quot;</span><span class="p">:</span>                   <span class="n">u</span><span class="o">.</span><span class="n">rad</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">s</span><span class="p">,</span>
+    <span class="s2">&quot;energy&quot;</span><span class="p">:</span>                       <span class="n">u</span><span class="o">.</span><span class="n">J</span><span class="p">,</span>
+    <span class="s2">&quot;energy/length^2&quot;</span><span class="p">:</span>              <span class="n">u</span><span class="o">.</span><span class="n">J</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">m</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span>
+    <span class="s2">&quot;energy/temperature&quot;</span><span class="p">:</span>           <span class="n">u</span><span class="o">.</span><span class="n">J</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">K</span><span class="p">,</span>
+    <span class="s2">&quot;energy/temperature/mass&quot;</span><span class="p">:</span>      <span class="n">u</span><span class="o">.</span><span class="n">J</span> <span class="o">/</span> <span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">K</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">kg</span><span class="p">),</span>
+    <span class="s2">&quot;energy/time&quot;</span><span class="p">:</span>                  <span class="n">u</span><span class="o">.</span><span class="n">W</span><span class="p">,</span>
+    <span class="s2">&quot;energyflux&quot;</span><span class="p">:</span>                   <span class="n">u</span><span class="o">.</span><span class="n">W</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">m</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span>
+    <span class="s2">&quot;length&quot;</span><span class="p">:</span>                       <span class="n">u</span><span class="o">.</span><span class="n">m</span><span class="p">,</span>
+    <span class="s2">&quot;length/time&quot;</span><span class="p">:</span>                  <span class="n">u</span><span class="o">.</span><span class="n">m</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">s</span><span class="p">,</span>
+    <span class="s2">&quot;length^2/time&quot;</span><span class="p">:</span>                <span class="n">u</span><span class="o">.</span><span class="n">m</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">s</span><span class="p">,</span>
+    <span class="s2">&quot;mass&quot;</span><span class="p">:</span>                         <span class="n">u</span><span class="o">.</span><span class="n">kg</span><span class="p">,</span>
+    <span class="s2">&quot;mass/length^3&quot;</span><span class="p">:</span>                <span class="n">u</span><span class="o">.</span><span class="n">kg</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">m</span><span class="o">**</span><span class="mi">3</span><span class="p">,</span>
+    <span class="s2">&quot;mass/time&quot;</span><span class="p">:</span>                    <span class="n">u</span><span class="o">.</span><span class="n">kg</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">s</span><span class="p">,</span>
+    <span class="s2">&quot;pressure&quot;</span><span class="p">:</span>                     <span class="n">u</span><span class="o">.</span><span class="n">Pa</span><span class="p">,</span>
+    <span class="s2">&quot;temperature&quot;</span><span class="p">:</span>                  <span class="n">u</span><span class="o">.</span><span class="n">K</span><span class="p">,</span>
+    <span class="s2">&quot;temperature/length&quot;</span><span class="p">:</span>           <span class="n">u</span><span class="o">.</span><span class="n">K</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">m</span><span class="p">,</span>
+    <span class="s2">&quot;time&quot;</span><span class="p">:</span>                         <span class="n">u</span><span class="o">.</span><span class="n">s</span><span class="p">,</span>
+    <span class="s2">&quot;time^-1&quot;</span><span class="p">:</span>                      <span class="mi">1</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">s</span><span class="p">,</span>
+    <span class="s2">&quot;1/time&quot;</span><span class="p">:</span>                       <span class="mi">1</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">s</span><span class="p">,</span>
+    <span class="s2">&quot;1/time/energy&quot;</span><span class="p">:</span>                <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">s</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">J</span><span class="p">),</span>
+    <span class="s2">&quot;time^3*ampere^2/mass/length&quot;</span><span class="p">:</span>  <span class="n">u</span><span class="o">.</span><span class="n">s</span><span class="o">**</span><span class="mi">3</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">A</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">kg</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">m</span><span class="p">),</span>  <span class="c1"># electrical resistivity</span>
+<span class="p">}</span>
+
+<span class="c1"># Per-parameter unit overrides keyed by *parameter name* (not unit string).</span>
+<span class="c1"># Use these to correct known errors in vplanet&#39;s Dimension(s) documentation.</span>
+<span class="n">_VPLANET_PARAM_OVERRIDES</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="c1"># vplanet -H labels dActViscMan as &quot;pressure&quot; (Pa), but the module stores</span>
+    <span class="c1"># and expects it in m^2/s (kinematic viscosity / diffusivity units).</span>
+    <span class="s2">&quot;dActViscMan&quot;</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">m</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">s</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="c1"># Cache for get_vplanet_units_source() — populated on first call.</span>
+<span class="n">_VPLANET_SOURCE_CACHE</span> <span class="o">=</span> <span class="kc">None</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">get_vplanet_units</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Run ``vplanet -H`` and return a dictionary mapping every parameter name</span>
+<span class="sd">    to its default astropy unit.</span>
+
+<span class="sd">    The extended help output (``vplanet -H``) is parsed using the structured</span>
+<span class="sd">    RST table format produced by VPLanet.  Each parameter block looks like::</span>
+
+<span class="sd">        +------...------+</span>
+<span class="sd">        | **ParamName** |</span>
+<span class="sd">        +=======+=======+</span>
+<span class="sd">        | Custom unit   || K  |</span>
+<span class="sd">        +-------+-------+</span>
+
+<span class="sd">    For **output parameters**, the ``Custom unit`` row gives the natural display</span>
+<span class="sd">    unit (e.g. ``K``, ``TW``, ``Gyr``).</span>
+
+<span class="sd">    For **input options**, VPLanet often omits ``Custom unit`` and instead</span>
+<span class="sd">    provides a ``Dimension(s)`` row (e.g. ``temperature``, ``energy/time``,</span>
+<span class="sd">    ``pressure``).  When ``Custom unit`` is absent, the dimension string is</span>
+<span class="sd">    used as a fallback via ``_VPLANET_DIMENSION_MAP`` to produce a canonical</span>
+<span class="sd">    SI unit for that physical dimension.</span>
+
+<span class="sd">    Parameters that are dimensionless or whose unit is a VPLanet-specific</span>
+<span class="sd">    constant (e.g. *Primordial Earth Units*, *EMAGMOM*) are mapped to ``None``.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict</span>
+<span class="sd">        ``{parameter_name: astropy_unit_or_None}``</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; units = get_vplanet_units()</span>
+<span class="sd">    &gt;&gt;&gt; units[&quot;TJumpUMan&quot;]    # output param — Custom unit row</span>
+<span class="sd">    Unit(&quot;K&quot;)</span>
+<span class="sd">    &gt;&gt;&gt; units[&quot;dAge&quot;]         # input param — Custom unit row</span>
+<span class="sd">    Unit(&quot;Gyr&quot;)</span>
+<span class="sd">    &gt;&gt;&gt; units[&quot;dTMan&quot;]        # input param — Dimension(s) fallback</span>
+<span class="sd">    Unit(&quot;K&quot;)</span>
+<span class="sd">    &gt;&gt;&gt; units[&quot;dActViscMan&quot;]  # input param — Dimension(s) fallback</span>
+<span class="sd">    Unit(&quot;m2 / s&quot;)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">proc</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">(</span>
+        <span class="p">[</span><span class="s2">&quot;vplanet&quot;</span><span class="p">,</span> <span class="s2">&quot;-H&quot;</span><span class="p">],</span>
+        <span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span>
+        <span class="n">stderr</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">stdout</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">proc</span><span class="o">.</span><span class="n">communicate</span><span class="p">()</span>
+    <span class="n">lines</span> <span class="o">=</span> <span class="n">stdout</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="s2">&quot;replace&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="n">result</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">param_name</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">pending_dim</span> <span class="o">=</span> <span class="kc">None</span>   <span class="c1"># Dimension(s) value seen before any Custom unit row</span>
+
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">:</span>
+        <span class="c1"># Blank line terminates a parameter block; commit pending dimension.</span>
+        <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">param_name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">param_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">result</span> <span class="ow">and</span> <span class="n">pending_dim</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">result</span><span class="p">[</span><span class="n">param_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">_VPLANET_DIMENSION_MAP</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pending_dim</span><span class="p">)</span>
+            <span class="n">param_name</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">pending_dim</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">continue</span>
+
+        <span class="c1"># Detect the start of a parameter block: | **Name** ... |</span>
+        <span class="n">name_match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;\|\s+\*\*(\S+)\*\*&quot;</span><span class="p">,</span> <span class="n">line</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">name_match</span><span class="p">:</span>
+            <span class="c1"># Commit any pending dimension from the previous block (no blank line between)</span>
+            <span class="k">if</span> <span class="n">param_name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">param_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">result</span> <span class="ow">and</span> <span class="n">pending_dim</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">result</span><span class="p">[</span><span class="n">param_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">_VPLANET_DIMENSION_MAP</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pending_dim</span><span class="p">)</span>
+            <span class="n">param_name</span> <span class="o">=</span> <span class="n">name_match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">pending_dim</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">continue</span>
+
+        <span class="k">if</span> <span class="n">param_name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">continue</span>
+
+        <span class="c1"># Prefer &quot;Custom unit&quot; row — most specific.</span>
+        <span class="n">unit_match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;\|\s+Custom unit\s+\|\|\s+(.*?)\s*\|&quot;</span><span class="p">,</span> <span class="n">line</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">unit_match</span><span class="p">:</span>
+            <span class="n">unit_str</span> <span class="o">=</span> <span class="n">unit_match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+            <span class="n">result</span><span class="p">[</span><span class="n">param_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">_VPLANET_UNIT_MAP</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">unit_str</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="n">pending_dim</span> <span class="o">=</span> <span class="kc">None</span>   <span class="c1"># Custom unit takes precedence; discard dimension</span>
+            <span class="k">continue</span>
+
+        <span class="c1"># Fallback: store the Dimension(s) value for later commitment.</span>
+        <span class="n">dim_match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;\|\s+Dimension\(s\)\s+\|\|\s+(.*?)\s*\|&quot;</span><span class="p">,</span> <span class="n">line</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">dim_match</span><span class="p">:</span>
+            <span class="n">pending_dim</span> <span class="o">=</span> <span class="n">dim_match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+
+    <span class="c1"># Handle last block if file doesn&#39;t end with a blank line</span>
+    <span class="k">if</span> <span class="n">param_name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">param_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">result</span> <span class="ow">and</span> <span class="n">pending_dim</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">result</span><span class="p">[</span><span class="n">param_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">_VPLANET_DIMENSION_MAP</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pending_dim</span><span class="p">)</span>
+
+    <span class="c1"># Apply per-parameter overrides (correct known vplanet documentation errors)</span>
+    <span class="n">result</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">_VPLANET_PARAM_OVERRIDES</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">result</span>
+
+
+<span class="c1"># --------------------------------------------------------------------------- #</span>
+<span class="c1"># Source-based unit lookup                                                     #</span>
+<span class="c1"># --------------------------------------------------------------------------- #</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_fetch_source_units</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Fetch and parse all vplanet C source files from GitHub to build a</span>
+<span class="sd">    complete ``{parameter_name: astropy_unit}`` mapping.</span>
+
+<span class="sd">    The function searches two patterns inside every ``*.c`` file under</span>
+<span class="sd">    ``src/`` in the VirtualPlanetaryLaboratory/vplanet GitHub repository:</span>
+
+<span class="sd">    * **Input options** — the ``fvInitializeOptions*`` functions set</span>
+<span class="sd">      ``options[OPT_X].cName`` (e.g. ``&quot;dTMan&quot;``) and</span>
+<span class="sd">      ``options[OPT_X].cDimension`` (e.g. ``&quot;temperature&quot;``).</span>
+<span class="sd">      The dimension string is looked up in ``_VPLANET_DIMENSION_MAP``.</span>
+
+<span class="sd">    * **Output parameters** — the ``fvInitializeOutput*`` functions set</span>
+<span class="sd">      ``output[OUT_X].cName`` (e.g. ``&quot;TMan&quot;``) and</span>
+<span class="sd">      ``output[OUT_X].cNeg`` (e.g. ``&quot;K&quot;``).</span>
+<span class="sd">      The unit string is looked up in ``_VPLANET_UNIT_MAP``; any string not</span>
+<span class="sd">      found there is attempted via ``astropy.units.Unit()``.</span>
+
+<span class="sd">    The version tag is derived from ``vplanet.__version__`` so that the</span>
+<span class="sd">    source matches the installed binary.  Falls back to ``&quot;main&quot;`` if the</span>
+<span class="sd">    version tag does not exist on GitHub.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict</span>
+<span class="sd">        ``{parameter_name: astropy_unit_or_None}`` for every parameter found</span>
+<span class="sd">        across all source files.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Determine GitHub ref from installed vplanet version</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">vplanet</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">_vp</span>
+        <span class="n">version</span> <span class="o">=</span> <span class="n">_vp</span><span class="o">.</span><span class="n">__version__</span>
+        <span class="n">tags_to_try</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;v</span><span class="si">{</span><span class="n">version</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">version</span><span class="p">,</span> <span class="s2">&quot;main&quot;</span><span class="p">]</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="n">tags_to_try</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;main&quot;</span><span class="p">]</span>
+
+    <span class="n">c_file_entries</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">for</span> <span class="n">tag</span> <span class="ow">in</span> <span class="n">tags_to_try</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">api_url</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;https://api.github.com/repos/&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;VirtualPlanetaryLaboratory/vplanet/contents/src?ref=</span><span class="si">{</span><span class="n">tag</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+            <span class="n">req</span> <span class="o">=</span> <span class="n">urllib</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">Request</span><span class="p">(</span>
+                <span class="n">api_url</span><span class="p">,</span>
+                <span class="n">headers</span><span class="o">=</span><span class="p">{</span>
+                    <span class="s2">&quot;User-Agent&quot;</span><span class="p">:</span> <span class="s2">&quot;vplanet-python-inference&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;Accept&quot;</span><span class="p">:</span> <span class="s2">&quot;application/vnd.github.v3+json&quot;</span><span class="p">,</span>
+                <span class="p">},</span>
+            <span class="p">)</span>
+            <span class="k">with</span> <span class="n">urllib</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="n">req</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">15</span><span class="p">)</span> <span class="k">as</span> <span class="n">resp</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">resp</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="mi">200</span><span class="p">:</span>
+                    <span class="n">contents</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">resp</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
+                    <span class="n">c_file_entries</span> <span class="o">=</span> <span class="p">[</span>
+                        <span class="p">(</span><span class="n">f</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">],</span> <span class="n">f</span><span class="p">[</span><span class="s2">&quot;download_url&quot;</span><span class="p">])</span>
+                        <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">contents</span>
+                        <span class="k">if</span> <span class="n">f</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.c&quot;</span><span class="p">)</span>
+                    <span class="p">]</span>
+                    <span class="k">break</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="k">continue</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">c_file_entries</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">{}</span>
+
+    <span class="c1"># Regex patterns — all single-line; vplanet never wraps these calls</span>
+    <span class="n">_opt_name_re</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span>
+        <span class="sa">r</span><span class="s1">&#39;fvFormattedString\s*\(\s*&amp;options\[(\w+)\]\.cName\s*,\s*&quot;([^&quot;]+)&quot;&#39;</span>
+    <span class="p">)</span>
+    <span class="n">_opt_dim_re</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span>
+        <span class="sa">r</span><span class="s1">&#39;fvFormattedString\s*\(\s*&amp;options\[(\w+)\]\.cDimension\s*,\s*&quot;([^&quot;]+)&quot;&#39;</span>
+    <span class="p">)</span>
+    <span class="n">_out_name_re</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span>
+        <span class="sa">r</span><span class="s1">&#39;fvFormattedString\s*\(\s*&amp;output\[(\w+)\]\.cName\s*,\s*&quot;([^&quot;]+)&quot;&#39;</span>
+    <span class="p">)</span>
+    <span class="n">_out_neg_re</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span>
+        <span class="sa">r</span><span class="s1">&#39;fvFormattedString\s*\(\s*&amp;output\[(\w+)\]\.cNeg\s*,\s*&quot;([^&quot;]+)&quot;&#39;</span>
+    <span class="p">)</span>
+
+    <span class="n">opt_names</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="p">{}</span>   <span class="c1"># OPT_X  → parameter name (with leading &#39;d&#39;)</span>
+    <span class="n">opt_dims</span><span class="p">:</span>  <span class="nb">dict</span> <span class="o">=</span> <span class="p">{}</span>   <span class="c1"># OPT_X  → cDimension string</span>
+    <span class="n">out_names</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="p">{}</span>   <span class="c1"># OUT_X  → output name (no leading &#39;d&#39;)</span>
+    <span class="n">out_negs</span><span class="p">:</span>  <span class="nb">dict</span> <span class="o">=</span> <span class="p">{}</span>   <span class="c1"># OUT_X  → cNeg unit string</span>
+
+    <span class="k">for</span> <span class="n">_fname</span><span class="p">,</span> <span class="n">url</span> <span class="ow">in</span> <span class="n">c_file_entries</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">with</span> <span class="n">urllib</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span> <span class="k">as</span> <span class="n">resp</span><span class="p">:</span>
+                <span class="n">source</span> <span class="o">=</span> <span class="n">resp</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="s2">&quot;replace&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="k">continue</span>
+
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">_opt_name_re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="n">source</span><span class="p">):</span>
+            <span class="n">opt_names</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">dim</span> <span class="ow">in</span> <span class="n">_opt_dim_re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="n">source</span><span class="p">):</span>
+            <span class="n">opt_dims</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">dim</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">_out_name_re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="n">source</span><span class="p">):</span>
+            <span class="n">out_names</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">neg</span> <span class="ow">in</span> <span class="n">_out_neg_re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="n">source</span><span class="p">):</span>
+            <span class="n">out_negs</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">neg</span>
+
+    <span class="c1"># Sentinel to distinguish &quot;not in map&quot; from &quot;explicitly None&quot;</span>
+    <span class="n">_MISSING</span> <span class="o">=</span> <span class="nb">object</span><span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_resolve_unit</span><span class="p">(</span><span class="n">unit_str</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Map a cNeg string to an astropy unit.&quot;&quot;&quot;</span>
+        <span class="n">val</span> <span class="o">=</span> <span class="n">_VPLANET_UNIT_MAP</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">unit_str</span><span class="p">,</span> <span class="n">_MISSING</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">val</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">_MISSING</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">val</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">u</span><span class="o">.</span><span class="n">Unit</span><span class="p">(</span><span class="n">unit_str</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="n">result</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="c1"># Input options — use cDimension</span>
+    <span class="k">for</span> <span class="n">opt_key</span><span class="p">,</span> <span class="n">dim_str</span> <span class="ow">in</span> <span class="n">opt_dims</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">opt_names</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">opt_key</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">name</span><span class="p">:</span>
+            <span class="n">result</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">_VPLANET_DIMENSION_MAP</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">dim_str</span><span class="p">)</span>
+
+    <span class="c1"># Output parameters — use cNeg (preferred, more specific)</span>
+    <span class="k">for</span> <span class="n">out_key</span><span class="p">,</span> <span class="n">neg_str</span> <span class="ow">in</span> <span class="n">out_negs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">out_names</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">out_key</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">name</span><span class="p">:</span>
+            <span class="n">result</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">_resolve_unit</span><span class="p">(</span><span class="n">neg_str</span><span class="p">)</span>
+
+    <span class="c1"># Apply per-parameter overrides</span>
+    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">unit</span> <span class="ow">in</span> <span class="n">_VPLANET_PARAM_OVERRIDES</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">result</span><span class="p">:</span>
+            <span class="n">result</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">unit</span>
+
+    <span class="k">return</span> <span class="n">result</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">get_vplanet_units_source</span><span class="p">(</span><span class="n">parameter</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Look up the unit for a vplanet parameter by parsing the C source code</span>
+<span class="sd">    on GitHub.</span>
+
+<span class="sd">    On the first call the entire vplanet ``src/*.c`` tree is fetched from</span>
+<span class="sd">    GitHub and cached in memory.  Subsequent calls use the in-process cache,</span>
+<span class="sd">    so only one round-trip of network requests is ever made per interpreter</span>
+<span class="sd">    session.</span>
+
+<span class="sd">    The lookup searches two complementary patterns in the C source:</span>
+
+<span class="sd">    * **Input options** (``fvInitializeOptions*`` functions): uses the</span>
+<span class="sd">      ``cDimension`` field, which contains a qualitative dimension description</span>
+<span class="sd">      like ``&quot;temperature&quot;`` or ``&quot;energy/time&quot;``.</span>
+<span class="sd">      Mapped via ``_VPLANET_DIMENSION_MAP`` to a canonical SI astropy unit.</span>
+
+<span class="sd">    * **Output parameters** (``fvInitializeOutput*`` functions): uses the</span>
+<span class="sd">      ``cNeg`` field, which contains the display unit string such as ``&quot;K&quot;``</span>
+<span class="sd">      or ``&quot;TW&quot;``.</span>
+<span class="sd">      Mapped via ``_VPLANET_UNIT_MAP`` (or ``astropy.units.Unit()`` as a</span>
+<span class="sd">      fallback).</span>
+
+<span class="sd">    The GitHub tag is matched to the installed ``vplanet.__version__``,</span>
+<span class="sd">    falling back to ``main``.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    parameter : str</span>
+<span class="sd">        VPLanet parameter name.  Both the option form with a leading</span>
+<span class="sd">        ``&quot;d&quot;`` (e.g. ``&quot;dTMan&quot;``) and the output form without</span>
+<span class="sd">        (e.g. ``&quot;TMan&quot;``) are accepted.  The function tries the exact name</span>
+<span class="sd">        first, then with/without the ``&quot;d&quot;`` prefix.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    astropy.units.Unit or None</span>
+<span class="sd">        The associated unit, or ``None`` for dimensionless / VPLanet-specific</span>
+<span class="sd">        constants.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If the parameter is not found in any source file.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; get_vplanet_units_source(&quot;TJumpUMan&quot;)   # output form</span>
+<span class="sd">    Unit(&quot;K&quot;)</span>
+<span class="sd">    &gt;&gt;&gt; get_vplanet_units_source(&quot;dTMan&quot;)       # input option form</span>
+<span class="sd">    Unit(&quot;K&quot;)</span>
+<span class="sd">    &gt;&gt;&gt; get_vplanet_units_source(&quot;TMan&quot;)        # output form without &#39;d&#39;</span>
+<span class="sd">    Unit(&quot;K&quot;)</span>
+<span class="sd">    &gt;&gt;&gt; get_vplanet_units_source(&quot;HflowUMan&quot;)   # heat flow output</span>
+<span class="sd">    Unit(&quot;TW&quot;)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">global</span> <span class="n">_VPLANET_SOURCE_CACHE</span>
+
+    <span class="k">if</span> <span class="n">_VPLANET_SOURCE_CACHE</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">_VPLANET_SOURCE_CACHE</span> <span class="o">=</span> <span class="n">_fetch_source_units</span><span class="p">()</span>
+
+    <span class="n">cache</span> <span class="o">=</span> <span class="n">_VPLANET_SOURCE_CACHE</span>
+
+    <span class="c1"># Try exact name first (handles both &quot;TMan&quot; output and &quot;dTMan&quot; option form)</span>
+    <span class="k">if</span> <span class="n">parameter</span> <span class="ow">in</span> <span class="n">cache</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">cache</span><span class="p">[</span><span class="n">parameter</span><span class="p">]</span>
+
+    <span class="c1"># Try without leading &#39;d&#39; (output names never have it)</span>
+    <span class="k">if</span> <span class="n">parameter</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;d&quot;</span><span class="p">):</span>
+        <span class="n">no_d</span> <span class="o">=</span> <span class="n">parameter</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+        <span class="k">if</span> <span class="n">no_d</span> <span class="ow">in</span> <span class="n">cache</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">cache</span><span class="p">[</span><span class="n">no_d</span><span class="p">]</span>
+
+    <span class="c1"># Try with leading &#39;d&#39; added (option names always have it)</span>
+    <span class="n">with_d</span> <span class="o">=</span> <span class="s2">&quot;d&quot;</span> <span class="o">+</span> <span class="n">parameter</span>
+    <span class="k">if</span> <span class="n">with_d</span> <span class="ow">in</span> <span class="n">cache</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">cache</span><span class="p">[</span><span class="n">with_d</span><span class="p">]</span>
+
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;Parameter </span><span class="si">{</span><span class="n">parameter</span><span class="si">!r}</span><span class="s2"> was not found in the vplanet source code. &quot;</span>
+        <span class="s2">&quot;Check that the parameter name is correct (case-sensitive).&quot;</span>
+    <span class="p">)</span>
+
+
+<div class="viewcode-block" id="VplanetParameters">
+<a class="viewcode-back" href="../../api.html#vplanet_inference.VplanetParameters">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">VplanetParameters</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">names</span><span class="p">,</span> <span class="n">units</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">true</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">uncertainty</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+
+        <span class="c1"># required</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">names</span> <span class="o">=</span> <span class="n">names</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">units</span> <span class="o">=</span> <span class="n">units</span>
+
+        <span class="c1"># optional</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span> <span class="o">=</span> <span class="n">bounds</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">true</span> <span class="o">=</span> <span class="n">true</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">uncertainty</span> <span class="o">=</span> <span class="n">uncertainty</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">labels</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">labels</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">labels</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">names</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">labels</span> <span class="o">=</span> <span class="n">labels</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">num</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">names</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">units</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dict_units</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">names</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">units</span><span class="p">))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dict_bounds</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">names</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">true</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dict_true</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">names</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">true</span><span class="p">))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dict_data</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">names</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">labels</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dict_labels</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">names</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="p">))</span>
+
+
+<div class="viewcode-block" id="VplanetParameters.set_data">
+<a class="viewcode-back" href="../../api.html#vplanet_inference.VplanetParameters.set_data">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">true</span><span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">true</span> <span class="o">=</span> <span class="n">true</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">true</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">uncertainty</span><span class="p">])</span><span class="o">.</span><span class="n">T</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">dict_true</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">names</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">true</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dict_data</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">names</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">))</span></div>
+
+
+
+<div class="viewcode-block" id="VplanetParameters.get_true_units">
+<a class="viewcode-back" href="../../api.html#vplanet_inference.VplanetParameters.get_true_units">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_true_units</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">param_name</span><span class="p">):</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">true</span><span class="p">[</span><span class="n">param_name</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">units</span><span class="p">[</span><span class="n">param_name</span><span class="p">]</span></div>
+</div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_get_physical_unit</span><span class="p">(</span><span class="n">unit</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the underlying `~astropy.units.UnitBase` for *unit*, unwrapping</span>
+<span class="sd">    logarithmic (e.g. ``u.dex(...)``) and negated units so that</span>
+<span class="sd">    :py:meth:`~astropy.units.UnitBase.is_equivalent` works reliably.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">unit</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="c1"># Logarithmic wrapper (e.g. u.dex(u.erg/u.s))</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">unit</span><span class="p">,</span> <span class="n">u</span><span class="o">.</span><span class="n">LogUnit</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">unit</span><span class="o">.</span><span class="n">physical_unit</span>
+    <span class="c1"># Negated / scaled unit (e.g. -u.dimensionless_unscaled) — strip the scale</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">unit</span><span class="p">,</span> <span class="n">u</span><span class="o">.</span><span class="n">CompositeUnit</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">u</span><span class="o">.</span><span class="n">CompositeUnit</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">unit</span><span class="o">.</span><span class="n">bases</span><span class="p">,</span> <span class="n">unit</span><span class="o">.</span><span class="n">powers</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">unit</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">check_units</span><span class="p">(</span><span class="n">inparams</span><span class="p">,</span> <span class="n">outparams</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check that the astropy units supplied in *inparams* and *outparams* are</span>
+<span class="sd">    physically consistent with the default units for those parameters.</span>
+
+<span class="sd">    &quot;Consistent&quot; means the two units describe the *same physical dimension*,</span>
+<span class="sd">    i.e. they are interconvertible (e.g. ``u.Msun`` and ``u.M_earth`` are</span>
+<span class="sd">    both mass).  The actual numeric scale does not matter — VPLanet performs</span>
+<span class="sd">    unit conversions internally.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    inparams : dict</span>
+<span class="sd">        Input-parameter dict passed to :class:`VplanetModel`, of the form</span>
+<span class="sd">        ``{&quot;body.ParamName&quot;: astropy_unit, ...}``.</span>
+<span class="sd">    outparams : dict, optional</span>
+<span class="sd">        Output-parameter dict passed to :class:`VplanetModel`, of the form</span>
+<span class="sd">        ``{&quot;final.body.ParamName&quot;: astropy_unit, ...}``.</span>
+<span class="sd">    source : bool, optional</span>
+<span class="sd">        If ``False`` (default), look up units by parsing ``vplanet -H``</span>
+<span class="sd">        runtime output via :func:`get_vplanet_units`.  If ``True``, look up</span>
+<span class="sd">        units by parsing the vplanet C source code on GitHub via</span>
+<span class="sd">        :func:`get_vplanet_units_source`.  The source-based lookup is more</span>
+<span class="sd">        precise for input options (uses the exact ``cDimension`` field) and</span>
+<span class="sd">        caches results after the first call.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict</span>
+<span class="sd">        A summary dict with three keys:</span>
+
+<span class="sd">        ``&quot;consistent&quot;``</span>
+<span class="sd">            List of ``(key, user_unit, vplanet_unit)`` tuples that passed.</span>
+<span class="sd">        ``&quot;inconsistent&quot;``</span>
+<span class="sd">            List of ``(key, user_unit, vplanet_unit)`` tuples that failed —</span>
+<span class="sd">            the two units have different physical dimensions.</span>
+<span class="sd">        ``&quot;unknown&quot;``</span>
+<span class="sd">            List of ``(key, user_unit)`` tuples for parameters that were not</span>
+<span class="sd">            found in the lookup source, or where either unit is ``None`` /</span>
+<span class="sd">            unmapped.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If any inconsistencies are found, a ``ValueError`` is raised listing</span>
+<span class="sd">        every problematic parameter so all issues are visible at once.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; import astropy.units as u</span>
+<span class="sd">    &gt;&gt;&gt; inparams  = {&quot;star.dMass&quot;: u.Msun, &quot;star.dAge&quot;: u.yr}</span>
+<span class="sd">    &gt;&gt;&gt; outparams = {&quot;final.star.Luminosity&quot;: u.Lsun}</span>
+<span class="sd">    &gt;&gt;&gt; check_units(inparams, outparams)              # uses vplanet -H</span>
+<span class="sd">    &gt;&gt;&gt; check_units(inparams, outparams, source=True) # uses GitHub C source</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Build the reference unit lookup depending on the chosen backend.</span>
+    <span class="k">if</span> <span class="n">source</span><span class="p">:</span>
+        <span class="c1"># Ensure the source cache is populated once, then use it as a dict.</span>
+        <span class="k">global</span> <span class="n">_VPLANET_SOURCE_CACHE</span>
+        <span class="k">if</span> <span class="n">_VPLANET_SOURCE_CACHE</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">_VPLANET_SOURCE_CACHE</span> <span class="o">=</span> <span class="n">_fetch_source_units</span><span class="p">()</span>
+        <span class="n">_lookup</span> <span class="o">=</span> <span class="n">_VPLANET_SOURCE_CACHE</span>
+        <span class="n">_not_found_label</span> <span class="o">=</span> <span class="s2">&quot;(not in source)&quot;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">_lookup</span> <span class="o">=</span> <span class="n">get_vplanet_units</span><span class="p">()</span>
+        <span class="n">_not_found_label</span> <span class="o">=</span> <span class="s2">&quot;(not in vplanet -H)&quot;</span>
+
+    <span class="n">consistent</span>   <span class="o">=</span> <span class="p">[]</span>   <span class="c1"># (key, user_unit, vp_unit)</span>
+    <span class="n">inconsistent</span> <span class="o">=</span> <span class="p">[]</span>   <span class="c1"># (key, user_unit, vp_unit)</span>
+    <span class="c1"># _unknown_ext tracks (key, user_unit, vp_unit_or_None, reason) internally</span>
+    <span class="c1"># so the report can give a precise label per entry.</span>
+    <span class="c1"># reason values:</span>
+    <span class="c1">#   &quot;not_found&quot;  — param absent from the lookup entirely</span>
+    <span class="c1">#   &quot;skipped&quot;    — param found but user_unit=None (user opted out of check)</span>
+    <span class="c1">#   &quot;vp_none&quot;    — param found but vplanet has no standard unit for it</span>
+    <span class="n">_unknown_ext</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="c1"># Combine both dicts</span>
+    <span class="n">all_params</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">if</span> <span class="n">inparams</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">all_params</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">inparams</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">outparams</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">all_params</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">outparams</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">user_unit</span> <span class="ow">in</span> <span class="n">all_params</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="c1"># The VPLanet parameter name is always the last component of the key</span>
+        <span class="c1"># e.g. &quot;star.dMass&quot; → &quot;dMass&quot;,  &quot;final.star.Luminosity&quot; → &quot;Luminosity&quot;</span>
+        <span class="n">param_name</span> <span class="o">=</span> <span class="n">key</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="c1"># Resolve vplanet unit from the chosen backend.</span>
+        <span class="k">if</span> <span class="n">source</span><span class="p">:</span>
+            <span class="c1"># Source dict uses exact names; try with/without &#39;d&#39; prefix to</span>
+            <span class="c1"># match both input option names and output parameter names.</span>
+            <span class="n">_candidates</span> <span class="o">=</span> <span class="p">[</span><span class="n">param_name</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">param_name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;d&quot;</span><span class="p">):</span>
+                <span class="n">_candidates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">param_name</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">_candidates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;d&quot;</span> <span class="o">+</span> <span class="n">param_name</span><span class="p">)</span>
+
+            <span class="n">_found_key</span> <span class="o">=</span> <span class="nb">next</span><span class="p">((</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">_candidates</span> <span class="k">if</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">_lookup</span><span class="p">),</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">_found_key</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">_unknown_ext</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">key</span><span class="p">,</span> <span class="n">user_unit</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;not_found&quot;</span><span class="p">))</span>
+                <span class="k">continue</span>
+            <span class="n">vp_unit</span> <span class="o">=</span> <span class="n">_lookup</span><span class="p">[</span><span class="n">_found_key</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">param_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_lookup</span><span class="p">:</span>
+                <span class="n">_unknown_ext</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">key</span><span class="p">,</span> <span class="n">user_unit</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;not_found&quot;</span><span class="p">))</span>
+                <span class="k">continue</span>
+            <span class="n">vp_unit</span> <span class="o">=</span> <span class="n">_lookup</span><span class="p">[</span><span class="n">param_name</span><span class="p">]</span>
+
+        <span class="c1"># User opted out of unit checking for this parameter (e.g. dimensionless).</span>
+        <span class="k">if</span> <span class="n">user_unit</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">_unknown_ext</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">key</span><span class="p">,</span> <span class="n">user_unit</span><span class="p">,</span> <span class="n">vp_unit</span><span class="p">,</span> <span class="s2">&quot;skipped&quot;</span><span class="p">))</span>
+            <span class="k">continue</span>
+
+        <span class="c1"># VPLanet maps this to a custom/non-standard constant — can&#39;t compare.</span>
+        <span class="k">if</span> <span class="n">vp_unit</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">_unknown_ext</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">key</span><span class="p">,</span> <span class="n">user_unit</span><span class="p">,</span> <span class="n">vp_unit</span><span class="p">,</span> <span class="s2">&quot;vp_none&quot;</span><span class="p">))</span>
+            <span class="k">continue</span>
+
+        <span class="n">user_phys</span> <span class="o">=</span> <span class="n">_get_physical_unit</span><span class="p">(</span><span class="n">user_unit</span><span class="p">)</span>
+        <span class="n">vp_phys</span>   <span class="o">=</span> <span class="n">_get_physical_unit</span><span class="p">(</span><span class="n">vp_unit</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">user_phys</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">vp_phys</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">_unknown_ext</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">key</span><span class="p">,</span> <span class="n">user_unit</span><span class="p">,</span> <span class="n">vp_unit</span><span class="p">,</span> <span class="s2">&quot;vp_none&quot;</span><span class="p">))</span>
+            <span class="k">continue</span>
+
+        <span class="k">if</span> <span class="n">user_phys</span><span class="o">.</span><span class="n">is_equivalent</span><span class="p">(</span><span class="n">vp_phys</span><span class="p">):</span>
+            <span class="n">consistent</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">key</span><span class="p">,</span> <span class="n">user_unit</span><span class="p">,</span> <span class="n">vp_unit</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">inconsistent</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">key</span><span class="p">,</span> <span class="n">user_unit</span><span class="p">,</span> <span class="n">vp_unit</span><span class="p">))</span>
+
+    <span class="c1"># ------------------------------------------------------------------ #</span>
+    <span class="c1"># Report                                                               #</span>
+    <span class="c1"># ------------------------------------------------------------------ #</span>
+    <span class="n">all_keys</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="p">[</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="o">*</span><span class="n">_</span> <span class="ow">in</span> <span class="n">consistent</span><span class="p">]</span>
+        <span class="o">+</span> <span class="p">[</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="o">*</span><span class="n">_</span> <span class="ow">in</span> <span class="n">inconsistent</span><span class="p">]</span>
+        <span class="o">+</span> <span class="p">[</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="o">*</span><span class="n">_</span> <span class="ow">in</span> <span class="n">_unknown_ext</span><span class="p">]</span>
+    <span class="p">)</span>
+    <span class="n">col_w</span> <span class="o">=</span> <span class="nb">max</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">all_keys</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">{</span><span class="s1">&#39;Parameter&#39;</span><span class="si">:</span><span class="s2">&lt;</span><span class="si">{</span><span class="n">col_w</span><span class="si">}}</span><span class="s2">  </span><span class="si">{</span><span class="s1">&#39;User unit&#39;</span><span class="si">:</span><span class="s2">&lt;20</span><span class="si">}</span><span class="s2">  </span><span class="si">{</span><span class="s1">&#39;VPLanet unit&#39;</span><span class="si">:</span><span class="s2">&lt;20</span><span class="si">}</span><span class="s2">  Status&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;-&quot;</span> <span class="o">*</span> <span class="p">(</span><span class="n">col_w</span> <span class="o">+</span> <span class="mi">64</span><span class="p">))</span>
+
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">u_unit</span><span class="p">,</span> <span class="n">vp_unit</span> <span class="ow">in</span> <span class="n">consistent</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">:</span><span class="s2">&lt;</span><span class="si">{</span><span class="n">col_w</span><span class="si">}}</span><span class="s2">  </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">u_unit</span><span class="p">)</span><span class="si">:</span><span class="s2">&lt;20</span><span class="si">}</span><span class="s2">  </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">vp_unit</span><span class="p">)</span><span class="si">:</span><span class="s2">&lt;20</span><span class="si">}</span><span class="s2">  OK&quot;</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">u_unit</span><span class="p">,</span> <span class="n">vp_unit</span> <span class="ow">in</span> <span class="n">inconsistent</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">:</span><span class="s2">&lt;</span><span class="si">{</span><span class="n">col_w</span><span class="si">}}</span><span class="s2">  </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">u_unit</span><span class="p">)</span><span class="si">:</span><span class="s2">&lt;20</span><span class="si">}</span><span class="s2">  </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">vp_unit</span><span class="p">)</span><span class="si">:</span><span class="s2">&lt;20</span><span class="si">}</span><span class="s2">  INCONSISTENT ✗&quot;</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">u_unit</span><span class="p">,</span> <span class="n">vp_unit</span><span class="p">,</span> <span class="n">reason</span> <span class="ow">in</span> <span class="n">_unknown_ext</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">reason</span> <span class="o">==</span> <span class="s2">&quot;not_found&quot;</span><span class="p">:</span>
+            <span class="n">vp_label</span> <span class="o">=</span> <span class="n">_not_found_label</span>
+            <span class="n">status</span>   <span class="o">=</span> <span class="s2">&quot;unknown&quot;</span>
+        <span class="k">elif</span> <span class="n">reason</span> <span class="o">==</span> <span class="s2">&quot;skipped&quot;</span><span class="p">:</span>
+            <span class="c1"># Show what vplanet expects so the user can decide whether to set a unit.</span>
+            <span class="n">vp_label</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">vp_unit</span><span class="p">)</span> <span class="k">if</span> <span class="n">vp_unit</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s2">&quot;(dimensionless)&quot;</span>
+            <span class="n">status</span>   <span class="o">=</span> <span class="s2">&quot;skipped&quot;</span>
+        <span class="k">else</span><span class="p">:</span>  <span class="c1"># vp_none</span>
+            <span class="n">vp_label</span> <span class="o">=</span> <span class="s2">&quot;(no standard unit)&quot;</span>
+            <span class="n">status</span>   <span class="o">=</span> <span class="s2">&quot;skipped&quot;</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">:</span><span class="s2">&lt;</span><span class="si">{</span><span class="n">col_w</span><span class="si">}}</span><span class="s2">  </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">u_unit</span><span class="p">)</span><span class="si">:</span><span class="s2">&lt;20</span><span class="si">}</span><span class="s2">  </span><span class="si">{</span><span class="n">vp_label</span><span class="si">:</span><span class="s2">&lt;20</span><span class="si">}</span><span class="s2">  </span><span class="si">{</span><span class="n">status</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">inconsistent</span><span class="p">:</span>
+        <span class="n">lines</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;The following parameters have incompatible units:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">u_unit</span><span class="p">,</span> <span class="n">vp_unit</span> <span class="ow">in</span> <span class="n">inconsistent</span><span class="p">:</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">: user supplied </span><span class="si">{</span><span class="n">u_unit</span><span class="si">!r}</span><span class="s2">, &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;vplanet default unit has dimension &#39;</span><span class="si">{</span><span class="n">vp_unit</span><span class="o">.</span><span class="n">physical_type</span><span class="si">}</span><span class="s2">&#39; &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;(e.g. </span><span class="si">{</span><span class="n">vp_unit</span><span class="si">}</span><span class="s2">)&quot;</span>
+            <span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lines</span><span class="p">))</span>
+
+    <span class="c1"># Return value: keep unknown as (key, user_unit) tuples for backward compat.</span>
+    <span class="n">unknown</span> <span class="o">=</span> <span class="p">[(</span><span class="n">key</span><span class="p">,</span> <span class="n">u_unit</span><span class="p">)</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">u_unit</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_reason</span> <span class="ow">in</span> <span class="n">_unknown_ext</span><span class="p">]</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;consistent&quot;</span><span class="p">:</span> <span class="n">consistent</span><span class="p">,</span> <span class="s2">&quot;inconsistent&quot;</span><span class="p">:</span> <span class="n">inconsistent</span><span class="p">,</span> <span class="s2">&quot;unknown&quot;</span><span class="p">:</span> <span class="n">unknown</span><span class="p">}</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Jessica Birky.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

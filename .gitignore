@@ -2,3 +2,5 @@
 .pdf
 .ipynb_checkpoints/*
 */__pycache__/*
+docs/case_studies/output/*
+docs/tutorials/output/*

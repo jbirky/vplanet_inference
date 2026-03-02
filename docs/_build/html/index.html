@@ -1,0 +1,249 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>vplanet_inference &mdash; vplanet_inference 0.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="_static/custom.css?v=a6a68382" />
+      <link rel="stylesheet" type="text/css" href="_static/fonts.css?v=5583d106" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=d45e8c67"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Installation" href="installation.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="#" class="icon icon-home">
+            vplanet_inference
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/index.html">Tutorial Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/01_vplanet_infiles.html">Setting Up and Running VPLanet Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/02_sensitivity_analysis.html">Global Sensitivity Analysis with <code class="docutils literal notranslate"><span class="pre">vplanet_inference</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/03_mcmc_custom_likelihood.html">MCMC with VPLanet and <code class="docutils literal notranslate"><span class="pre">alabi</span></code></a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="#">vplanet_inference</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="#" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">vplanet_inference</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="vplanet-inference">
+<h1>vplanet_inference<a class="headerlink" href="#vplanet-inference" title="Link to this heading"></a></h1>
+<p>Python tools for statistical inference with <a class="reference external" href="https://github.com/VirtualPlanetaryLaboratory/vplanet">VPLanet</a> — a planetary system evolution simulator.</p>
+<p><code class="docutils literal notranslate"><span class="pre">vplanet_inference</span></code> provides a high-level Python interface for:</p>
+<ul class="simple">
+<li><p>Running VPLanet forward models with unit-aware parameter substitution</p></li>
+<li><p>Performing parameter sweeps and sensitivity analysis</p></li>
+<li><p>Running Bayesian inference (MCMC / nested sampling) constrained by observational data</p></li>
+</ul>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#requirements">Requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#setting-up-a-conda-environment">Setting up a conda environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#installing-vplanet-inference">Installing vplanet_inference</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#optional-dependency-alabi">Optional dependency: alabi</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#verifying-the-installation">Verifying the installation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="quickstart.html#running-a-forward-model">Running a forward model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quickstart.html#tracking-time-evolution">Tracking time evolution</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quickstart.html#two-body-tidal-evolution-example">Two-body tidal evolution example</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/index.html">Tutorial Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/01_vplanet_infiles.html">Setting Up and Running VPLanet Models</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/01_vplanet_infiles.html#1.-VPLanet-Input-Files:-The-Manual-Way">1. VPLanet Input Files: The Manual Way</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/01_vplanet_infiles.html#1.1-The-Primary-Input-File-(vpl.in)">1.1 The Primary Input File (<code class="docutils literal notranslate"><span class="pre">vpl.in</span></code>)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/01_vplanet_infiles.html#1.2-Body-Files-(star.in)">1.2 Body Files (<code class="docutils literal notranslate"><span class="pre">star.in</span></code>)</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/01_vplanet_infiles.html#2.-Running-VPLanet-from-the-Command-Line">2. Running VPLanet from the Command Line</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/01_vplanet_infiles.html#3.-Understanding-VPLanet-Output-Files">3. Understanding VPLanet Output Files</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/01_vplanet_infiles.html#3.1-The-Log-File">3.1 The Log File</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/01_vplanet_infiles.html#3.2-The-Forward-File">3.2 The Forward File</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/01_vplanet_infiles.html#4.-Running-the-Same-Model-Through-vplanet_inference">4. Running the Same Model Through <code class="docutils literal notranslate"><span class="pre">vplanet_inference</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/01_vplanet_infiles.html#4.1-Declaring-Input-Parameters-(inparams)">4.1 Declaring Input Parameters (<code class="docutils literal notranslate"><span class="pre">inparams</span></code>)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/01_vplanet_infiles.html#4.2-Declaring-Output-Parameters-(outparams)">4.2 Declaring Output Parameters (<code class="docutils literal notranslate"><span class="pre">outparams</span></code>)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/01_vplanet_infiles.html#4.3-Running-a-Single-Model">4.3 Running a Single Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/01_vplanet_infiles.html#4.4-Varying-Input-Parameters">4.4 Varying Input Parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/01_vplanet_infiles.html#4.5-Tracking-Time-Evolution">4.5 Tracking Time Evolution</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/01_vplanet_infiles.html#Summary">Summary</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/02_sensitivity_analysis.html">Global Sensitivity Analysis with <code class="docutils literal notranslate"><span class="pre">vplanet_inference</span></code></a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/02_sensitivity_analysis.html#What-we-cover">What we cover</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/02_sensitivity_analysis.html#1.-Sobol-Sensitivity-Indices">1. Sobol Sensitivity Indices</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/02_sensitivity_analysis.html#Workflow">Workflow</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/02_sensitivity_analysis.html#2.-Setting-Up-the-VPLanet-Model">2. Setting Up the VPLanet Model</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/02_sensitivity_analysis.html#2.1-Declaring-Input-Parameters">2.1 Declaring Input Parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/02_sensitivity_analysis.html#2.2-Initializing-VplanetModel">2.2 Initializing <code class="docutils literal notranslate"><span class="pre">VplanetModel</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/02_sensitivity_analysis.html#2.3-Defining-a-Model-Wrapper">2.3 Defining a Model Wrapper</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/02_sensitivity_analysis.html#3.-Running-the-Sensitivity-Analysis">3. Running the Sensitivity Analysis</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/02_sensitivity_analysis.html#3.1-Generating-the-Saltelli-Sample">3.1 Generating the Saltelli Sample</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/02_sensitivity_analysis.html#3.2-Evaluating-the-Model">3.2 Evaluating the Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/02_sensitivity_analysis.html#3.3-Computing-Sobol-Indices">3.3 Computing Sobol Indices</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/02_sensitivity_analysis.html#4.-Visualizing-Results">4. Visualizing Results</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/02_sensitivity_analysis.html#Interpreting-the-Results">Interpreting the Results</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/02_sensitivity_analysis.html#5.-Bar-Chart-of-Sensitivity-by-Parameter">5. Bar Chart of Sensitivity by Parameter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/02_sensitivity_analysis.html#6.-Using-AnalyzeVplanetModel-(YAML-Workflow)">6. Using <code class="docutils literal notranslate"><span class="pre">AnalyzeVplanetModel</span></code> (YAML Workflow)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/02_sensitivity_analysis.html#Summary">Summary</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/03_mcmc_custom_likelihood.html">MCMC with VPLanet and <code class="docutils literal notranslate"><span class="pre">alabi</span></code></a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/03_mcmc_custom_likelihood.html#Problem:-inferring-TRAPPIST-1-stellar-properties">Problem: inferring TRAPPIST-1 stellar properties</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/03_mcmc_custom_likelihood.html#1.-Configure-the-VPLanet-Forward-Model">1. Configure the VPLanet Forward Model</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/03_mcmc_custom_likelihood.html#Sanity-check:-single-run-at-known-TRAPPIST-1-values">Sanity check: single run at known TRAPPIST-1 values</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/03_mcmc_custom_likelihood.html#2.-Observational-Data-and-Priors">2. Observational Data and Priors</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/03_mcmc_custom_likelihood.html#3.-Custom-Likelihood-and-Prior-Functions">3. Custom Likelihood and Prior Functions</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/03_mcmc_custom_likelihood.html#3.1-Custom-Log-Likelihood">3.1 Custom Log-Likelihood</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/03_mcmc_custom_likelihood.html#3.2-Log-Prior">3.2 Log-Prior</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/03_mcmc_custom_likelihood.html#3.3-Log-Posterior">3.3 Log-Posterior</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/03_mcmc_custom_likelihood.html#4.-Option-A-—-Direct-MCMC-with-dynesty">4. Option A — Direct MCMC with <code class="docutils literal notranslate"><span class="pre">dynesty</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/03_mcmc_custom_likelihood.html#5.-Option-B-—-Direct-MCMC-with-emcee">5. Option B — Direct MCMC with <code class="docutils literal notranslate"><span class="pre">emcee</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/03_mcmc_custom_likelihood.html#6.-Option-C-—-Surrogate-MCMC-with-alabi">6. Option C — Surrogate MCMC with <code class="docutils literal notranslate"><span class="pre">alabi</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/03_mcmc_custom_likelihood.html#Installation">Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/03_mcmc_custom_likelihood.html#Workflow">Workflow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/03_mcmc_custom_likelihood.html#6.1-Setting-Up-the-Prior-Sampler-and-Transform">6.1 Setting Up the Prior Sampler and Transform</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/03_mcmc_custom_likelihood.html#6.2-Initialising-the-Surrogate-Model">6.2 Initialising the Surrogate Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/03_mcmc_custom_likelihood.html#6.3-Active-Learning">6.3 Active Learning</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/03_mcmc_custom_likelihood.html#6.4-MCMC-on-the-Surrogate">6.4 MCMC on the Surrogate</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/03_mcmc_custom_likelihood.html#6.5-Reloading-a-Saved-Model">6.5 Reloading a Saved Model</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/03_mcmc_custom_likelihood.html#Summary">Summary</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api.html#vplanet-inference-model">vplanet_inference.model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#vplanet-inference-analysis">vplanet_inference.analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#vplanet-inference-parameters">vplanet_inference.parameters</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="installation.html" class="btn btn-neutral float-right" title="Installation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Jessica Birky.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

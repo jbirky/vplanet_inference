@@ -122,7 +122,10 @@ class AnalyzeVplanetModel(object):
 
     def format_theta(self, theta_var):
 
+        # defaults to running true values
         theta_run_dict = copy.copy(self.inparams_all.dict_true)
+        
+        # substitute variable parameters
         theta_var_dict = dict(zip(self.inparams_var.names, theta_var))
 
         for key in self.inparams_var.names:

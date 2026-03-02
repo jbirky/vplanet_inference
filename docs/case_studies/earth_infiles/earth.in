@@ -1,0 +1,40 @@
+# Earth body: radiogenic heating + thermal interior
+sName           earth
+saModules       radheat thermint
+
+# Physical properties (negative -> VPLanet Earth defaults, unit-independent)
+dMass           -1.0
+dRadius         -1.0
+dRotPeriod      -1.0
+dObliquity      0.410152
+dRadGyra        0.5
+dEcc            0.0167
+dSemi           -1
+
+# Radiogenic heating — 40K (substituted by vplanet_inference)
+d40KPowerMan    -1
+d40KPowerCore   -1
+d40KPowerCrust  -1
+
+# Radiogenic heating — other isotopes (default Earth values)
+d232ThPowerMan    -1
+d232ThPowerCore   -1
+d232ThPowerCrust  -1
+d235UPowerMan     -1
+d235UPowerCore    -1
+d235UPowerCrust   -1
+d238UPowerMan     -1
+d238UPowerCore    -1
+d238UPowerCrust   -1
+
+# Thermint initial conditions and rheological parameters
+dTMan           3000
+dTCore          6500
+dViscJumpMan    2.4
+dActViscMan     3e5
+dViscRef        6e7
+dEruptEff       0.10
+dDTChiRef       0
+
+# Output time series for visualization (overridden by vplanet_inference)
+saOutputOrder   -Time -TMan -TUMan -TCMB -TCore -HflowUMan -HflowCMB -RIC -ViscUMan -ViscLMan -FMeltUMan

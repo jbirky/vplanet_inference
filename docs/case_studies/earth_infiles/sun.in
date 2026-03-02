@@ -1,0 +1,9 @@
+# Host star: present-day Sun (fixed, no evolution)
+sName           sun
+saModules       stellar
+dMass           1.988410e+30
+dRadius         2.019571e+08
+dLuminosity     3.846e26
+dSemi           0
+dEcc            0
+sStellarModel   none

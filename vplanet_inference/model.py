@@ -7,7 +7,6 @@ import shutil
 import time
 import random
 import astropy.units as u
-from collections import OrderedDict
 
 __all__ = ["VplanetModel"]
 
@@ -26,7 +25,9 @@ class VplanetModel(object):
                  timesteps=None, 
                  time_init=5e6*u.yr, 
                  forward=True,
-                 verbose=True):
+                 verbose=True,
+                 quiet=True,
+                 debug=False):
         """
         Class for creating and executing VPLANET infiles.
 
@@ -51,12 +52,17 @@ class VplanetModel(object):
         self.sys_name = sys_name
         self.ninparam = len(inparams)
         self.verbose = verbose
+        self.quiet = quiet
+        self.debug = debug
+        
+        if self.quiet:
+            import logging
+            logging.getLogger("vplanet").setLevel(logging.CRITICAL)
 
-        # Output parameters
+        # Output parameters - preserve user-specified order; keys() and values()
+        # iterate in the same insertion order, so self.outparams[i] always
+        # corresponds to self.out_units[i].
         if outparams is not None:
-            # format into alphabetized ordered dictionary 
-            outparams = OrderedDict(sorted(outparams.items()))
-
             self.outparams = list(outparams.keys())
             self.out_units = list(outparams.values())
             self.noutparam = len(self.outparams)
@@ -159,7 +165,11 @@ class VplanetModel(object):
         for file in self.infile_list: # vpl.in, primary.in, secondary.in
             with open(os.path.join(self.inpath, file), 'r') as f:
                 file_in = f.read()
-                
+
+            # Strip inline comments (everything from # to end of line) so that
+            # substitutions work regardless of whether template lines have # comments
+            file_in = re.sub(r'[ \t]*#[^\n]*', '', file_in)
+
             ind = np.where(param_file_all == file.strip('.in'))[0]
             theta_file = theta_conv[ind]
             param_name_file = param_name_all[ind]
@@ -169,44 +179,58 @@ class VplanetModel(object):
                 output_order_vars = out_name_split[1][np.where(out_name_split[0] == file.strip('.in'))[0]]
                 output_order_str = "Time " + " ".join(output_order_vars)
 
-                # Set variables for tracking evolution
-                file_in = re.sub("%s*" % "saOutputOrder", "%s %s #" % ("saOutputOrder", output_order_str), file_in)
-                
+                # Set variables for tracking evolution (replace entire saOutputOrder line)
+                file_in = re.sub(r"saOutputOrder[^\n]*", "saOutputOrder %s #" % output_order_str, file_in)
+
             # iterate over all input parameters, and substitute parameters in appropriate files
             for i in range(len(theta_file)):
-                file_in = re.sub("%s(.*?)#" % param_name_file[i], "%s %.10e #" % (param_name_file[i], theta_file[i]), file_in)
+                if self.debug:
+                    print(f"Setting {param_name_file[i]} to {theta_file[i]} in file {file}")
+
+                # Store original file content to check if substitution occurred
+                original_file_in = file_in
+
+                # Match "parameter value" with optional trailing comment (comments stripped above)
+                pattern = r"%s\s+[^\s\n]+" % re.escape(param_name_file[i])
+                replacement = "%s %.10e" % (param_name_file[i], theta_file[i])
+                file_in = re.sub(pattern, replacement, file_in)
+
+                # Check if the parameter was actually found and substituted
+                if file_in == original_file_in:
+                    raise ValueError(f"Parameter '{param_name_file[i]}' not found in file '{file}'. "
+                                   f"Make sure the parameter exists in the template file.")
 
                 # Set output timesteps to simulation stop time
                 if param_name_file[i] == 'dStopTime':
-                    file_in = re.sub("%s(.*?)#" % "dOutputTime", "%s %.10e #" % ("dOutputTime", theta_file[i]), file_in)
+                    file_in = re.sub(r"dOutputTime\s+\S+", "dOutputTime %.10e" % theta_file[i], file_in)
 
             # if VPL file
             if file == 'vpl.in':
-                file_in = re.sub("%s(.*?)#" % "sSystemName", "%s %s #" % ("sSystemName", self.sys_name), file_in)
+                file_in = re.sub(r"sSystemName\s+\S+", "sSystemName %s #" % self.sys_name, file_in)
 
                 # Set units to SI
-                file_in = re.sub("%s(.*?)#" % "sUnitMass", "%s %s #" % ("sUnitMass", "kg"), file_in)
-                file_in = re.sub("%s(.*?)#" % "sUnitLength", "%s %s #" % ("sUnitLength", "m"), file_in)
-                file_in = re.sub("%s(.*?)#" % "sUnitTime", "%s %s #" % ("sUnitTime", "sec"), file_in)
-                file_in = re.sub("%s(.*?)#" % "sUnitAngle", "%s %s #" % ("sUnitAngle", "rad"), file_in)
-                file_in = re.sub("%s(.*?)#" % "sUnitTemp", "%s %s #" % ("sUnitTemp", "K"), file_in)
+                file_in = re.sub(r"sUnitMass\s+\S+", "sUnitMass kg #", file_in)
+                file_in = re.sub(r"sUnitLength\s+\S+", "sUnitLength m #", file_in)
+                file_in = re.sub(r"sUnitTime\s+\S+", "sUnitTime sec #", file_in)
+                file_in = re.sub(r"sUnitAngle\s+\S+", "sUnitAngle rad #", file_in)
+                file_in = re.sub(r"sUnitTemp\s+\S+", "sUnitTemp K #", file_in)
 
                 # Set output timesteps (if specified, otherwise will default to same as dStopTime)
                 if self.timesteps is not None:
-                    file_in = re.sub("%s(.*?)#" % "dOutputTime", "%s %.10e #" % ("dOutputTime", self.timesteps), file_in)
+                    file_in = re.sub(r"dOutputTime\s+\S+", "dOutputTime %.10e #" % self.timesteps, file_in)
 
                 # Run evolution forward or backward
                 if self.forward == True:
-                    file_in = re.sub("%s(.*?)#" % "bDoForward", "%s %s #" % ("bDoForward", "1"), file_in)
-                    file_in = re.sub("%s(.*?)#" % "bDoBackward", "%s %s #" % ("bDoBackward", "0"), file_in)
+                    file_in = re.sub(r"bDoForward\s+\S+", "bDoForward 1 #", file_in)
+                    file_in = re.sub(r"bDoBackward\s+\S+", "bDoBackward 0 #", file_in)
                 else:
-                    file_in = re.sub("%s(.*?)#" % "bDoForward", "%s %s #" % ("bDoForward", "0"), file_in)
-                    file_in = re.sub("%s(.*?)#" % "bDoBackward", "%s %s #" % ("bDoBackward", "1"), file_in)
+                    file_in = re.sub(r"bDoForward\s+\S+", "bDoForward 0 #", file_in)
+                    file_in = re.sub(r"bDoBackward\s+\S+", "bDoBackward 1 #", file_in)
 
             else: # (not VPL file)
                 # Set output timesteps (if specified, otherwise will default to same as dStopTime)
                 if self.time_init is not None:
-                    file_in = re.sub("%s(.*?)#" % "dAge", "%s %.10e #" % ("dAge", self.time_init), file_in)
+                    file_in = re.sub(r"dAge\s+\S+", "dAge %.10e #" % self.time_init, file_in)
 
             write_file = os.path.join(outpath, file)
             with open(write_file, 'w') as f:
@@ -237,7 +261,15 @@ class VplanetModel(object):
                 try:
                     outvalues[i] = base.to(self.out_units[i]).value
                 except:
-                    outvalues[i] = np.nan
+                    # Some VPLanet modules (e.g. thermint) emit "(null)" as the unit
+                    # for certain outputs in the log file. vplot cannot parse "(null)",
+                    # so it assigns an empty unit string. Since vpl.in forces SI units
+                    # (sUnitMass kg, sUnitLength m, sUnitTime sec, sUnitTemp K), the
+                    # raw numerical value is already in SI — just take it directly.
+                    try:
+                        outvalues[i] = (base.value * self.out_units[i].si).to(self.out_units[i]).value
+                    except:
+                        outvalues[i] = np.nan
 
         return outvalues
 
@@ -267,7 +299,16 @@ class VplanetModel(object):
                         evol_out.append(body_out_array[ii].value)
                 else:
                     try:
-                        evol_out.append(body_out_array[ii].to(body_out_units[ii]))
+                        try:
+                            output_converted = body_out_array[ii].to(body_out_units[ii])
+                        except:
+                            # Some VPLanet modules (e.g. thermint) emit "(null)" as the unit
+                            # for certain outputs in the log file. vplot cannot parse "(null)",
+                            # so it assigns an empty unit string. Since vpl.in forces SI units
+                            # (sUnitMass kg, sUnitLength m, sUnitTime sec, sUnitTemp K), the
+                            # raw numerical value is already in SI — just take it directly.
+                            output_converted = (body_out_array[ii].value * body_out_units[ii].si).to(body_out_units[ii])
+                        evol_out.append(output_converted)
                     except:
                         print(f"Failed to convert parameter {bf} {body_out_names[ii]} to unit {body_out_units[ii]}")
                         print(f"{bf} {body_out_names[ii]} array: {body_out_array[ii]}")
