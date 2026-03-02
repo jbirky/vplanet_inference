@@ -1711,38 +1711,6 @@
    "source": [
     "vpi.plot_fisher_heatmap(FI, param_names=inlabels)"
    ]
-  },
-  {
-   "cell_type": "markdown",
-   "id": "cell33",
-   "metadata": {},
-   "source": [
-    "## Summary\n",
-    "\n",
-    "| Step | Code |\n",
-    "|------|------|\n",
-    "| Define inparams and units | `inparams = {\"earth.dTMan\": u.K, ...}` |\n",
-    "| Set observational constraints | `like_data = np.array([(mean, std), ...])` |\n",
-    "| Initialize VplanetModel | `vpm_final = vpi.VplanetModel(inparams, outparams, ...)` |\n",
-    "| Define log-likelihood | `lnl = -0.5 * sum(((model - obs) / sigma)^2)` |\n",
-    "| Single optimization | `scipy.optimize.minimize(neg_lnlike, x0, bounds=bounds, method='nelder-mead')` |\n",
-    "| Multi-start MLE | `mp.Pool(N_CORES).imap(opt_parallel, starting_points)` |\n",
-    "| Select best solution | `theta_best = results[argmax(lnl_values)]` |\n",
-    "\n",
-    "**Key takeaways:**\n",
-    "\n",
-    "- The MLE approach identifies parameter combinations consistent with present-day Earth observations\n",
-    "- Multi-start optimization guards against local optima in a non-convex likelihood landscape\n",
-    "- Well-constrained observables (e.g. inner core radius from seismology) strongly pin certain parameters\n",
-    "- Poorly constrained observables (e.g. mantle viscosity) leave some parameters degenerate\n",
-    "\n",
-    "**Next steps:**\n",
-    "\n",
-    "- Run the `analysis.py` script in this directory for a larger-scale MLE (100 starts, 32 cores)\n",
-    "- Quantify parameter uncertainties with MCMC — see **Tutorial 3** in the `tutorials/` directory\n",
-    "- Compute the Fisher Information Matrix at the MLE to estimate parameter covariances\n",
-    "  (implemented in `analysis.py` using the `fischer` module)"
-   ]
   }
  ],
  "metadata": {

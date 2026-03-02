@@ -24,7 +24,9 @@
       <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
-    <link rel="search" title="Search" href="../search.html" /> 
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="API Reference" href="../api.html" />
+    <link rel="prev" title="Case Studies" href="index.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -57,6 +59,35 @@
 <li class="toctree-l1"><a class="reference internal" href="../tutorials/01_vplanet_infiles.html">Setting Up and Running VPLanet Models</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../tutorials/02_sensitivity_analysis.html">Global Sensitivity Analysis with <code class="docutils literal notranslate"><span class="pre">vplanet_inference</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="../tutorials/03_mcmc_custom_likelihood.html">MCMC with VPLanet and <code class="docutils literal notranslate"><span class="pre">alabi</span></code></a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Case Studies</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="index.html">Case Studies</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Maximum Likelihood Estimation for Earth Interior Evolution</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#What-we-cover">What we cover</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#1.-Earth-Model-Setup">1. Earth Model Setup</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#1.1-VPLanet-Input-Files">1.1 VPLanet Input Files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#1.2-Input-Parameters">1.2 Input Parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#1.3-Output-Parameters-and-Observational-Constraints">1.3 Output Parameters and Observational Constraints</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#1.4-Initializing-VplanetModel">1.4 Initializing VplanetModel</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#2.-The-Log-Likelihood-Function">2. The Log-Likelihood Function</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#3.-Fiducial-Model">3. Fiducial Model</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#3.1-Visualizing-the-Thermal-Evolution-at-Fiducial-Parameters">3.1 Visualizing the Thermal Evolution at Fiducial Parameters</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#4.-Single-Optimization-Run">4. Single Optimization Run</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#5.-Multi-Start-MLE">5. Multi-Start MLE</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#6.-Analyzing-the-MLE-Results">6. Analyzing the MLE Results</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#6.1-Best-Fit-Parameters">6.1 Best-Fit Parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#6.2-Model-Outputs-vs.-Observations">6.2 Model Outputs vs. Observations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#6.3-Analyze-Local-Sensitivity-Around-the-MLE-Solution">6.3 Analyze Local Sensitivity Around the MLE Solution</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#6.4-Compute-Fischer-Information-Matrix">6.4 Compute Fischer Information Matrix</a></li>
+</ul>
+</li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
 <ul>
@@ -1675,59 +1706,16 @@ Performing sensitivity analysis for 9 parameters...
 <img alt="../_images/case_studies_04_earth_mle_36_1.png" src="../_images/case_studies_04_earth_mle_36_1.png" />
 </div>
 </div>
-<section id="Summary">
-<h3>Summary<a class="headerlink" href="#Summary" title="Link to this heading"></a></h3>
-<table class="docutils align-default">
-<thead>
-<tr class="row-odd"><th class="head"><p>Step</p></th>
-<th class="head"><p>Code</p></th>
-</tr>
-</thead>
-<tbody>
-<tr class="row-even"><td><p>Define inparams and units</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">inparams</span> <span class="pre">=</span> <span class="pre">{&quot;earth.dTMan&quot;:</span> <span class="pre">u.K,</span> <span class="pre">...}</span></code></p></td>
-</tr>
-<tr class="row-odd"><td><p>Set observational constraints</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">like_data</span> <span class="pre">=</span> <span class="pre">np.array([(mean,</span> <span class="pre">std),</span> <span class="pre">...])</span></code></p></td>
-</tr>
-<tr class="row-even"><td><p>Initialize VplanetModel</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">vpm_final</span> <span class="pre">=</span> <span class="pre">vpi.VplanetModel(inparams,</span> <span class="pre">outparams,</span> <span class="pre">...)</span></code></p></td>
-</tr>
-<tr class="row-odd"><td><p>Define log-likelihood</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">lnl</span> <span class="pre">=</span> <span class="pre">-0.5</span> <span class="pre">*</span> <span class="pre">sum(((model</span> <span class="pre">-</span> <span class="pre">obs)</span> <span class="pre">/</span> <span class="pre">sigma)^2)</span></code></p></td>
-</tr>
-<tr class="row-even"><td><p>Single optimization</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">scipy.optimize.minimize(neg_lnlike,</span> <span class="pre">x0,</span> <span class="pre">bounds=bounds,</span> <span class="pre">method='nelder-mead')</span></code></p></td>
-</tr>
-<tr class="row-odd"><td><p>Multi-start MLE</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">mp.Pool(N_CORES).imap(opt_parallel,</span> <span class="pre">starting_points)</span></code></p></td>
-</tr>
-<tr class="row-even"><td><p>Select best solution</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">theta_best</span> <span class="pre">=</span> <span class="pre">results[argmax(lnl_values)]</span></code></p></td>
-</tr>
-</tbody>
-</table>
-<p><strong>Key takeaways:</strong></p>
-<ul class="simple">
-<li><p>The MLE approach identifies parameter combinations consistent with present-day Earth observations</p></li>
-<li><p>Multi-start optimization guards against local optima in a non-convex likelihood landscape</p></li>
-<li><p>Well-constrained observables (e.g. inner core radius from seismology) strongly pin certain parameters</p></li>
-<li><p>Poorly constrained observables (e.g. mantle viscosity) leave some parameters degenerate</p></li>
-</ul>
-<p><strong>Next steps:</strong></p>
-<ul class="simple">
-<li><p>Run the <code class="docutils literal notranslate"><span class="pre">analysis.py</span></code> script in this directory for a larger-scale MLE (100 starts, 32 cores)</p></li>
-<li><p>Quantify parameter uncertainties with MCMC — see <strong>Tutorial 3</strong> in the <code class="docutils literal notranslate"><span class="pre">tutorials/</span></code> directory</p></li>
-<li><p>Compute the Fisher Information Matrix at the MLE to estimate parameter covariances (implemented in <code class="docutils literal notranslate"><span class="pre">analysis.py</span></code> using the <code class="docutils literal notranslate"><span class="pre">fischer</span></code> module)</p></li>
-</ul>
-</section>
 </section>
 </section>
 
 
            </div>
           </div>
-          <footer>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="Case Studies" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../api.html" class="btn btn-neutral float-right" title="API Reference" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
 
   <hr/>
 

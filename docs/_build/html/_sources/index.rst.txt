@@ -26,6 +26,13 @@ Python tools for statistical inference with `VPLanet <https://github.com/Virtual
    tutorials/03_mcmc_custom_likelihood
 
 .. toctree::
+   :maxdepth: 3
+   :caption: Case Studies
+
+   case_studies/index
+   case_studies/04_earth_mle
+
+.. toctree::
    :maxdepth: 2
    :caption: API Reference
 
