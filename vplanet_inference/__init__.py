@@ -3,6 +3,8 @@ import os
 from .model import *
 from .analysis import *
 from .parameters import *
+from .fischer import *
+from .info_vis import *
 # from .model import VplanetModel
 # from .analysis import AnalyzeVplanetModel
 # from .parameters import VplanetParameters

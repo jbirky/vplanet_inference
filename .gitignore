@@ -1,5 +1,7 @@
-.png
-.pdf
+*.png
+*.pdf
+*.forward
+*.log
 .ipynb_checkpoints/*
 */__pycache__/*
 docs/case_studies/output/*

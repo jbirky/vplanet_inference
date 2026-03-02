@@ -16,6 +16,7 @@ from matplotlib import rc
 try:
     rc('font', **{'family': 'serif', 'serif': ['Computer Modern']})
     rc('text', usetex=True)
+    rc('text.latex', preamble=r'\usepackage{amsmath}')
 except:
     rc('text', usetex=False)
 
