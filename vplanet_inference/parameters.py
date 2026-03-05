@@ -477,6 +477,47 @@ def get_vplanet_units_source(parameter):
 
 
 class VplanetParameters(object):
+    """Container for a set of VPLanet parameters and their associated metadata.
+
+    Used internally by :class:`~vplanet_inference.AnalyzeVplanetModel` to hold
+    fixed inputs, variable inputs, and outputs loaded from a YAML configuration
+    file.  Can also be used directly to build parameter dictionaries for
+    :class:`~vplanet_inference.VplanetModel`.
+
+    Parameters
+    ----------
+    names : list of str
+        VPLanet parameter names (e.g. ``["star.dMass", "vpl.dStopTime"]``).
+    units : list of astropy.units.Unit or None
+        Astropy unit for each parameter, in the same order as ``names``.
+        ``None`` entries mark dimensionless parameters.
+    bounds : list of (float, float), optional
+        ``(min, max)`` prior bounds for each variable parameter.
+    true : list of float, optional
+        True / fiducial values for each parameter (used in synthetic tests).
+    data : list or np.ndarray, optional
+        Observational data for each parameter, typically ``[[mean, std], ...]``.
+    labels : list of str, optional
+        Human-readable plot labels.  Defaults to ``names`` if not provided.
+    uncertainty : list of float, optional
+        1-sigma uncertainties; used together with ``true`` by
+        :meth:`set_data` to build the ``data`` array.
+
+    Attributes
+    ----------
+    num : int
+        Number of parameters.
+    dict_units : dict
+        ``{name: unit}`` mapping.
+    dict_bounds : dict
+        ``{name: (min, max)}`` mapping (only if ``bounds`` was supplied).
+    dict_true : dict
+        ``{name: true_value}`` mapping (only if ``true`` was supplied).
+    dict_data : dict
+        ``{name: data_row}`` mapping (only if ``data`` was supplied).
+    dict_labels : dict
+        ``{name: label}`` mapping.
+    """
 
     def __init__(self, names, units, bounds=None, true=None, data=None, labels=None, uncertainty=None):
 
@@ -510,7 +551,13 @@ class VplanetParameters(object):
 
 
     def set_data(self, true):
+        """Set ``true`` values and build the ``data`` array from ``uncertainty``.
 
+        Parameters
+        ----------
+        true : array-like of float
+            True / best-fit values for each parameter.
+        """
         self.true = true
         self.data = np.array([self.true, self.uncertainty]).T
 
@@ -519,7 +566,18 @@ class VplanetParameters(object):
 
 
     def get_true_units(self, param_name):
+        """Return the true value of a parameter as an astropy Quantity.
 
+        Parameters
+        ----------
+        param_name : str
+            Parameter name (must be in ``self.names``).
+
+        Returns
+        -------
+        astropy.units.Quantity
+            ``true_value * unit`` for the requested parameter.
+        """
         return self.true[param_name] * self.units[param_name]
 
 

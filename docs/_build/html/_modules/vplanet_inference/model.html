@@ -56,8 +56,9 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Case Studies</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../case_studies/index.html">Case Studies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../case_studies/index.html">Case Studies Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../case_studies/04_earth_mle.html">Maximum Likelihood Estimation for Earth Interior Evolution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../case_studies/05_custom_rotation_model.html">Custom Rotation-Activity-XUV Model</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
 <ul>
@@ -105,36 +106,99 @@
 <div class="viewcode-block" id="VplanetModel">
 <a class="viewcode-back" href="../../api.html#vplanet_inference.VplanetModel">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">VplanetModel</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Interface for running VPLanet forward models with unit-aware parameter substitution.</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> 
-                 <span class="n">inparams</span><span class="p">,</span> 
-                 <span class="n">inpath</span><span class="o">=</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> 
-                 <span class="n">outparams</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
-                 <span class="n">outpath</span><span class="o">=</span><span class="s2">&quot;output/&quot;</span><span class="p">,</span> 
+<span class="sd">    Reads a set of VPLanet template input files, substitutes parameter values</span>
+<span class="sd">    (converting from user-specified astropy units to SI), executes VPLanet, and</span>
+<span class="sd">    returns the requested output quantities with optional unit conversion.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    inparams : dict</span>
+<span class="sd">        Ordered mapping of ``&quot;body.dParamName&quot;`` keys to astropy units.</span>
+<span class="sd">        The units define how the corresponding element of ``theta`` is</span>
+<span class="sd">        interpreted when passed to :meth:`run_model`.  Use</span>
+<span class="sd">        ``u.dex(u.dimensionless_unscaled)`` for log-scale inputs and</span>
+<span class="sd">        ``-u.dimensionless_unscaled`` for parameters stored with a sign</span>
+<span class="sd">        flip in the VPLanet infile.</span>
+<span class="sd">        Example::</span>
+
+<span class="sd">            {&quot;star.dMass&quot;: u.Msun, &quot;star.dRotPeriod&quot;: u.day, &quot;vpl.dStopTime&quot;: u.Gyr}</span>
+
+<span class="sd">    inpath : str, optional</span>
+<span class="sd">        Path to the directory containing template ``.in`` files.</span>
+<span class="sd">        Defaults to the current working directory ``&quot;.&quot;``.</span>
+<span class="sd">    outparams : dict, optional</span>
+<span class="sd">        Ordered mapping of ``&quot;final.body.ParamName&quot;`` (or</span>
+<span class="sd">        ``&quot;initial.body.ParamName&quot;``) keys to astropy units.  Each key</span>
+<span class="sd">        selects one scalar value from the VPLanet log file; each unit</span>
+<span class="sd">        controls the conversion applied before returning.</span>
+<span class="sd">        Example::</span>
+
+<span class="sd">            {&quot;final.star.Luminosity&quot;: u.Lsun, &quot;final.star.RotPer&quot;: u.day}</span>
+
+<span class="sd">    outpath : str, optional</span>
+<span class="sd">        Base directory for per-run output subdirectories.</span>
+<span class="sd">        Defaults to ``&quot;output/&quot;``.</span>
+<span class="sd">    fixsub : dict, optional</span>
+<span class="sd">        Fixed parameter substitutions applied to every run (not yet fully</span>
+<span class="sd">        implemented).</span>
+<span class="sd">    executable : str, optional</span>
+<span class="sd">        Name or path of the VPLanet binary.  Defaults to ``&quot;vplanet&quot;``.</span>
+<span class="sd">    vplfile : str, optional</span>
+<span class="sd">        Name of the primary VPLanet input file.  Defaults to ``&quot;vpl.in&quot;``.</span>
+<span class="sd">    sys_name : str, optional</span>
+<span class="sd">        Value substituted for ``sSystemName`` in the primary input file.</span>
+<span class="sd">        Defaults to ``&quot;system&quot;``.</span>
+<span class="sd">    timesteps : astropy.units.Quantity, optional</span>
+<span class="sd">        If given, ``dOutputTime`` is set to this value and</span>
+<span class="sd">        :meth:`run_model` returns a time-series dictionary instead of a</span>
+<span class="sd">        flat array.  Must carry astropy time units (e.g.</span>
+<span class="sd">        ``1e6 * u.yr``).</span>
+<span class="sd">    time_init : astropy.units.Quantity, optional</span>
+<span class="sd">        Initial simulation age written to ``dAge`` in every body file.</span>
+<span class="sd">        Defaults to ``5e6 * u.yr``.</span>
+<span class="sd">    forward : bool, optional</span>
+<span class="sd">        If ``True`` (default) run a forward evolution (``bDoForward 1``).</span>
+<span class="sd">        Set to ``False`` for backward integration.</span>
+<span class="sd">    verbose : bool, optional</span>
+<span class="sd">        Print substituted parameter values and model outputs after each</span>
+<span class="sd">        run.  Defaults to ``True``.</span>
+<span class="sd">    quiet : bool, optional</span>
+<span class="sd">        Suppress VPLanet Python-binding log output.  Defaults to ``True``.</span>
+<span class="sd">    debug : bool, optional</span>
+<span class="sd">        Print per-parameter substitution details during</span>
+<span class="sd">        :meth:`initialize_model`.  Defaults to ``False``.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; import vplanet_inference as vpi</span>
+<span class="sd">    &gt;&gt;&gt; import astropy.units as u</span>
+<span class="sd">    &gt;&gt;&gt; vpm = vpi.VplanetModel(</span>
+<span class="sd">    ...     inparams={&quot;star.dMass&quot;: u.Msun, &quot;vpl.dStopTime&quot;: u.Gyr},</span>
+<span class="sd">    ...     outparams={&quot;final.star.Luminosity&quot;: u.Lsun},</span>
+<span class="sd">    ...     inpath=&quot;infiles/stellar/&quot;,</span>
+<span class="sd">    ...     outpath=&quot;output/&quot;,</span>
+<span class="sd">    ...     verbose=False,</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &gt;&gt;&gt; result = vpm.run_model([0.09, 7.6])</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">inparams</span><span class="p">,</span>
+                 <span class="n">inpath</span><span class="o">=</span><span class="s2">&quot;.&quot;</span><span class="p">,</span>
+                 <span class="n">outparams</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">outpath</span><span class="o">=</span><span class="s2">&quot;output/&quot;</span><span class="p">,</span>
                  <span class="n">fixsub</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                  <span class="n">executable</span><span class="o">=</span><span class="s2">&quot;vplanet&quot;</span><span class="p">,</span>
-                 <span class="n">vplfile</span><span class="o">=</span><span class="s2">&quot;vpl.in&quot;</span><span class="p">,</span> 
-                 <span class="n">sys_name</span><span class="o">=</span><span class="s2">&quot;system&quot;</span><span class="p">,</span> 
-                 <span class="n">timesteps</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
-                 <span class="n">time_init</span><span class="o">=</span><span class="mf">5e6</span><span class="o">*</span><span class="n">u</span><span class="o">.</span><span class="n">yr</span><span class="p">,</span> 
+                 <span class="n">vplfile</span><span class="o">=</span><span class="s2">&quot;vpl.in&quot;</span><span class="p">,</span>
+                 <span class="n">sys_name</span><span class="o">=</span><span class="s2">&quot;system&quot;</span><span class="p">,</span>
+                 <span class="n">timesteps</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">time_init</span><span class="o">=</span><span class="mf">5e6</span><span class="o">*</span><span class="n">u</span><span class="o">.</span><span class="n">yr</span><span class="p">,</span>
                  <span class="n">forward</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                  <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                  <span class="n">quiet</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                  <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Class for creating and executing VPLANET infiles.</span>
-
-<span class="sd">        params  : (str, list) variable parameter names</span>
-<span class="sd">                  [&#39;vpl.dStopTime&#39;, &#39;star.dRotPeriod&#39;, &#39;star.dMass&#39;, &#39;planet.dEcc&#39;, &#39;planet.dOrbPeriod&#39;]</span>
-<span class="sd">                </span>
-<span class="sd">        inpath  : (str) path to template infiles</span>
-<span class="sd">                  &#39;infiles/&#39;</span>
-
-<span class="sd">        outparams : (str, list) return specified list of parameters from log file</span>
-<span class="sd">                    [&#39;final.primary.Radius&#39;, &#39;final.secondary.Radius&#39;]</span>
-<span class="sd">        </span>
-<span class="sd">        timesteps : (float * astropy units, optional)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="c1"># Input parameters</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">inparams</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">inparams</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
@@ -199,10 +263,27 @@
 <div class="viewcode-block" id="VplanetModel.initialize_model">
 <a class="viewcode-back" href="../../api.html#vplanet_inference.VplanetModel.initialize_model">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">initialize_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">outpath</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        theta   : (float, list) parameter values, corresponding to self.param</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Write VPLanet input files for a single parameter vector.</span>
 
-<span class="sd">        outpath : (str) path to where model infiles should be written</span>
+<span class="sd">        Converts ``theta`` from user units to SI, substitutes values into the</span>
+<span class="sd">        template ``.in`` files, forces SI unit declarations and ``sSystemName``,</span>
+<span class="sd">        and writes the result to ``outpath``.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        theta : array-like of float</span>
+<span class="sd">            Parameter values in the units defined by ``inparams``, in the same</span>
+<span class="sd">            order as ``self.inparams``.</span>
+<span class="sd">        outpath : str</span>
+<span class="sd">            Directory in which to write the substituted input files.  Created</span>
+<span class="sd">            automatically if it does not exist.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If a parameter name listed in ``inparams`` is not found in the</span>
+<span class="sd">            corresponding template file, or if the ``timesteps`` / ``time_init``</span>
+<span class="sd">            units are invalid.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         
         <span class="c1"># Convert units of theta to SI</span>
@@ -339,11 +420,24 @@
 <div class="viewcode-block" id="VplanetModel.get_outparam">
 <a class="viewcode-back" href="../../api.html#vplanet_inference.VplanetModel.get_outparam">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_outparam</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        output    : (vplot object) results form a model run obtained using vplot.GetOutput()</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Extract scalar final-state output values from a VPLanet output object.</span>
 
-<span class="sd">        outparams : (str, list) return specified list of parameters from log file</span>
-<span class="sd">                    [&#39;initial.primary.Luminosity&#39;, &#39;final.primary.Radius&#39;, &#39;initial.secondary.Luminosity&#39;, &#39;final.secondary.Radius&#39;]</span>
+<span class="sd">        Walks the attribute path of each key in ``self.outparams`` (e.g.</span>
+<span class="sd">        ``&quot;final.star.Luminosity&quot;`` → ``output.log.final.star.Luminosity``),</span>
+<span class="sd">        converts the result to the requested unit, and returns all values as a</span>
+<span class="sd">        flat array.  Handles VPLanet modules that emit ``&quot;(null)&quot;`` as a unit</span>
+<span class="sd">        string by falling back to the raw SI value.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        output : vplanet output object</span>
+<span class="sd">            Result returned by ``vplanet.get_output(outpath)``.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        outvalues : np.ndarray, shape (n_outparams,)</span>
+<span class="sd">            Output values in the units specified by ``outparams``, in the same</span>
+<span class="sd">            order as ``self.outparams``.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">outvalues</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">noutparam</span><span class="p">)</span>
 
@@ -376,9 +470,30 @@
 <div class="viewcode-block" id="VplanetModel.get_evol">
 <a class="viewcode-back" href="../../api.html#vplanet_inference.VplanetModel.get_evol">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_evol</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Extract time-series evolution arrays from a VPLanet output object.</span>
 
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        warning: this is going to break for outparams that aren&#39;t formatted final.body.param</span>
+<span class="sd">        Reads the ``.forward`` file data (loaded by ``vplanet.get_output``),</span>
+<span class="sd">        converts each tracked quantity to its requested unit, and returns the</span>
+<span class="sd">        time array and a list of converted output arrays.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        output : vplanet output object</span>
+<span class="sd">            Result returned by ``vplanet.get_output(outpath)``.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        time_out : astropy.units.Quantity</span>
+<span class="sd">            Time array from the VPLanet ``.forward`` file, in the native</span>
+<span class="sd">            simulation time unit (seconds in SI mode).</span>
+<span class="sd">        evol_out : list of astropy.units.Quantity</span>
+<span class="sd">            One entry per output parameter in ``self.outparams``, each a</span>
+<span class="sd">            1-D array with the requested unit applied.</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        This method assumes all ``outparams`` keys follow the</span>
+<span class="sd">        ``&quot;final.body.ParamName&quot;`` naming convention.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="n">evol_out</span> <span class="o">=</span> <span class="p">[]</span>
@@ -421,10 +536,42 @@
 <div class="viewcode-block" id="VplanetModel.run_model">
 <a class="viewcode-back" href="../../api.html#vplanet_inference.VplanetModel.run_model">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">run_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">remove</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">outsubpath</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">return_output</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        theta     : (float, list) parameter values, corresponding to self.inparams</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Run VPLanet for a single parameter vector and return the results.</span>
 
-<span class="sd">        remove    : (bool) True will erase input/output files after model is run</span>
+<span class="sd">        Writes input files to a unique randomized subdirectory of</span>
+<span class="sd">        ``self.outpath_base``, executes VPLanet, parses the output, and</span>
+<span class="sd">        optionally removes the run directory afterwards.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        theta : array-like of float</span>
+<span class="sd">            Parameter values in the units defined by ``inparams``, ordered to</span>
+<span class="sd">            match ``self.inparams``.</span>
+<span class="sd">        remove : bool, optional</span>
+<span class="sd">            If ``True`` (default) delete the run directory after the model</span>
+<span class="sd">            completes.  Set to ``False`` to inspect the raw VPLanet output.</span>
+<span class="sd">        outsubpath : str or int, optional</span>
+<span class="sd">            Subdirectory name appended to ``self.outpath_base``.  If ``None``</span>
+<span class="sd">            (default) a random 12-digit hex string is used to avoid collisions</span>
+<span class="sd">            in parallel runs.</span>
+<span class="sd">        return_output : bool, optional</span>
+<span class="sd">            If ``True`` return the raw ``vplanet.get_output`` object instead of</span>
+<span class="sd">            the processed array.  Useful for debugging.  Defaults to ``False``.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        np.ndarray or dict</span>
+<span class="sd">            * If ``timesteps`` was **not** set at construction: a 1-D</span>
+<span class="sd">              ``np.ndarray`` of shape ``(n_outparams,)`` with the final-state</span>
+<span class="sd">              scalar values in the units specified by ``outparams``.</span>
+<span class="sd">            * If ``timesteps`` **was** set: a ``dict`` mapping each</span>
+<span class="sd">              ``outparams`` key to its time-series ``astropy.units.Quantity``</span>
+<span class="sd">              array, plus a ``&quot;Time&quot;`` key containing the time axis in years.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; result = vpm.run_model([0.09, 7.6], remove=True)</span>
+<span class="sd">        &gt;&gt;&gt; print(result)   # array([5.22e-4])  — final Luminosity in Lsun</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="c1"># randomize output directory</span>
@@ -482,6 +629,21 @@
 <div class="viewcode-block" id="VplanetModel.quickplot_evol">
 <a class="viewcode-back" href="../../api.html#vplanet_inference.VplanetModel.quickplot_evol">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">quickplot_evol</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="n">evol</span><span class="p">,</span> <span class="n">ind</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Quick diagnostic plot of evolution time series.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        time : array-like</span>
+<span class="sd">            Time array (any units; used as the x-axis).</span>
+<span class="sd">        evol : array-like, shape (n_outparams, n_timesteps)</span>
+<span class="sd">            Evolution arrays, one row per output parameter.</span>
+<span class="sd">        ind : array-like of int, optional</span>
+<span class="sd">            Indices of rows in ``evol`` to plot.  Defaults to all rows.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        matplotlib.figure.Figure</span>
+<span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">rc</span>

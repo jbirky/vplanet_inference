@@ -19,10 +19,12 @@
       <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="prev" title="Maximum Likelihood Estimation for Earth Interior Evolution" href="case_studies/04_earth_mle.html" /> 
+    <link rel="prev" title="Custom Rotation-Activity-XUV Model" href="case_studies/05_custom_rotation_model.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -58,8 +60,9 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Case Studies</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="case_studies/index.html">Case Studies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="case_studies/index.html">Case Studies Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="case_studies/04_earth_mle.html">Maximum Likelihood Estimation for Earth Interior Evolution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="case_studies/05_custom_rotation_model.html">Custom Rotation-Activity-XUV Model</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
 <ul class="current">
@@ -78,6 +81,12 @@
 <li class="toctree-l2"><a class="reference internal" href="#vplanet-inference-analysis">vplanet_inference.analysis</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#vplanet_inference.sort_yaml_key"><code class="docutils literal notranslate"><span class="pre">sort_yaml_key()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#vplanet_inference.AnalyzeVplanetModel"><code class="docutils literal notranslate"><span class="pre">AnalyzeVplanetModel</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#vplanet_inference.AnalyzeVplanetModel.vpm"><code class="docutils literal notranslate"><span class="pre">AnalyzeVplanetModel.vpm</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#vplanet_inference.AnalyzeVplanetModel.inparams_fix"><code class="docutils literal notranslate"><span class="pre">AnalyzeVplanetModel.inparams_fix</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#vplanet_inference.AnalyzeVplanetModel.inparams_var"><code class="docutils literal notranslate"><span class="pre">AnalyzeVplanetModel.inparams_var</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#vplanet_inference.AnalyzeVplanetModel.inparams_all"><code class="docutils literal notranslate"><span class="pre">AnalyzeVplanetModel.inparams_all</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#vplanet_inference.AnalyzeVplanetModel.outparams"><code class="docutils literal notranslate"><span class="pre">AnalyzeVplanetModel.outparams</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#vplanet_inference.AnalyzeVplanetModel.like_data"><code class="docutils literal notranslate"><span class="pre">AnalyzeVplanetModel.like_data</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#vplanet_inference.AnalyzeVplanetModel.format_theta"><code class="docutils literal notranslate"><span class="pre">AnalyzeVplanetModel.format_theta()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#vplanet_inference.AnalyzeVplanetModel.run_model_format"><code class="docutils literal notranslate"><span class="pre">AnalyzeVplanetModel.run_model_format()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#vplanet_inference.AnalyzeVplanetModel.run_models"><code class="docutils literal notranslate"><span class="pre">AnalyzeVplanetModel.run_models()</span></code></a></li>
@@ -91,8 +100,44 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#vplanet-inference-parameters">vplanet_inference.parameters</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#vplanet_inference.VplanetParameters"><code class="docutils literal notranslate"><span class="pre">VplanetParameters</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#vplanet_inference.VplanetParameters.num"><code class="docutils literal notranslate"><span class="pre">VplanetParameters.num</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#vplanet_inference.VplanetParameters.dict_units"><code class="docutils literal notranslate"><span class="pre">VplanetParameters.dict_units</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#vplanet_inference.VplanetParameters.dict_bounds"><code class="docutils literal notranslate"><span class="pre">VplanetParameters.dict_bounds</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#vplanet_inference.VplanetParameters.dict_true"><code class="docutils literal notranslate"><span class="pre">VplanetParameters.dict_true</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#vplanet_inference.VplanetParameters.dict_data"><code class="docutils literal notranslate"><span class="pre">VplanetParameters.dict_data</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#vplanet_inference.VplanetParameters.dict_labels"><code class="docutils literal notranslate"><span class="pre">VplanetParameters.dict_labels</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#vplanet_inference.VplanetParameters.set_data"><code class="docutils literal notranslate"><span class="pre">VplanetParameters.set_data()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#vplanet_inference.VplanetParameters.get_true_units"><code class="docutils literal notranslate"><span class="pre">VplanetParameters.get_true_units()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#vplanet_inference.get_vplanet_units"><code class="docutils literal notranslate"><span class="pre">get_vplanet_units()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#vplanet_inference.get_vplanet_units_source"><code class="docutils literal notranslate"><span class="pre">get_vplanet_units_source()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#vplanet_inference.check_units"><code class="docutils literal notranslate"><span class="pre">check_units()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#vplanet-inference-fischer">vplanet_inference.fischer</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#vplanet_inference.compute_fisher_information"><code class="docutils literal notranslate"><span class="pre">compute_fisher_information()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#vplanet_inference.analyze_fisher_information"><code class="docutils literal notranslate"><span class="pre">analyze_fisher_information()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#vplanet-inference-info-vis">vplanet_inference.info_vis</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#local-sensitivity-analysis">Local Sensitivity Analysis</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#vplanet_inference.local_sensitivity_analysis"><code class="docutils literal notranslate"><span class="pre">local_sensitivity_analysis()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#vplanet_inference.plot_sensitivity_heatmap"><code class="docutils literal notranslate"><span class="pre">plot_sensitivity_heatmap()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#fisher-information-visualizations">Fisher Information Visualizations</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#vplanet_inference.plot_fisher_heatmap"><code class="docutils literal notranslate"><span class="pre">plot_fisher_heatmap()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#vplanet_inference.plot_correlation_matrix"><code class="docutils literal notranslate"><span class="pre">plot_correlation_matrix()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#vplanet_inference.plot_uncertainty_ellipse"><code class="docutils literal notranslate"><span class="pre">plot_uncertainty_ellipse()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#vplanet_inference.plot_eigenvalue_spectrum"><code class="docutils literal notranslate"><span class="pre">plot_eigenvalue_spectrum()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#vplanet_inference.plot_standard_errors"><code class="docutils literal notranslate"><span class="pre">plot_standard_errors()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#vplanet_inference.plot_condition_number_breakdown"><code class="docutils literal notranslate"><span class="pre">plot_condition_number_breakdown()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#vplanet_inference.create_fisher_dashboard"><code class="docutils literal notranslate"><span class="pre">create_fisher_dashboard()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#posterior-visualization">Posterior Visualization</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#vplanet_inference.plot_corner_probability"><code class="docutils literal notranslate"><span class="pre">plot_corner_probability()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -133,19 +178,115 @@
 <dt class="sig sig-object py" id="vplanet_inference.VplanetModel">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">vplanet_inference.</span></span><span class="sig-name descname"><span class="pre">VplanetModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inparams</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inpath='.'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outparams=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outpath='output/'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixsub=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">executable='vplanet'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vplfile='vpl.in'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sys_name='system'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timesteps=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_init=&lt;Quantity</span> <span class="pre">5000000.</span> <span class="pre">yr&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">forward=True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose=True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quiet=True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug=False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/vplanet_inference/model.html#VplanetModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#vplanet_inference.VplanetModel" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Interface for running VPLanet forward models with unit-aware parameter substitution.</p>
+<p>Reads a set of VPLanet template input files, substitutes parameter values
+(converting from user-specified astropy units to SI), executes VPLanet, and
+returns the requested output quantities with optional unit conversion.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>inparams</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a>) – <p>Ordered mapping of <code class="docutils literal notranslate"><span class="pre">&quot;body.dParamName&quot;</span></code> keys to astropy units.
+The units define how the corresponding element of <code class="docutils literal notranslate"><span class="pre">theta</span></code> is
+interpreted when passed to <a class="reference internal" href="#vplanet_inference.VplanetModel.run_model" title="vplanet_inference.VplanetModel.run_model"><code class="xref py py-meth docutils literal notranslate"><span class="pre">run_model()</span></code></a>.  Use
+<code class="docutils literal notranslate"><span class="pre">u.dex(u.dimensionless_unscaled)</span></code> for log-scale inputs and
+<code class="docutils literal notranslate"><span class="pre">-u.dimensionless_unscaled</span></code> for parameters stored with a sign
+flip in the VPLanet infile.
+Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s2">&quot;star.dMass&quot;</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">Msun</span><span class="p">,</span> <span class="s2">&quot;star.dRotPeriod&quot;</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">,</span> <span class="s2">&quot;vpl.dStopTime&quot;</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">Gyr</span><span class="p">}</span>
+</pre></div>
+</div>
+</p></li>
+<li><p><strong>inpath</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – Path to the directory containing template <code class="docutils literal notranslate"><span class="pre">.in</span></code> files.
+Defaults to the current working directory <code class="docutils literal notranslate"><span class="pre">&quot;.&quot;</span></code>.</p></li>
+<li><p><strong>outparams</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a><em>, </em><em>optional</em>) – <p>Ordered mapping of <code class="docutils literal notranslate"><span class="pre">&quot;final.body.ParamName&quot;</span></code> (or
+<code class="docutils literal notranslate"><span class="pre">&quot;initial.body.ParamName&quot;</span></code>) keys to astropy units.  Each key
+selects one scalar value from the VPLanet log file; each unit
+controls the conversion applied before returning.
+Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s2">&quot;final.star.Luminosity&quot;</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">Lsun</span><span class="p">,</span> <span class="s2">&quot;final.star.RotPer&quot;</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">}</span>
+</pre></div>
+</div>
+</p></li>
+<li><p><strong>outpath</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – Base directory for per-run output subdirectories.
+Defaults to <code class="docutils literal notranslate"><span class="pre">&quot;output/&quot;</span></code>.</p></li>
+<li><p><strong>fixsub</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a><em>, </em><em>optional</em>) – Fixed parameter substitutions applied to every run (not yet fully
+implemented).</p></li>
+<li><p><strong>executable</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – Name or path of the VPLanet binary.  Defaults to <code class="docutils literal notranslate"><span class="pre">&quot;vplanet&quot;</span></code>.</p></li>
+<li><p><strong>vplfile</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – Name of the primary VPLanet input file.  Defaults to <code class="docutils literal notranslate"><span class="pre">&quot;vpl.in&quot;</span></code>.</p></li>
+<li><p><strong>sys_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – Value substituted for <code class="docutils literal notranslate"><span class="pre">sSystemName</span></code> in the primary input file.
+Defaults to <code class="docutils literal notranslate"><span class="pre">&quot;system&quot;</span></code>.</p></li>
+<li><p><strong>timesteps</strong> (<a class="reference external" href="https://docs.astropy.org/en/stable/api/astropy.units.Quantity.html#astropy.units.Quantity" title="(in Astropy v7.2)"><em>astropy.units.Quantity</em></a><em>, </em><em>optional</em>) – If given, <code class="docutils literal notranslate"><span class="pre">dOutputTime</span></code> is set to this value and
+<a class="reference internal" href="#vplanet_inference.VplanetModel.run_model" title="vplanet_inference.VplanetModel.run_model"><code class="xref py py-meth docutils literal notranslate"><span class="pre">run_model()</span></code></a> returns a time-series dictionary instead of a
+flat array.  Must carry astropy time units (e.g.
+<code class="docutils literal notranslate"><span class="pre">1e6</span> <span class="pre">*</span> <span class="pre">u.yr</span></code>).</p></li>
+<li><p><strong>time_init</strong> (<a class="reference external" href="https://docs.astropy.org/en/stable/api/astropy.units.Quantity.html#astropy.units.Quantity" title="(in Astropy v7.2)"><em>astropy.units.Quantity</em></a><em>, </em><em>optional</em>) – Initial simulation age written to <code class="docutils literal notranslate"><span class="pre">dAge</span></code> in every body file.
+Defaults to <code class="docutils literal notranslate"><span class="pre">5e6</span> <span class="pre">*</span> <span class="pre">u.yr</span></code>.</p></li>
+<li><p><strong>forward</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code> (default) run a forward evolution (<code class="docutils literal notranslate"><span class="pre">bDoForward</span> <span class="pre">1</span></code>).
+Set to <code class="docutils literal notranslate"><span class="pre">False</span></code> for backward integration.</p></li>
+<li><p><strong>verbose</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – Print substituted parameter values and model outputs after each
+run.  Defaults to <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
+<li><p><strong>quiet</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – Suppress VPLanet Python-binding log output.  Defaults to <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
+<li><p><strong>debug</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – Print per-parameter substitution details during
+<a class="reference internal" href="#vplanet_inference.VplanetModel.initialize_model" title="vplanet_inference.VplanetModel.initialize_model"><code class="xref py py-meth docutils literal notranslate"><span class="pre">initialize_model()</span></code></a>.  Defaults to <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">vplanet_inference</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">vpi</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">astropy.units</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">u</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">vpm</span> <span class="o">=</span> <span class="n">vpi</span><span class="o">.</span><span class="n">VplanetModel</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">inparams</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;star.dMass&quot;</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">Msun</span><span class="p">,</span> <span class="s2">&quot;vpl.dStopTime&quot;</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">Gyr</span><span class="p">},</span>
+<span class="gp">... </span>    <span class="n">outparams</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;final.star.Luminosity&quot;</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">Lsun</span><span class="p">},</span>
+<span class="gp">... </span>    <span class="n">inpath</span><span class="o">=</span><span class="s2">&quot;infiles/stellar/&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">outpath</span><span class="o">=</span><span class="s2">&quot;output/&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">vpm</span><span class="o">.</span><span class="n">run_model</span><span class="p">([</span><span class="mf">0.09</span><span class="p">,</span> <span class="mf">7.6</span><span class="p">])</span>
+</pre></div>
+</div>
 <dl class="py method">
 <dt class="sig sig-object py" id="vplanet_inference.VplanetModel.initialize_model">
 <span class="sig-name descname"><span class="pre">initialize_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">theta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outpath</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/vplanet_inference/model.html#VplanetModel.initialize_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#vplanet_inference.VplanetModel.initialize_model" title="Link to this definition"></a></dt>
-<dd><p>theta   : (float, list) parameter values, corresponding to self.param</p>
-<p>outpath : (str) path to where model infiles should be written</p>
+<dd><p>Write VPLanet input files for a single parameter vector.</p>
+<p>Converts <code class="docutils literal notranslate"><span class="pre">theta</span></code> from user units to SI, substitutes values into the
+template <code class="docutils literal notranslate"><span class="pre">.in</span></code> files, forces SI unit declarations and <code class="docutils literal notranslate"><span class="pre">sSystemName</span></code>,
+and writes the result to <code class="docutils literal notranslate"><span class="pre">outpath</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>theta</strong> (<em>array-like</em><em> of </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Parameter values in the units defined by <code class="docutils literal notranslate"><span class="pre">inparams</span></code>, in the same
+order as <code class="docutils literal notranslate"><span class="pre">self.inparams</span></code>.</p></li>
+<li><p><strong>outpath</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Directory in which to write the substituted input files.  Created
+automatically if it does not exist.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – If a parameter name listed in <code class="docutils literal notranslate"><span class="pre">inparams</span></code> is not found in the
+    corresponding template file, or if the <code class="docutils literal notranslate"><span class="pre">timesteps</span></code> / <code class="docutils literal notranslate"><span class="pre">time_init</span></code>
+    units are invalid.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="vplanet_inference.VplanetModel.get_outparam">
 <span class="sig-name descname"><span class="pre">get_outparam</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/vplanet_inference/model.html#VplanetModel.get_outparam"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#vplanet_inference.VplanetModel.get_outparam" title="Link to this definition"></a></dt>
-<dd><p>output    : (vplot object) results form a model run obtained using vplot.GetOutput()</p>
-<dl class="simple">
-<dt>outparams<span class="classifier">(str, list) return specified list of parameters from log file</span></dt><dd><p>[‘initial.primary.Luminosity’, ‘final.primary.Radius’, ‘initial.secondary.Luminosity’, ‘final.secondary.Radius’]</p>
+<dd><p>Extract scalar final-state output values from a VPLanet output object.</p>
+<p>Walks the attribute path of each key in <code class="docutils literal notranslate"><span class="pre">self.outparams</span></code> (e.g.
+<code class="docutils literal notranslate"><span class="pre">&quot;final.star.Luminosity&quot;</span></code> → <code class="docutils literal notranslate"><span class="pre">output.log.final.star.Luminosity</span></code>),
+converts the result to the requested unit, and returns all values as a
+flat array.  Handles VPLanet modules that emit <code class="docutils literal notranslate"><span class="pre">&quot;(null)&quot;</span></code> as a unit
+string by falling back to the raw SI value.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>output</strong> (<em>vplanet output object</em>) – Result returned by <code class="docutils literal notranslate"><span class="pre">vplanet.get_output(outpath)</span></code>.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>outvalues</strong> – Output values in the units specified by <code class="docutils literal notranslate"><span class="pre">outparams</span></code>, in the same
+order as <code class="docutils literal notranslate"><span class="pre">self.outparams</span></code>.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray, shape (n_outparams,)</p>
 </dd>
 </dl>
 </dd></dl>
@@ -153,91 +294,936 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="vplanet_inference.VplanetModel.get_evol">
 <span class="sig-name descname"><span class="pre">get_evol</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/vplanet_inference/model.html#VplanetModel.get_evol"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#vplanet_inference.VplanetModel.get_evol" title="Link to this definition"></a></dt>
-<dd><p>warning: this is going to break for outparams that aren’t formatted final.body.param</p>
+<dd><p>Extract time-series evolution arrays from a VPLanet output object.</p>
+<p>Reads the <code class="docutils literal notranslate"><span class="pre">.forward</span></code> file data (loaded by <code class="docutils literal notranslate"><span class="pre">vplanet.get_output</span></code>),
+converts each tracked quantity to its requested unit, and returns the
+time array and a list of converted output arrays.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>output</strong> (<em>vplanet output object</em>) – Result returned by <code class="docutils literal notranslate"><span class="pre">vplanet.get_output(outpath)</span></code>.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>time_out</strong> (<em>astropy.units.Quantity</em>) – Time array from the VPLanet <code class="docutils literal notranslate"><span class="pre">.forward</span></code> file, in the native
+simulation time unit (seconds in SI mode).</p></li>
+<li><p><strong>evol_out</strong> (<em>list of astropy.units.Quantity</em>) – One entry per output parameter in <code class="docutils literal notranslate"><span class="pre">self.outparams</span></code>, each a
+1-D array with the requested unit applied.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>This method assumes all <code class="docutils literal notranslate"><span class="pre">outparams</span></code> keys follow the
+<code class="docutils literal notranslate"><span class="pre">&quot;final.body.ParamName&quot;</span></code> naming convention.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="vplanet_inference.VplanetModel.run_model">
 <span class="sig-name descname"><span class="pre">run_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">theta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">remove</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outsubpath</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_output</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/vplanet_inference/model.html#VplanetModel.run_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#vplanet_inference.VplanetModel.run_model" title="Link to this definition"></a></dt>
-<dd><p>theta     : (float, list) parameter values, corresponding to self.inparams</p>
-<p>remove    : (bool) True will erase input/output files after model is run</p>
+<dd><p>Run VPLanet for a single parameter vector and return the results.</p>
+<p>Writes input files to a unique randomized subdirectory of
+<code class="docutils literal notranslate"><span class="pre">self.outpath_base</span></code>, executes VPLanet, parses the output, and
+optionally removes the run directory afterwards.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>theta</strong> (<em>array-like</em><em> of </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Parameter values in the units defined by <code class="docutils literal notranslate"><span class="pre">inparams</span></code>, ordered to
+match <code class="docutils literal notranslate"><span class="pre">self.inparams</span></code>.</p></li>
+<li><p><strong>remove</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code> (default) delete the run directory after the model
+completes.  Set to <code class="docutils literal notranslate"><span class="pre">False</span></code> to inspect the raw VPLanet output.</p></li>
+<li><p><strong>outsubpath</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>, </em><em>optional</em>) – Subdirectory name appended to <code class="docutils literal notranslate"><span class="pre">self.outpath_base</span></code>.  If <code class="docutils literal notranslate"><span class="pre">None</span></code>
+(default) a random 12-digit hex string is used to avoid collisions
+in parallel runs.</p></li>
+<li><p><strong>return_output</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code> return the raw <code class="docutils literal notranslate"><span class="pre">vplanet.get_output</span></code> object instead of
+the processed array.  Useful for debugging.  Defaults to <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p>If <code class="docutils literal notranslate"><span class="pre">timesteps</span></code> was <strong>not</strong> set at construction: a 1-D
+<code class="docutils literal notranslate"><span class="pre">np.ndarray</span></code> of shape <code class="docutils literal notranslate"><span class="pre">(n_outparams,)</span></code> with the final-state
+scalar values in the units specified by <code class="docutils literal notranslate"><span class="pre">outparams</span></code>.</p></li>
+<li><p>If <code class="docutils literal notranslate"><span class="pre">timesteps</span></code> <strong>was</strong> set: a <code class="docutils literal notranslate"><span class="pre">dict</span></code> mapping each
+<code class="docutils literal notranslate"><span class="pre">outparams</span></code> key to its time-series <code class="docutils literal notranslate"><span class="pre">astropy.units.Quantity</span></code>
+array, plus a <code class="docutils literal notranslate"><span class="pre">&quot;Time&quot;</span></code> key containing the time axis in years.</p></li>
+</ul>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)">dict</a></p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">vpm</span><span class="o">.</span><span class="n">run_model</span><span class="p">([</span><span class="mf">0.09</span><span class="p">,</span> <span class="mf">7.6</span><span class="p">],</span> <span class="n">remove</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>   <span class="c1"># array([5.22e-4])  — final Luminosity in Lsun</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="vplanet_inference.VplanetModel.quickplot_evol">
 <span class="sig-name descname"><span class="pre">quickplot_evol</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">evol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ind</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/vplanet_inference/model.html#VplanetModel.quickplot_evol"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#vplanet_inference.VplanetModel.quickplot_evol" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Quick diagnostic plot of evolution time series.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>time</strong> (<em>array-like</em>) – Time array (any units; used as the x-axis).</p></li>
+<li><p><strong>evol</strong> (<em>array-like</em><em>, </em><em>shape</em><em> (</em><em>n_outparams</em><em>, </em><em>n_timesteps</em><em>)</em>) – Evolution arrays, one row per output parameter.</p></li>
+<li><p><strong>ind</strong> (<em>array-like</em><em> of </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>, </em><em>optional</em>) – Indices of rows in <code class="docutils literal notranslate"><span class="pre">evol</span></code> to plot.  Defaults to all rows.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>matplotlib.figure.Figure</p>
+</dd>
+</dl>
+</dd></dl>
 
 </dd></dl>
 
 </section>
+<hr class="docutils" />
 <section id="vplanet-inference-analysis">
 <h2>vplanet_inference.analysis<a class="headerlink" href="#vplanet-inference-analysis" title="Link to this heading"></a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="vplanet_inference.sort_yaml_key">
 <span class="sig-prename descclassname"><span class="pre">vplanet_inference.</span></span><span class="sig-name descname"><span class="pre">sort_yaml_key</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">base</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sub_key</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/vplanet_inference/analysis.html#sort_yaml_key"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#vplanet_inference.sort_yaml_key" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Extract a sub-key value from each entry in a nested YAML dict.</p>
+<p>Iterates over the top-level keys of <em>base</em> and returns the value of
+<code class="docutils literal notranslate"><span class="pre">base[key][sub_key]</span></code> for each, attempting <code class="docutils literal notranslate"><span class="pre">eval()</span></code> then <code class="docutils literal notranslate"><span class="pre">float()</span></code>
+conversion before falling back to <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>base</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a>) – Outer YAML dictionary (e.g. the <code class="docutils literal notranslate"><span class="pre">&quot;input_var&quot;</span></code> block).</p></li>
+<li><p><strong>sub_key</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Name of the nested key to extract (e.g. <code class="docutils literal notranslate"><span class="pre">&quot;units&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;bounds&quot;</span></code>,
+<code class="docutils literal notranslate"><span class="pre">&quot;true_value&quot;</span></code>).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>One entry per top-level key in <em>base</em>, converted to a Python object
+where possible, <code class="docutils literal notranslate"><span class="pre">None</span></code> otherwise.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)">list</a></p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="vplanet_inference.AnalyzeVplanetModel">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">vplanet_inference.</span></span><span class="sig-name descname"><span class="pre">AnalyzeVplanetModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cfile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inpath</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outpath</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'.'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compute_true</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ncore</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">24</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vpm_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/vplanet_inference/analysis.html#AnalyzeVplanetModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#vplanet_inference.AnalyzeVplanetModel" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>High-level driver for VPLanet parameter studies loaded from a YAML config.</p>
+<p>Reads a YAML configuration file that specifies fixed input parameters,
+variable input parameters (with prior bounds), and output parameters
+(with optional observational data).  Wraps a <a class="reference internal" href="#vplanet_inference.VplanetModel" title="vplanet_inference.VplanetModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">VplanetModel</span></code></a>
+instance and exposes methods for running forward models, computing
+log-likelihoods, running MCMC, and performing global sensitivity analysis.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cfile</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Path to the YAML configuration file.  Must contain <code class="docutils literal notranslate"><span class="pre">&quot;input_fix&quot;</span></code>,
+<code class="docutils literal notranslate"><span class="pre">&quot;input_var&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;output&quot;</span></code>, and <code class="docutils literal notranslate"><span class="pre">&quot;inpath&quot;</span></code> blocks.</p></li>
+<li><p><strong>inpath</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – Override the VPLanet infile path from the YAML <code class="docutils literal notranslate"><span class="pre">&quot;inpath&quot;</span></code> key.</p></li>
+<li><p><strong>outpath</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – Directory for all output files.  Defaults to <code class="docutils literal notranslate"><span class="pre">&quot;.&quot;</span></code>.</p></li>
+<li><p><strong>verbose</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – Passed through to <a class="reference internal" href="#vplanet_inference.VplanetModel" title="vplanet_inference.VplanetModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">VplanetModel</span></code></a>.  Defaults to <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
+<li><p><strong>compute_true</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code> (default) run the model at the <code class="docutils literal notranslate"><span class="pre">&quot;true_value&quot;</span></code>
+parameters to populate <code class="docutils literal notranslate"><span class="pre">outparams.data</span></code> (synthetic test mode).</p></li>
+<li><p><strong>ncore</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>, </em><em>optional</em>) – Number of CPU cores for parallel model evaluation.
+Defaults to <code class="docutils literal notranslate"><span class="pre">multiprocessing.cpu_count()</span></code>.</p></li>
+<li><p><strong>vpm_kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a><em>, </em><em>optional</em>) – Additional keyword arguments forwarded to <a class="reference internal" href="#vplanet_inference.VplanetModel" title="vplanet_inference.VplanetModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">VplanetModel</span></code></a>.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="vplanet_inference.AnalyzeVplanetModel.vpm">
+<span class="sig-name descname"><span class="pre">vpm</span></span><a class="headerlink" href="#vplanet_inference.AnalyzeVplanetModel.vpm" title="Link to this definition"></a></dt>
+<dd><p>The underlying VPLanet model instance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#vplanet_inference.VplanetModel" title="vplanet_inference.VplanetModel">VplanetModel</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="vplanet_inference.AnalyzeVplanetModel.inparams_fix">
+<span class="sig-name descname"><span class="pre">inparams_fix</span></span><a class="headerlink" href="#vplanet_inference.AnalyzeVplanetModel.inparams_fix" title="Link to this definition"></a></dt>
+<dd><p>Fixed input parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#vplanet_inference.VplanetParameters" title="vplanet_inference.VplanetParameters">VplanetParameters</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="vplanet_inference.AnalyzeVplanetModel.inparams_var">
+<span class="sig-name descname"><span class="pre">inparams_var</span></span><a class="headerlink" href="#vplanet_inference.AnalyzeVplanetModel.inparams_var" title="Link to this definition"></a></dt>
+<dd><p>Variable input parameters (those varied during inference).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#vplanet_inference.VplanetParameters" title="vplanet_inference.VplanetParameters">VplanetParameters</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="vplanet_inference.AnalyzeVplanetModel.inparams_all">
+<span class="sig-name descname"><span class="pre">inparams_all</span></span><a class="headerlink" href="#vplanet_inference.AnalyzeVplanetModel.inparams_all" title="Link to this definition"></a></dt>
+<dd><p>Union of fixed and variable input parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#vplanet_inference.VplanetParameters" title="vplanet_inference.VplanetParameters">VplanetParameters</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="vplanet_inference.AnalyzeVplanetModel.outparams">
+<span class="sig-name descname"><span class="pre">outparams</span></span><a class="headerlink" href="#vplanet_inference.AnalyzeVplanetModel.outparams" title="Link to this definition"></a></dt>
+<dd><p>Output parameters with observational data and uncertainties.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#vplanet_inference.VplanetParameters" title="vplanet_inference.VplanetParameters">VplanetParameters</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="vplanet_inference.AnalyzeVplanetModel.like_data">
+<span class="sig-name descname"><span class="pre">like_data</span></span><a class="headerlink" href="#vplanet_inference.AnalyzeVplanetModel.like_data" title="Link to this definition"></a></dt>
+<dd><p>Observational data array used by <a class="reference internal" href="#vplanet_inference.AnalyzeVplanetModel.lnlike" title="vplanet_inference.AnalyzeVplanetModel.lnlike"><code class="xref py py-meth docutils literal notranslate"><span class="pre">lnlike()</span></code></a>, shape
+<code class="docutils literal notranslate"><span class="pre">(n_outparams,</span> <span class="pre">2)</span></code> with columns <code class="docutils literal notranslate"><span class="pre">[mean,</span> <span class="pre">std]</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="vplanet_inference.AnalyzeVplanetModel.format_theta">
 <span class="sig-name descname"><span class="pre">format_theta</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">theta_var</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/vplanet_inference/analysis.html#AnalyzeVplanetModel.format_theta"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#vplanet_inference.AnalyzeVplanetModel.format_theta" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Merge variable parameters into the full parameter vector.</p>
+<p>Starts from the true/fiducial values of all parameters and
+substitutes the provided variable values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>theta_var</strong> (<em>array-like</em><em> of </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Values for the variable parameters only, in the order of
+<code class="docutils literal notranslate"><span class="pre">self.inparams_var.names</span></code>.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Full parameter vector of length <code class="docutils literal notranslate"><span class="pre">len(self.inparams_all.names)</span></code>.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="vplanet_inference.AnalyzeVplanetModel.run_model_format">
 <span class="sig-name descname"><span class="pre">run_model_format</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">theta_var</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/vplanet_inference/analysis.html#AnalyzeVplanetModel.run_model_format"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#vplanet_inference.AnalyzeVplanetModel.run_model_format" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Run the model for a vector of variable parameters.</p>
+<p>Internally calls <a class="reference internal" href="#vplanet_inference.AnalyzeVplanetModel.format_theta" title="vplanet_inference.AnalyzeVplanetModel.format_theta"><code class="xref py py-meth docutils literal notranslate"><span class="pre">format_theta()</span></code></a> to build the full parameter
+vector and then delegates to <a class="reference internal" href="#vplanet_inference.VplanetModel.run_model" title="vplanet_inference.VplanetModel.run_model"><code class="xref py py-meth docutils literal notranslate"><span class="pre">VplanetModel.run_model()</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>theta_var</strong> (<em>array-like</em><em> of </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Variable parameter values.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Model output values; see <a class="reference internal" href="#vplanet_inference.VplanetModel.run_model" title="vplanet_inference.VplanetModel.run_model"><code class="xref py py-meth docutils literal notranslate"><span class="pre">VplanetModel.run_model()</span></code></a>.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="vplanet_inference.AnalyzeVplanetModel.run_models">
 <span class="sig-name descname"><span class="pre">run_models</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">theta_var_array</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/vplanet_inference/analysis.html#AnalyzeVplanetModel.run_models"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#vplanet_inference.AnalyzeVplanetModel.run_models" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Run the model for an array of variable parameter vectors.</p>
+<p>Uses <code class="docutils literal notranslate"><span class="pre">multiprocessing.Pool</span></code> when <code class="docutils literal notranslate"><span class="pre">self.ncore</span> <span class="pre">&gt;</span> <span class="pre">1</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>theta_var_array</strong> (<em>np.ndarray</em><em>, </em><em>shape</em><em> (</em><em>n_samples</em><em>, </em><em>n_var_params</em><em>)</em>) – Each row is one set of variable parameter values.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Model outputs for every sample.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray, shape (n_samples, n_outparams)</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="vplanet_inference.AnalyzeVplanetModel.lnlike">
 <span class="sig-name descname"><span class="pre">lnlike</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">theta_var</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/vplanet_inference/analysis.html#AnalyzeVplanetModel.lnlike"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#vplanet_inference.AnalyzeVplanetModel.lnlike" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Gaussian log-likelihood for the variable parameters.</p>
+<p>Computes <span class="math notranslate nohighlight">\(\ln \mathcal{L} = -\tfrac{1}{2}\sum_i
+\left(\tfrac{m_i - d_i}{\sigma_i}\right)^2\)</span> where <span class="math notranslate nohighlight">\(m_i\)</span> are
+the model outputs and <span class="math notranslate nohighlight">\(d_i, \sigma_i\)</span> come from
+<code class="docutils literal notranslate"><span class="pre">self.outparams.data</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>theta_var</strong> (<em>array-like</em><em> of </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Variable parameter values.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Log-likelihood value.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)">float</a></p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="vplanet_inference.AnalyzeVplanetModel.run_mcmc">
 <span class="sig-name descname"><span class="pre">run_mcmc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'dynesty'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reload</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ExpSquaredKernel'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ntrain</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ntest</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">niter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/vplanet_inference/analysis.html#AnalyzeVplanetModel.run_mcmc"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#vplanet_inference.AnalyzeVplanetModel.run_mcmc" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Run Bayesian inference using the specified MCMC method.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>method</strong> (<em>{&quot;dynesty&quot;</em><em>, </em><em>&quot;alabi&quot;</em><em>, </em><em>&quot;alabi_dynesty&quot;}</em><em>, </em><em>optional</em>) – <p>Inference backend.</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">&quot;dynesty&quot;</span></code></dt><dd><p>Direct nested sampling with <code class="docutils literal notranslate"><span class="pre">dynesty</span></code> on the true forward
+model (no surrogate).</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">&quot;alabi&quot;</span></code></dt><dd><p>Train a Gaussian Process surrogate with <code class="docutils literal notranslate"><span class="pre">alabi</span></code>’s BAPE
+active-learning algorithm, then stop (no MCMC run yet).</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">&quot;alabi_dynesty&quot;</span></code></dt><dd><p>Train the GP surrogate, then run <code class="docutils literal notranslate"><span class="pre">dynesty</span></code> on it.</p>
+</dd>
+</dl>
+</p></li>
+<li><p><strong>reload</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, load a previously saved <code class="docutils literal notranslate"><span class="pre">alabi</span></code> cache from the
+results directory instead of retraining.  Defaults to <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p></li>
+<li><p><strong>kernel</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – GP kernel name passed to <code class="docutils literal notranslate"><span class="pre">alabi.SurrogateModel.init_gp</span></code>.
+Defaults to <code class="docutils literal notranslate"><span class="pre">&quot;ExpSquaredKernel&quot;</span></code>.</p></li>
+<li><p><strong>ntrain</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>, </em><em>optional</em>) – Initial training-set size for the GP surrogate.  Defaults to
+<code class="docutils literal notranslate"><span class="pre">1000</span></code>.</p></li>
+<li><p><strong>ntest</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>, </em><em>optional</em>) – Test-set size for GP evaluation.  Defaults to <code class="docutils literal notranslate"><span class="pre">100</span></code>.</p></li>
+<li><p><strong>niter</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>, </em><em>optional</em>) – Number of active-learning iterations.  Defaults to <code class="docutils literal notranslate"><span class="pre">500</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#Exception" title="(in Python v3.14)"><strong>Exception</strong></a> – If <code class="docutils literal notranslate"><span class="pre">self.like_data</span></code> is <code class="docutils literal notranslate"><span class="pre">None</span></code> or <code class="docutils literal notranslate"><span class="pre">alabi</span></code> is not installed.</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="vplanet_inference.AnalyzeVplanetModel.plot_sensitivity_table">
 <span class="sig-name descname"><span class="pre">plot_sensitivity_table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/vplanet_inference/analysis.html#AnalyzeVplanetModel.plot_sensitivity_table"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#vplanet_inference.AnalyzeVplanetModel.plot_sensitivity_table" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Plot a Sobol sensitivity index as a labelled heatmap.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>table</strong> (<em>pandas.DataFrame</em>) – Sensitivity table with input parameters as the index and output
+parameters as columns (values in [0, 1]).</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>matplotlib.figure.Figure</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="vplanet_inference.AnalyzeVplanetModel.variance_global_sensitivity">
 <span class="sig-name descname"><span class="pre">variance_global_sensitivity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">param_values</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Y</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nsample</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1024</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subpath</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'results_sensitivity'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/vplanet_inference/analysis.html#AnalyzeVplanetModel.variance_global_sensitivity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#vplanet_inference.AnalyzeVplanetModel.variance_global_sensitivity" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Run Sobol variance-based global sensitivity analysis.</p>
+<p>Uses the SALib library to sample the parameter space (Saltelli scheme)
+and compute first-order (S1) and total-effect (ST) Sobol indices for
+every output parameter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>param_values</strong> (<em>np.ndarray</em><em>, </em><em>optional</em>) – Pre-computed Saltelli sample array of shape
+<code class="docutils literal notranslate"><span class="pre">(nsample</span> <span class="pre">*</span> <span class="pre">(n_var_params</span> <span class="pre">+</span> <span class="pre">2),</span> <span class="pre">n_var_params)</span></code>.  If <code class="docutils literal notranslate"><span class="pre">None</span></code>
+(default) new samples are drawn.</p></li>
+<li><p><strong>Y</strong> (<em>np.ndarray</em><em>, </em><em>optional</em>) – Pre-computed model outputs of shape
+<code class="docutils literal notranslate"><span class="pre">(n_samples,</span> <span class="pre">n_outparams)</span></code>.  If <code class="docutils literal notranslate"><span class="pre">None</span></code> (default) the model is
+run for all <code class="docutils literal notranslate"><span class="pre">param_values</span></code>.</p></li>
+<li><p><strong>nsample</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>, </em><em>optional</em>) – Base sample size <em>N</em> for the Saltelli sampler.  The total number of
+model runs is <code class="docutils literal notranslate"><span class="pre">N</span> <span class="pre">*</span> <span class="pre">(n_var_params</span> <span class="pre">+</span> <span class="pre">2)</span></code>.  Defaults to <code class="docutils literal notranslate"><span class="pre">1024</span></code>.</p></li>
+<li><p><strong>save</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, save samples, sensitivity tables, and figures to
+<code class="docutils literal notranslate"><span class="pre">self.outpath</span> <span class="pre">/</span> <span class="pre">subpath</span> <span class="pre">/</span> <span class="pre">config_id</span> <span class="pre">/</span></code>.  Defaults to <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p></li>
+<li><p><strong>subpath</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – Subdirectory within <code class="docutils literal notranslate"><span class="pre">self.outpath</span></code> for saved results.
+Defaults to <code class="docutils literal notranslate"><span class="pre">&quot;results_sensitivity&quot;</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Results are stored as <code class="docutils literal notranslate"><span class="pre">self.table_s1</span></code>, <code class="docutils literal notranslate"><span class="pre">self.table_sT</span></code>,
+<code class="docutils literal notranslate"><span class="pre">self.fig_s1</span></code>, and <code class="docutils literal notranslate"><span class="pre">self.fig_sT</span></code>.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
 
 </dd></dl>
 
 </section>
+<hr class="docutils" />
 <section id="vplanet-inference-parameters">
 <h2>vplanet_inference.parameters<a class="headerlink" href="#vplanet-inference-parameters" title="Link to this heading"></a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="vplanet_inference.VplanetParameters">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">vplanet_inference.</span></span><span class="sig-name descname"><span class="pre">VplanetParameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">names</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">units</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bounds</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">true</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">uncertainty</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/vplanet_inference/parameters.html#VplanetParameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#vplanet_inference.VplanetParameters" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Container for a set of VPLanet parameters and their associated metadata.</p>
+<p>Used internally by <a class="reference internal" href="#vplanet_inference.AnalyzeVplanetModel" title="vplanet_inference.AnalyzeVplanetModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">AnalyzeVplanetModel</span></code></a> to hold
+fixed inputs, variable inputs, and outputs loaded from a YAML configuration
+file.  Can also be used directly to build parameter dictionaries for
+<a class="reference internal" href="#vplanet_inference.VplanetModel" title="vplanet_inference.VplanetModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">VplanetModel</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>names</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – VPLanet parameter names (e.g. <code class="docutils literal notranslate"><span class="pre">[&quot;star.dMass&quot;,</span> <span class="pre">&quot;vpl.dStopTime&quot;]</span></code>).</p></li>
+<li><p><strong>units</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em> of </em><a class="reference external" href="https://docs.astropy.org/en/stable/api/astropy.units.Unit.html#astropy.units.Unit" title="(in Astropy v7.2)"><em>astropy.units.Unit</em></a><em> or </em><em>None</em>) – Astropy unit for each parameter, in the same order as <code class="docutils literal notranslate"><span class="pre">names</span></code>.
+<code class="docutils literal notranslate"><span class="pre">None</span></code> entries mark dimensionless parameters.</p></li>
+<li><p><strong>bounds</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em> of </em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>)</em><em>, </em><em>optional</em>) – <code class="docutils literal notranslate"><span class="pre">(min,</span> <span class="pre">max)</span></code> prior bounds for each variable parameter.</p></li>
+<li><p><strong>true</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>optional</em>) – True / fiducial values for each parameter (used in synthetic tests).</p></li>
+<li><p><strong>data</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em> or </em><em>np.ndarray</em><em>, </em><em>optional</em>) – Observational data for each parameter, typically <code class="docutils literal notranslate"><span class="pre">[[mean,</span> <span class="pre">std],</span> <span class="pre">...]</span></code>.</p></li>
+<li><p><strong>labels</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – Human-readable plot labels.  Defaults to <code class="docutils literal notranslate"><span class="pre">names</span></code> if not provided.</p></li>
+<li><p><strong>uncertainty</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>optional</em>) – 1-sigma uncertainties; used together with <code class="docutils literal notranslate"><span class="pre">true</span></code> by
+<a class="reference internal" href="#vplanet_inference.VplanetParameters.set_data" title="vplanet_inference.VplanetParameters.set_data"><code class="xref py py-meth docutils literal notranslate"><span class="pre">set_data()</span></code></a> to build the <code class="docutils literal notranslate"><span class="pre">data</span></code> array.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="vplanet_inference.VplanetParameters.num">
+<span class="sig-name descname"><span class="pre">num</span></span><a class="headerlink" href="#vplanet_inference.VplanetParameters.num" title="Link to this definition"></a></dt>
+<dd><p>Number of parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="vplanet_inference.VplanetParameters.dict_units">
+<span class="sig-name descname"><span class="pre">dict_units</span></span><a class="headerlink" href="#vplanet_inference.VplanetParameters.dict_units" title="Link to this definition"></a></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">{name:</span> <span class="pre">unit}</span></code> mapping.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)">dict</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="vplanet_inference.VplanetParameters.dict_bounds">
+<span class="sig-name descname"><span class="pre">dict_bounds</span></span><a class="headerlink" href="#vplanet_inference.VplanetParameters.dict_bounds" title="Link to this definition"></a></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">{name:</span> <span class="pre">(min,</span> <span class="pre">max)}</span></code> mapping (only if <code class="docutils literal notranslate"><span class="pre">bounds</span></code> was supplied).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)">dict</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="vplanet_inference.VplanetParameters.dict_true">
+<span class="sig-name descname"><span class="pre">dict_true</span></span><a class="headerlink" href="#vplanet_inference.VplanetParameters.dict_true" title="Link to this definition"></a></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">{name:</span> <span class="pre">true_value}</span></code> mapping (only if <code class="docutils literal notranslate"><span class="pre">true</span></code> was supplied).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)">dict</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="vplanet_inference.VplanetParameters.dict_data">
+<span class="sig-name descname"><span class="pre">dict_data</span></span><a class="headerlink" href="#vplanet_inference.VplanetParameters.dict_data" title="Link to this definition"></a></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">{name:</span> <span class="pre">data_row}</span></code> mapping (only if <code class="docutils literal notranslate"><span class="pre">data</span></code> was supplied).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)">dict</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="vplanet_inference.VplanetParameters.dict_labels">
+<span class="sig-name descname"><span class="pre">dict_labels</span></span><a class="headerlink" href="#vplanet_inference.VplanetParameters.dict_labels" title="Link to this definition"></a></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">{name:</span> <span class="pre">label}</span></code> mapping.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)">dict</a></p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="vplanet_inference.VplanetParameters.set_data">
 <span class="sig-name descname"><span class="pre">set_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">true</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/vplanet_inference/parameters.html#VplanetParameters.set_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#vplanet_inference.VplanetParameters.set_data" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Set <code class="docutils literal notranslate"><span class="pre">true</span></code> values and build the <code class="docutils literal notranslate"><span class="pre">data</span></code> array from <code class="docutils literal notranslate"><span class="pre">uncertainty</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>true</strong> (<em>array-like</em><em> of </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – True / best-fit values for each parameter.</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="vplanet_inference.VplanetParameters.get_true_units">
 <span class="sig-name descname"><span class="pre">get_true_units</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">param_name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/vplanet_inference/parameters.html#VplanetParameters.get_true_units"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#vplanet_inference.VplanetParameters.get_true_units" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Return the true value of a parameter as an astropy Quantity.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>param_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Parameter name (must be in <code class="docutils literal notranslate"><span class="pre">self.names</span></code>).</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">true_value</span> <span class="pre">*</span> <span class="pre">unit</span></code> for the requested parameter.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.astropy.org/en/stable/api/astropy.units.Quantity.html#astropy.units.Quantity" title="(in Astropy v7.2)">astropy.units.Quantity</a></p>
+</dd>
+</dl>
+</dd></dl>
 
 </dd></dl>
 
+<dl class="py function">
+<dt class="sig sig-object py" id="vplanet_inference.get_vplanet_units">
+<span class="sig-prename descclassname"><span class="pre">vplanet_inference.</span></span><span class="sig-name descname"><span class="pre">get_vplanet_units</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/vplanet_inference/parameters.html#get_vplanet_units"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#vplanet_inference.get_vplanet_units" title="Link to this definition"></a></dt>
+<dd><p>Run <code class="docutils literal notranslate"><span class="pre">vplanet</span> <span class="pre">-H</span></code> and return a dictionary mapping every parameter name
+to its default astropy unit.</p>
+<p>The extended help output (<code class="docutils literal notranslate"><span class="pre">vplanet</span> <span class="pre">-H</span></code>) is parsed using the structured
+RST table format produced by VPLanet.  Each parameter block looks like:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+------...------+</span>
+<span class="o">|</span> <span class="o">**</span><span class="n">ParamName</span><span class="o">**</span> <span class="o">|</span>
+<span class="o">+=======+=======+</span>
+<span class="o">|</span> <span class="n">Custom</span> <span class="n">unit</span>   <span class="o">||</span> <span class="n">K</span>  <span class="o">|</span>
+<span class="o">+-------+-------+</span>
+</pre></div>
+</div>
+<p>For <strong>output parameters</strong>, the <code class="docutils literal notranslate"><span class="pre">Custom</span> <span class="pre">unit</span></code> row gives the natural display
+unit (e.g. <code class="docutils literal notranslate"><span class="pre">K</span></code>, <code class="docutils literal notranslate"><span class="pre">TW</span></code>, <code class="docutils literal notranslate"><span class="pre">Gyr</span></code>).</p>
+<p>For <strong>input options</strong>, VPLanet often omits <code class="docutils literal notranslate"><span class="pre">Custom</span> <span class="pre">unit</span></code> and instead
+provides a <code class="docutils literal notranslate"><span class="pre">Dimension(s)</span></code> row (e.g. <code class="docutils literal notranslate"><span class="pre">temperature</span></code>, <code class="docutils literal notranslate"><span class="pre">energy/time</span></code>,
+<code class="docutils literal notranslate"><span class="pre">pressure</span></code>).  When <code class="docutils literal notranslate"><span class="pre">Custom</span> <span class="pre">unit</span></code> is absent, the dimension string is
+used as a fallback via <code class="docutils literal notranslate"><span class="pre">_VPLANET_DIMENSION_MAP</span></code> to produce a canonical
+SI unit for that physical dimension.</p>
+<p>Parameters that are dimensionless or whose unit is a VPLanet-specific
+constant (e.g. <em>Primordial Earth Units</em>, <em>EMAGMOM</em>) are mapped to <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">{parameter_name:</span> <span class="pre">astropy_unit_or_None}</span></code></p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)">dict</a></p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">units</span> <span class="o">=</span> <span class="n">get_vplanet_units</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">units</span><span class="p">[</span><span class="s2">&quot;TJumpUMan&quot;</span><span class="p">]</span>    <span class="c1"># output param — Custom unit row</span>
+<span class="go">Unit(&quot;K&quot;)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">units</span><span class="p">[</span><span class="s2">&quot;dAge&quot;</span><span class="p">]</span>         <span class="c1"># input param — Custom unit row</span>
+<span class="go">Unit(&quot;Gyr&quot;)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">units</span><span class="p">[</span><span class="s2">&quot;dTMan&quot;</span><span class="p">]</span>        <span class="c1"># input param — Dimension(s) fallback</span>
+<span class="go">Unit(&quot;K&quot;)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">units</span><span class="p">[</span><span class="s2">&quot;dActViscMan&quot;</span><span class="p">]</span>  <span class="c1"># input param — Dimension(s) fallback</span>
+<span class="go">Unit(&quot;m2 / s&quot;)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="vplanet_inference.get_vplanet_units_source">
+<span class="sig-prename descclassname"><span class="pre">vplanet_inference.</span></span><span class="sig-name descname"><span class="pre">get_vplanet_units_source</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parameter</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/vplanet_inference/parameters.html#get_vplanet_units_source"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#vplanet_inference.get_vplanet_units_source" title="Link to this definition"></a></dt>
+<dd><p>Look up the unit for a vplanet parameter by parsing the C source code
+on GitHub.</p>
+<p>On the first call the entire vplanet <code class="docutils literal notranslate"><span class="pre">src/*.c</span></code> tree is fetched from
+GitHub and cached in memory.  Subsequent calls use the in-process cache,
+so only one round-trip of network requests is ever made per interpreter
+session.</p>
+<p>The lookup searches two complementary patterns in the C source:</p>
+<ul class="simple">
+<li><p><strong>Input options</strong> (<code class="docutils literal notranslate"><span class="pre">fvInitializeOptions*</span></code> functions): uses the
+<code class="docutils literal notranslate"><span class="pre">cDimension</span></code> field, which contains a qualitative dimension description
+like <code class="docutils literal notranslate"><span class="pre">&quot;temperature&quot;</span></code> or <code class="docutils literal notranslate"><span class="pre">&quot;energy/time&quot;</span></code>.
+Mapped via <code class="docutils literal notranslate"><span class="pre">_VPLANET_DIMENSION_MAP</span></code> to a canonical SI astropy unit.</p></li>
+<li><p><strong>Output parameters</strong> (<code class="docutils literal notranslate"><span class="pre">fvInitializeOutput*</span></code> functions): uses the
+<code class="docutils literal notranslate"><span class="pre">cNeg</span></code> field, which contains the display unit string such as <code class="docutils literal notranslate"><span class="pre">&quot;K&quot;</span></code>
+or <code class="docutils literal notranslate"><span class="pre">&quot;TW&quot;</span></code>.
+Mapped via <code class="docutils literal notranslate"><span class="pre">_VPLANET_UNIT_MAP</span></code> (or <code class="docutils literal notranslate"><span class="pre">astropy.units.Unit()</span></code> as a
+fallback).</p></li>
+</ul>
+<p>The GitHub tag is matched to the installed <code class="docutils literal notranslate"><span class="pre">vplanet.__version__</span></code>,
+falling back to <code class="docutils literal notranslate"><span class="pre">main</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>parameter</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – VPLanet parameter name.  Both the option form with a leading
+<code class="docutils literal notranslate"><span class="pre">&quot;d&quot;</span></code> (e.g. <code class="docutils literal notranslate"><span class="pre">&quot;dTMan&quot;</span></code>) and the output form without
+(e.g. <code class="docutils literal notranslate"><span class="pre">&quot;TMan&quot;</span></code>) are accepted.  The function tries the exact name
+first, then with/without the <code class="docutils literal notranslate"><span class="pre">&quot;d&quot;</span></code> prefix.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The associated unit, or <code class="docutils literal notranslate"><span class="pre">None</span></code> for dimensionless / VPLanet-specific
+constants.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.astropy.org/en/stable/api/astropy.units.Unit.html#astropy.units.Unit" title="(in Astropy v7.2)">astropy.units.Unit</a> or None</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – If the parameter is not found in any source file.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">get_vplanet_units_source</span><span class="p">(</span><span class="s2">&quot;TJumpUMan&quot;</span><span class="p">)</span>   <span class="c1"># output form</span>
+<span class="go">Unit(&quot;K&quot;)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">get_vplanet_units_source</span><span class="p">(</span><span class="s2">&quot;dTMan&quot;</span><span class="p">)</span>       <span class="c1"># input option form</span>
+<span class="go">Unit(&quot;K&quot;)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">get_vplanet_units_source</span><span class="p">(</span><span class="s2">&quot;TMan&quot;</span><span class="p">)</span>        <span class="c1"># output form without &#39;d&#39;</span>
+<span class="go">Unit(&quot;K&quot;)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">get_vplanet_units_source</span><span class="p">(</span><span class="s2">&quot;HflowUMan&quot;</span><span class="p">)</span>   <span class="c1"># heat flow output</span>
+<span class="go">Unit(&quot;TW&quot;)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="vplanet_inference.check_units">
+<span class="sig-prename descclassname"><span class="pre">vplanet_inference.</span></span><span class="sig-name descname"><span class="pre">check_units</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inparams</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outparams</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/vplanet_inference/parameters.html#check_units"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#vplanet_inference.check_units" title="Link to this definition"></a></dt>
+<dd><p>Check that the astropy units supplied in <em>inparams</em> and <em>outparams</em> are
+physically consistent with the default units for those parameters.</p>
+<p>“Consistent” means the two units describe the <em>same physical dimension</em>,
+i.e. they are interconvertible (e.g. <code class="docutils literal notranslate"><span class="pre">u.Msun</span></code> and <code class="docutils literal notranslate"><span class="pre">u.M_earth</span></code> are
+both mass).  The actual numeric scale does not matter — VPLanet performs
+unit conversions internally.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>inparams</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a>) – Input-parameter dict passed to <a class="reference internal" href="#vplanet_inference.VplanetModel" title="vplanet_inference.VplanetModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">VplanetModel</span></code></a>, of the form
+<code class="docutils literal notranslate"><span class="pre">{&quot;body.ParamName&quot;:</span> <span class="pre">astropy_unit,</span> <span class="pre">...}</span></code>.</p></li>
+<li><p><strong>outparams</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a><em>, </em><em>optional</em>) – Output-parameter dict passed to <a class="reference internal" href="#vplanet_inference.VplanetModel" title="vplanet_inference.VplanetModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">VplanetModel</span></code></a>, of the form
+<code class="docutils literal notranslate"><span class="pre">{&quot;final.body.ParamName&quot;:</span> <span class="pre">astropy_unit,</span> <span class="pre">...}</span></code>.</p></li>
+<li><p><strong>source</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – If <code class="docutils literal notranslate"><span class="pre">False</span></code> (default), look up units by parsing <code class="docutils literal notranslate"><span class="pre">vplanet</span> <span class="pre">-H</span></code>
+runtime output via <a class="reference internal" href="#vplanet_inference.get_vplanet_units" title="vplanet_inference.get_vplanet_units"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_vplanet_units()</span></code></a>.  If <code class="docutils literal notranslate"><span class="pre">True</span></code>, look up
+units by parsing the vplanet C source code on GitHub via
+<a class="reference internal" href="#vplanet_inference.get_vplanet_units_source" title="vplanet_inference.get_vplanet_units_source"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_vplanet_units_source()</span></code></a>.  The source-based lookup is more
+precise for input options (uses the exact <code class="docutils literal notranslate"><span class="pre">cDimension</span></code> field) and
+caches results after the first call.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><p>A summary dict with three keys:</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">&quot;consistent&quot;</span></code></dt><dd><p>List of <code class="docutils literal notranslate"><span class="pre">(key,</span> <span class="pre">user_unit,</span> <span class="pre">vplanet_unit)</span></code> tuples that passed.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">&quot;inconsistent&quot;</span></code></dt><dd><p>List of <code class="docutils literal notranslate"><span class="pre">(key,</span> <span class="pre">user_unit,</span> <span class="pre">vplanet_unit)</span></code> tuples that failed —
+the two units have different physical dimensions.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">&quot;unknown&quot;</span></code></dt><dd><p>List of <code class="docutils literal notranslate"><span class="pre">(key,</span> <span class="pre">user_unit)</span></code> tuples for parameters that were not
+found in the lookup source, or where either unit is <code class="docutils literal notranslate"><span class="pre">None</span></code> /
+unmapped.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)">dict</a></p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – If any inconsistencies are found, a <code class="docutils literal notranslate"><span class="pre">ValueError</span></code> is raised listing
+    every problematic parameter so all issues are visible at once.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">astropy.units</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">u</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">inparams</span>  <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;star.dMass&quot;</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">Msun</span><span class="p">,</span> <span class="s2">&quot;star.dAge&quot;</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">yr</span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">outparams</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;final.star.Luminosity&quot;</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">Lsun</span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">check_units</span><span class="p">(</span><span class="n">inparams</span><span class="p">,</span> <span class="n">outparams</span><span class="p">)</span>              <span class="c1"># uses vplanet -H</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">check_units</span><span class="p">(</span><span class="n">inparams</span><span class="p">,</span> <span class="n">outparams</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="c1"># uses GitHub C source</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</section>
+<hr class="docutils" />
+<section id="vplanet-inference-fischer">
+<h2>vplanet_inference.fischer<a class="headerlink" href="#vplanet-inference-fischer" title="Link to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="vplanet_inference.compute_fisher_information">
+<span class="sig-prename descclassname"><span class="pre">vplanet_inference.</span></span><span class="sig-name descname"><span class="pre">compute_fisher_information</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">log_likelihood</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.14)"><span class="pre">Callable</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">params</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><span class="pre">ndarray</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><span class="pre">ndarray</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'hessian'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epsilon</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1e-05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">per_observation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><span class="pre">ndarray</span></a></span></span><a class="reference internal" href="_modules/vplanet_inference/fischer.html#compute_fisher_information"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#vplanet_inference.compute_fisher_information" title="Link to this definition"></a></dt>
+<dd><p>Compute the Fisher Information Matrix for a black-box likelihood function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>log_likelihood</strong> (<em>callable</em>) – Function that computes log-likelihood.
+Should have signature: log_likelihood(params, data) -&gt; float or array
+- If per_observation=False: returns scalar total log-likelihood
+- If per_observation=True: returns array of per-observation log-likelihoods</p></li>
+<li><p><strong>params</strong> (<em>np.ndarray</em>) – Parameter values at which to evaluate Fisher information (shape: (n_params,))</p></li>
+<li><p><strong>data</strong> (<em>np.ndarray</em><em> or </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a>) – The observed data to pass to log_likelihood function</p></li>
+<li><p><strong>method</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>default='hessian'</em>) – Method to compute Fisher information:
+- ‘hessian’: Use negative Hessian of log-likelihood (observed FI)
+- ‘score’: Use outer product of score vectors (requires per_observation=True)</p></li>
+<li><p><strong>epsilon</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>default=1e-5</em>) – Step size for finite difference approximation</p></li>
+<li><p><strong>per_observation</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>default=False</em>) – Whether log_likelihood returns per-observation values</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>fisher_info</strong> – Fisher Information Matrix (shape: (n_params, n_params))</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Simple example: Normal distribution with unknown mean</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span><span class="w"> </span><span class="nf">log_lik</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="n">mu</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="gp">... </span>    <span class="n">sigma</span> <span class="o">=</span> <span class="mf">1.0</span>
+<span class="gp">... </span>    <span class="k">return</span> <span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">data</span> <span class="o">-</span> <span class="n">mu</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="n">sigma</span><span class="o">**</span><span class="mi">2</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">params</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">FI</span> <span class="o">=</span> <span class="n">compute_fisher_information</span><span class="p">(</span><span class="n">log_lik</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Fisher Information: </span><span class="si">{</span><span class="n">FI</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Standard Error: </span><span class="si">{</span><span class="mi">1</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">FI</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="vplanet_inference.analyze_fisher_information">
+<span class="sig-prename descclassname"><span class="pre">vplanet_inference.</span></span><span class="sig-name descname"><span class="pre">analyze_fisher_information</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fisher_info</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><span class="pre">ndarray</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">param_names</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a></span></span><a class="reference internal" href="_modules/vplanet_inference/fischer.html#analyze_fisher_information"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#vplanet_inference.analyze_fisher_information" title="Link to this definition"></a></dt>
+<dd><p>Analyze Fisher Information Matrix to extract useful statistics.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fisher_info</strong> (<em>np.ndarray</em>) – Fisher Information Matrix</p></li>
+<li><p><strong>param_names</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em>, </em><em>optional</em>) – Names of parameters for reporting</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>results</strong> – Dictionary containing:
+- ‘standard_errors’: Approximate parameter standard errors
+- ‘correlation_matrix’: Parameter correlation matrix
+- ‘condition_number’: Condition number (higher = more numerical issues)
+- ‘determinant’: Determinant (volume of confidence ellipsoid)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)">dict</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<hr class="docutils" />
+<section id="vplanet-inference-info-vis">
+<h2>vplanet_inference.info_vis<a class="headerlink" href="#vplanet-inference-info-vis" title="Link to this heading"></a></h2>
+<section id="local-sensitivity-analysis">
+<h3>Local Sensitivity Analysis<a class="headerlink" href="#local-sensitivity-analysis" title="Link to this heading"></a></h3>
+<dl class="py function">
+<dt class="sig sig-object py" id="vplanet_inference.local_sensitivity_analysis">
+<span class="sig-prename descclassname"><span class="pre">vplanet_inference.</span></span><span class="sig-name descname"><span class="pre">local_sensitivity_analysis</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vpm_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta_fiducial</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inparams</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outparams</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delta_percent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/vplanet_inference/info_vis.html#local_sensitivity_analysis"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#vplanet_inference.local_sensitivity_analysis" title="Link to this definition"></a></dt>
+<dd><p>Perform local (gradient-based) sensitivity analysis around a fiducial point.</p>
+<p>Perturbs each input parameter individually by ±``delta_percent`` percent
+of its fiducial value and records the resulting percent change in every
+output parameter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>vpm_model</strong> (<a class="reference internal" href="#vplanet_inference.VplanetModel" title="vplanet_inference.VplanetModel"><em>VplanetModel</em></a>) – Initialised VPLanet model instance.</p></li>
+<li><p><strong>theta_fiducial</strong> (<em>np.ndarray</em><em>, </em><em>shape</em><em> (</em><em>n_params</em><em>,</em><em>)</em>) – Fiducial (reference) parameter values in the units defined by
+<code class="docutils literal notranslate"><span class="pre">vpm_model.inparams</span></code>.</p></li>
+<li><p><strong>inparams</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a>) – Input parameter dict (<code class="docutils literal notranslate"><span class="pre">{&quot;body.dParam&quot;:</span> <span class="pre">unit,</span> <span class="pre">...}</span></code>); used to
+extract the ordered list of parameter names.</p></li>
+<li><p><strong>outparams</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a>) – Output parameter dict; used to extract the ordered list of output
+names.</p></li>
+<li><p><strong>delta_percent</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>optional</em>) – Fractional perturbation size in percent.  Defaults to <code class="docutils literal notranslate"><span class="pre">1.0</span></code>
+(i.e. ±1 %).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>sensitivity_matrix</strong> (<em>np.ndarray, shape (n_outputs, n_inputs, 2)</em>) – Percent change in each output for each input perturbation.
+<code class="docutils literal notranslate"><span class="pre">sensitivity_matrix[j,</span> <span class="pre">i,</span> <span class="pre">0]</span></code> is the response to
+<code class="docutils literal notranslate"><span class="pre">+delta_percent</span></code> applied to input <code class="docutils literal notranslate"><span class="pre">i</span></code> on output <code class="docutils literal notranslate"><span class="pre">j</span></code>;
+index <code class="docutils literal notranslate"><span class="pre">1</span></code> corresponds to <code class="docutils literal notranslate"><span class="pre">-delta_percent</span></code>.</p></li>
+<li><p><strong>param_names</strong> (<em>list of str</em>) – Input parameter names (keys of <code class="docutils literal notranslate"><span class="pre">inparams</span></code>).</p></li>
+<li><p><strong>output_names</strong> (<em>list of str</em>) – Output parameter names (keys of <code class="docutils literal notranslate"><span class="pre">outparams</span></code>).</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="vplanet_inference.plot_sensitivity_heatmap">
+<span class="sig-prename descclassname"><span class="pre">vplanet_inference.</span></span><span class="sig-name descname"><span class="pre">plot_sensitivity_heatmap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sensitivity_matrix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param_names</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_names</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delta_percent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_fs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">16</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/vplanet_inference/info_vis.html#plot_sensitivity_heatmap"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#vplanet_inference.plot_sensitivity_heatmap" title="Link to this definition"></a></dt>
+<dd><p>Plot local sensitivity analysis results as a four-panel heatmap figure.</p>
+<p>Produces a 2×2 grid showing: (1) average absolute sensitivity,
+(2) response to +delta perturbation, (3) response to −delta
+perturbation, and (4) a bar chart of the most influential input for
+each output.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sensitivity_matrix</strong> (<em>np.ndarray</em><em>, </em><em>shape</em><em> (</em><em>n_outputs</em><em>, </em><em>n_inputs</em><em>, </em><em>2</em><em>)</em>) – Output of <a class="reference internal" href="#vplanet_inference.local_sensitivity_analysis" title="vplanet_inference.local_sensitivity_analysis"><code class="xref py py-func docutils literal notranslate"><span class="pre">local_sensitivity_analysis()</span></code></a>.</p></li>
+<li><p><strong>param_names</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Input parameter names (used for x-axis tick labels; the prefix
+<code class="docutils literal notranslate"><span class="pre">&quot;earth.d&quot;</span></code> is stripped automatically).</p></li>
+<li><p><strong>output_names</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Output parameter names (used for y-axis tick labels; the prefix
+<code class="docutils literal notranslate"><span class="pre">&quot;final.earth.&quot;</span></code> is stripped automatically).</p></li>
+<li><p><strong>delta_percent</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>optional</em>) – Perturbation size used in the analysis — shown in panel titles.
+Defaults to <code class="docutils literal notranslate"><span class="pre">1.0</span></code>.</p></li>
+<li><p><strong>label_fs</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>, </em><em>optional</em>) – Base font size for axis labels and titles.  Defaults to <code class="docutils literal notranslate"><span class="pre">16</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>matplotlib.figure.Figure</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="fisher-information-visualizations">
+<h3>Fisher Information Visualizations<a class="headerlink" href="#fisher-information-visualizations" title="Link to this heading"></a></h3>
+<dl class="py function">
+<dt class="sig sig-object py" id="vplanet_inference.plot_fisher_heatmap">
+<span class="sig-prename descclassname"><span class="pre">vplanet_inference.</span></span><span class="sig-name descname"><span class="pre">plot_fisher_heatmap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fisher_info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param_names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/vplanet_inference/info_vis.html#plot_fisher_heatmap"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#vplanet_inference.plot_fisher_heatmap" title="Link to this definition"></a></dt>
+<dd><p>Plot Fisher Information Matrix as a heatmap.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fisher_info</strong> (<em>np.ndarray</em>) – Fisher Information Matrix</p></li>
+<li><p><strong>param_names</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em>, </em><em>optional</em>) – Parameter names for axis labels</p></li>
+<li><p><strong>ax</strong> (<em>matplotlib.axes.Axes</em><em>, </em><em>optional</em>) – Axes to plot on</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="vplanet_inference.plot_correlation_matrix">
+<span class="sig-prename descclassname"><span class="pre">vplanet_inference.</span></span><span class="sig-name descname"><span class="pre">plot_correlation_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fisher_info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param_names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/vplanet_inference/info_vis.html#plot_correlation_matrix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#vplanet_inference.plot_correlation_matrix" title="Link to this definition"></a></dt>
+<dd><p>Plot parameter correlation matrix derived from Fisher Information.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fisher_info</strong> (<em>np.ndarray</em>) – Fisher Information Matrix</p></li>
+<li><p><strong>param_names</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em>, </em><em>optional</em>) – Parameter names for axis labels</p></li>
+<li><p><strong>ax</strong> (<em>matplotlib.axes.Axes</em><em>, </em><em>optional</em>) – Axes to plot on</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="vplanet_inference.plot_uncertainty_ellipse">
+<span class="sig-prename descclassname"><span class="pre">vplanet_inference.</span></span><span class="sig-name descname"><span class="pre">plot_uncertainty_ellipse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fisher_info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">center</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param_names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_std</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">indices</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0,</span> <span class="pre">1)</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/vplanet_inference/info_vis.html#plot_uncertainty_ellipse"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#vplanet_inference.plot_uncertainty_ellipse" title="Link to this definition"></a></dt>
+<dd><p>Plot 2D uncertainty ellipse from Fisher Information.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fisher_info</strong> (<em>np.ndarray</em>) – Fisher Information Matrix</p></li>
+<li><p><strong>center</strong> (<em>np.ndarray</em><em>, </em><em>optional</em>) – Center point for ellipse (parameter values)</p></li>
+<li><p><strong>param_names</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em>, </em><em>optional</em>) – Parameter names for axis labels</p></li>
+<li><p><strong>n_std</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>default=2</em>) – Number of standard deviations for ellipse</p></li>
+<li><p><strong>ax</strong> (<em>matplotlib.axes.Axes</em><em>, </em><em>optional</em>) – Axes to plot on</p></li>
+<li><p><strong>indices</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a><em>, </em><em>default=</em><em>(</em><em>0</em><em>, </em><em>1</em><em>)</em>) – Which two parameters to plot</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="vplanet_inference.plot_eigenvalue_spectrum">
+<span class="sig-prename descclassname"><span class="pre">vplanet_inference.</span></span><span class="sig-name descname"><span class="pre">plot_eigenvalue_spectrum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fisher_info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param_names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/vplanet_inference/info_vis.html#plot_eigenvalue_spectrum"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#vplanet_inference.plot_eigenvalue_spectrum" title="Link to this definition"></a></dt>
+<dd><p>Plot eigenvalue spectrum of Fisher Information Matrix.
+Shows which parameter combinations are well/poorly constrained.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fisher_info</strong> (<em>np.ndarray</em>) – Fisher Information Matrix</p></li>
+<li><p><strong>param_names</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em>, </em><em>optional</em>) – Parameter names</p></li>
+<li><p><strong>ax</strong> (<em>matplotlib.axes.Axes</em><em>, </em><em>optional</em>) – Axes to plot on</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="vplanet_inference.plot_standard_errors">
+<span class="sig-prename descclassname"><span class="pre">vplanet_inference.</span></span><span class="sig-name descname"><span class="pre">plot_standard_errors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fisher_info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param_names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/vplanet_inference/info_vis.html#plot_standard_errors"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#vplanet_inference.plot_standard_errors" title="Link to this definition"></a></dt>
+<dd><p>Plot parameter standard errors from Fisher Information.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fisher_info</strong> (<em>np.ndarray</em>) – Fisher Information Matrix</p></li>
+<li><p><strong>param_names</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em>, </em><em>optional</em>) – Parameter names</p></li>
+<li><p><strong>ax</strong> (<em>matplotlib.axes.Axes</em><em>, </em><em>optional</em>) – Axes to plot on</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="vplanet_inference.plot_condition_number_breakdown">
+<span class="sig-prename descclassname"><span class="pre">vplanet_inference.</span></span><span class="sig-name descname"><span class="pre">plot_condition_number_breakdown</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fisher_info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param_names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/vplanet_inference/info_vis.html#plot_condition_number_breakdown"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#vplanet_inference.plot_condition_number_breakdown" title="Link to this definition"></a></dt>
+<dd><p>Visualize condition number and its implications.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fisher_info</strong> (<em>np.ndarray</em>) – Fisher Information Matrix</p></li>
+<li><p><strong>param_names</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em>, </em><em>optional</em>) – Parameter names</p></li>
+<li><p><strong>ax</strong> (<em>matplotlib.axes.Axes</em><em>, </em><em>optional</em>) – Axes to plot on</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="vplanet_inference.create_fisher_dashboard">
+<span class="sig-prename descclassname"><span class="pre">vplanet_inference.</span></span><span class="sig-name descname"><span class="pre">create_fisher_dashboard</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fisher_info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param_names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">center</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/vplanet_inference/info_vis.html#create_fisher_dashboard"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#vplanet_inference.create_fisher_dashboard" title="Link to this definition"></a></dt>
+<dd><p>Create comprehensive dashboard with multiple Fisher Information visualizations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fisher_info</strong> (<em>np.ndarray</em>) – Fisher Information Matrix</p></li>
+<li><p><strong>param_names</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em>, </em><em>optional</em>) – Parameter names</p></li>
+<li><p><strong>center</strong> (<em>np.ndarray</em><em>, </em><em>optional</em>) – Center point for ellipse plot</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="posterior-visualization">
+<h3>Posterior Visualization<a class="headerlink" href="#posterior-visualization" title="Link to this heading"></a></h3>
+<dl class="py function">
+<dt class="sig sig-object py" id="vplanet_inference.plot_corner_probability">
+<span class="sig-prename descclassname"><span class="pre">vplanet_inference.</span></span><span class="sig-name descname"><span class="pre">plot_corner_probability</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">yy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">highlight_pts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Blues_r'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">array1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">array2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inlabels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cb_label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'$-\\ln</span> <span class="pre">P$'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/vplanet_inference/info_vis.html#plot_corner_probability"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#vplanet_inference.plot_corner_probability" title="Link to this definition"></a></dt>
+<dd><p>Corner plot of parameter samples coloured by a scalar (e.g. log-probability).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tt</strong> (<em>np.ndarray</em><em>, </em><em>shape</em><em> (</em><em>n_samples</em><em>, </em><em>n_params</em><em>)</em>) – Parameter samples.</p></li>
+<li><p><strong>yy</strong> (<em>np.ndarray</em><em>, </em><em>shape</em><em> (</em><em>n_samples</em><em>,</em><em>)</em>) – Scalar values used to colour the scatter points (e.g. <code class="docutils literal notranslate"><span class="pre">-ln</span> <span class="pre">P</span></code>).</p></li>
+<li><p><strong>highlight_pts</strong> (<em>np.ndarray</em><em>, </em><em>optional</em>) – Additional points to overplot in red.</p></li>
+<li><p><strong>cmap</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – Matplotlib colormap name.  Defaults to <code class="docutils literal notranslate"><span class="pre">&quot;Blues_r&quot;</span></code>.</p></li>
+<li><p><strong>array1</strong> (<em>array-like</em><em>, </em><em>optional</em>) – A single parameter vector to mark with vertical/horizontal red lines.</p></li>
+<li><p><strong>array2</strong> (<em>array-like</em><em>, </em><em>optional</em>) – A second parameter vector to mark in green.</p></li>
+<li><p><strong>inlabels</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – Axis labels for each parameter.</p></li>
+<li><p><strong>cb_label</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – Colorbar label.  Defaults to <code class="docutils literal notranslate"><span class="pre">r'$-\ln</span> <span class="pre">P$'</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>matplotlib.figure.Figure</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
 </section>
 </section>
 
@@ -245,7 +1231,7 @@
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="case_studies/04_earth_mle.html" class="btn btn-neutral float-left" title="Maximum Likelihood Estimation for Earth Interior Evolution" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="case_studies/05_custom_rotation_model.html" class="btn btn-neutral float-left" title="Custom Rotation-Activity-XUV Model" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
 
   <hr/>

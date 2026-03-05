@@ -56,8 +56,9 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Case Studies</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../case_studies/index.html">Case Studies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../case_studies/index.html">Case Studies Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../case_studies/04_earth_mle.html">Maximum Likelihood Estimation for Earth Interior Evolution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../case_studies/05_custom_rotation_model.html">Custom Rotation-Activity-XUV Model</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
 <ul>
@@ -123,7 +124,26 @@
 <div class="viewcode-block" id="sort_yaml_key">
 <a class="viewcode-back" href="../../api.html#vplanet_inference.sort_yaml_key">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">sort_yaml_key</span><span class="p">(</span><span class="n">base</span><span class="p">,</span> <span class="n">sub_key</span><span class="p">):</span>
-    
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Extract a sub-key value from each entry in a nested YAML dict.</span>
+
+<span class="sd">    Iterates over the top-level keys of *base* and returns the value of</span>
+<span class="sd">    ``base[key][sub_key]`` for each, attempting ``eval()`` then ``float()``</span>
+<span class="sd">    conversion before falling back to ``None``.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    base : dict</span>
+<span class="sd">        Outer YAML dictionary (e.g. the ``&quot;input_var&quot;`` block).</span>
+<span class="sd">    sub_key : str</span>
+<span class="sd">        Name of the nested key to extract (e.g. ``&quot;units&quot;``, ``&quot;bounds&quot;``,</span>
+<span class="sd">        ``&quot;true_value&quot;``).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    list</span>
+<span class="sd">        One entry per top-level key in *base*, converted to a Python object</span>
+<span class="sd">        where possible, ``None`` otherwise.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">sub_list</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">base</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
         <span class="k">try</span><span class="p">:</span>
@@ -142,20 +162,60 @@
 <div class="viewcode-block" id="AnalyzeVplanetModel">
 <a class="viewcode-back" href="../../api.html#vplanet_inference.AnalyzeVplanetModel">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">AnalyzeVplanetModel</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> 
-                 <span class="n">cfile</span><span class="p">,</span> 
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;High-level driver for VPLanet parameter studies loaded from a YAML config.</span>
+
+<span class="sd">    Reads a YAML configuration file that specifies fixed input parameters,</span>
+<span class="sd">    variable input parameters (with prior bounds), and output parameters</span>
+<span class="sd">    (with optional observational data).  Wraps a :class:`VplanetModel`</span>
+<span class="sd">    instance and exposes methods for running forward models, computing</span>
+<span class="sd">    log-likelihoods, running MCMC, and performing global sensitivity analysis.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    cfile : str</span>
+<span class="sd">        Path to the YAML configuration file.  Must contain ``&quot;input_fix&quot;``,</span>
+<span class="sd">        ``&quot;input_var&quot;``, ``&quot;output&quot;``, and ``&quot;inpath&quot;`` blocks.</span>
+<span class="sd">    inpath : str, optional</span>
+<span class="sd">        Override the VPLanet infile path from the YAML ``&quot;inpath&quot;`` key.</span>
+<span class="sd">    outpath : str, optional</span>
+<span class="sd">        Directory for all output files.  Defaults to ``&quot;.&quot;``.</span>
+<span class="sd">    verbose : bool, optional</span>
+<span class="sd">        Passed through to :class:`VplanetModel`.  Defaults to ``True``.</span>
+<span class="sd">    compute_true : bool, optional</span>
+<span class="sd">        If ``True`` (default) run the model at the ``&quot;true_value&quot;``</span>
+<span class="sd">        parameters to populate ``outparams.data`` (synthetic test mode).</span>
+<span class="sd">    ncore : int, optional</span>
+<span class="sd">        Number of CPU cores for parallel model evaluation.</span>
+<span class="sd">        Defaults to ``multiprocessing.cpu_count()``.</span>
+<span class="sd">    vpm_kwargs : dict, optional</span>
+<span class="sd">        Additional keyword arguments forwarded to :class:`VplanetModel`.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    vpm : VplanetModel</span>
+<span class="sd">        The underlying VPLanet model instance.</span>
+<span class="sd">    inparams_fix : VplanetParameters</span>
+<span class="sd">        Fixed input parameters.</span>
+<span class="sd">    inparams_var : VplanetParameters</span>
+<span class="sd">        Variable input parameters (those varied during inference).</span>
+<span class="sd">    inparams_all : VplanetParameters</span>
+<span class="sd">        Union of fixed and variable input parameters.</span>
+<span class="sd">    outparams : VplanetParameters</span>
+<span class="sd">        Output parameters with observational data and uncertainties.</span>
+<span class="sd">    like_data : np.ndarray</span>
+<span class="sd">        Observational data array used by :meth:`lnlike`, shape</span>
+<span class="sd">        ``(n_outparams, 2)`` with columns ``[mean, std]``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">cfile</span><span class="p">,</span>
                  <span class="n">inpath</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                  <span class="n">outpath</span><span class="o">=</span><span class="s2">&quot;.&quot;</span><span class="p">,</span>
-                 <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> 
+                 <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                  <span class="n">compute_true</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                  <span class="n">ncore</span><span class="o">=</span><span class="n">mp</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">(),</span>
                  <span class="n">vpm_kwargs</span><span class="o">=</span><span class="p">{},</span>
                  <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Class for analyzing VPLANET models (run parameter sweeps, MCMC, sensitivity analysis, etc.) </span>
-<span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="c1"># number of CPU cores for parallelization</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ncore</span> <span class="o">=</span> <span class="n">ncore</span>
@@ -220,7 +280,22 @@
 <div class="viewcode-block" id="AnalyzeVplanetModel.format_theta">
 <a class="viewcode-back" href="../../api.html#vplanet_inference.AnalyzeVplanetModel.format_theta">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">format_theta</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">theta_var</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Merge variable parameters into the full parameter vector.</span>
 
+<span class="sd">        Starts from the true/fiducial values of all parameters and</span>
+<span class="sd">        substitutes the provided variable values.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        theta_var : array-like of float</span>
+<span class="sd">            Values for the variable parameters only, in the order of</span>
+<span class="sd">            ``self.inparams_var.names``.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        np.ndarray</span>
+<span class="sd">            Full parameter vector of length ``len(self.inparams_all.names)``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># defaults to running true values</span>
         <span class="n">theta_run_dict</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">inparams_all</span><span class="o">.</span><span class="n">dict_true</span><span class="p">)</span>
         
@@ -239,7 +314,21 @@
 <div class="viewcode-block" id="AnalyzeVplanetModel.run_model_format">
 <a class="viewcode-back" href="../../api.html#vplanet_inference.AnalyzeVplanetModel.run_model_format">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">run_model_format</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">theta_var</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Run the model for a vector of variable parameters.</span>
 
+<span class="sd">        Internally calls :meth:`format_theta` to build the full parameter</span>
+<span class="sd">        vector and then delegates to :meth:`VplanetModel.run_model`.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        theta_var : array-like of float</span>
+<span class="sd">            Variable parameter values.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        np.ndarray</span>
+<span class="sd">            Model output values; see :meth:`VplanetModel.run_model`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># format fixed theta + variable theta</span>
         <span class="n">theta_run</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">format_theta</span><span class="p">(</span><span class="n">theta_var</span><span class="p">)</span>
 
@@ -253,7 +342,20 @@
 <div class="viewcode-block" id="AnalyzeVplanetModel.run_models">
 <a class="viewcode-back" href="../../api.html#vplanet_inference.AnalyzeVplanetModel.run_models">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">run_models</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">theta_var_array</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Run the model for an array of variable parameter vectors.</span>
 
+<span class="sd">        Uses ``multiprocessing.Pool`` when ``self.ncore &gt; 1``.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        theta_var_array : np.ndarray, shape (n_samples, n_var_params)</span>
+<span class="sd">            Each row is one set of variable parameter values.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        np.ndarray, shape (n_samples, n_outparams)</span>
+<span class="sd">            Model outputs for every sample.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ncore</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
             <span class="n">outputs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">theta_var_array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
             <span class="k">for</span> <span class="n">ii</span><span class="p">,</span> <span class="n">tt</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="o">.</span><span class="n">tqdm</span><span class="p">(</span><span class="nb">enumerate</span><span class="p">(</span><span class="n">theta_var_array</span><span class="p">)):</span>
@@ -272,7 +374,23 @@
 <div class="viewcode-block" id="AnalyzeVplanetModel.lnlike">
 <a class="viewcode-back" href="../../api.html#vplanet_inference.AnalyzeVplanetModel.lnlike">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">lnlike</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">theta_var</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gaussian log-likelihood for the variable parameters.</span>
 
+<span class="sd">        Computes :math:`\\ln \\mathcal{L} = -\\tfrac{1}{2}\\sum_i</span>
+<span class="sd">        \\left(\\tfrac{m_i - d_i}{\\sigma_i}\\right)^2` where :math:`m_i` are</span>
+<span class="sd">        the model outputs and :math:`d_i, \\sigma_i` come from</span>
+<span class="sd">        ``self.outparams.data``.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        theta_var : array-like of float</span>
+<span class="sd">            Variable parameter values.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        float</span>
+<span class="sd">            Log-likelihood value.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_model_format</span><span class="p">(</span><span class="n">theta_var</span><span class="p">)</span>
 
         <span class="c1"># compute log likelihood</span>
@@ -284,12 +402,47 @@
 
 <div class="viewcode-block" id="AnalyzeVplanetModel.run_mcmc">
 <a class="viewcode-back" href="../../api.html#vplanet_inference.AnalyzeVplanetModel.run_mcmc">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">run_mcmc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;dynesty&quot;</span><span class="p">,</span> 
-                       <span class="n">reload</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> 
+    <span class="k">def</span><span class="w"> </span><span class="nf">run_mcmc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;dynesty&quot;</span><span class="p">,</span>
+                       <span class="n">reload</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                        <span class="n">kernel</span><span class="o">=</span><span class="s2">&quot;ExpSquaredKernel&quot;</span><span class="p">,</span>
-                       <span class="n">ntrain</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> 
-                       <span class="n">ntest</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> 
+                       <span class="n">ntrain</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
+                       <span class="n">ntest</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
                        <span class="n">niter</span><span class="o">=</span><span class="mi">500</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Run Bayesian inference using the specified MCMC method.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        method : {&quot;dynesty&quot;, &quot;alabi&quot;, &quot;alabi_dynesty&quot;}, optional</span>
+<span class="sd">            Inference backend.</span>
+
+<span class="sd">            ``&quot;dynesty&quot;``</span>
+<span class="sd">                Direct nested sampling with ``dynesty`` on the true forward</span>
+<span class="sd">                model (no surrogate).</span>
+<span class="sd">            ``&quot;alabi&quot;``</span>
+<span class="sd">                Train a Gaussian Process surrogate with ``alabi``&#39;s BAPE</span>
+<span class="sd">                active-learning algorithm, then stop (no MCMC run yet).</span>
+<span class="sd">            ``&quot;alabi_dynesty&quot;``</span>
+<span class="sd">                Train the GP surrogate, then run ``dynesty`` on it.</span>
+
+<span class="sd">        reload : bool, optional</span>
+<span class="sd">            If ``True``, load a previously saved ``alabi`` cache from the</span>
+<span class="sd">            results directory instead of retraining.  Defaults to ``False``.</span>
+<span class="sd">        kernel : str, optional</span>
+<span class="sd">            GP kernel name passed to ``alabi.SurrogateModel.init_gp``.</span>
+<span class="sd">            Defaults to ``&quot;ExpSquaredKernel&quot;``.</span>
+<span class="sd">        ntrain : int, optional</span>
+<span class="sd">            Initial training-set size for the GP surrogate.  Defaults to</span>
+<span class="sd">            ``1000``.</span>
+<span class="sd">        ntest : int, optional</span>
+<span class="sd">            Test-set size for GP evaluation.  Defaults to ``100``.</span>
+<span class="sd">        niter : int, optional</span>
+<span class="sd">            Number of active-learning iterations.  Defaults to ``500``.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        Exception</span>
+<span class="sd">            If ``self.like_data`` is ``None`` or ``alabi`` is not installed.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">like_data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;No likelihood data specified.&quot;</span><span class="p">)</span>
@@ -349,7 +502,18 @@
 <div class="viewcode-block" id="AnalyzeVplanetModel.plot_sensitivity_table">
 <a class="viewcode-back" href="../../api.html#vplanet_inference.AnalyzeVplanetModel.plot_sensitivity_table">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">plot_sensitivity_table</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Plot a Sobol sensitivity index as a labelled heatmap.</span>
 
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        table : pandas.DataFrame</span>
+<span class="sd">            Sensitivity table with input parameters as the index and output</span>
+<span class="sd">            parameters as columns (values in [0, 1]).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        matplotlib.figure.Figure</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># plot sensitivity tables</span>
         <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">[</span><span class="mi">12</span><span class="p">,</span><span class="mi">8</span><span class="p">])</span>
         <span class="n">sn</span><span class="o">.</span><span class="n">heatmap</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">yticklabels</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">inparams_var</span><span class="o">.</span><span class="n">labels</span><span class="p">,</span> <span class="n">xticklabels</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">outparams</span><span class="o">.</span><span class="n">labels</span><span class="p">,</span> 
@@ -369,6 +533,38 @@
 <div class="viewcode-block" id="AnalyzeVplanetModel.variance_global_sensitivity">
 <a class="viewcode-back" href="../../api.html#vplanet_inference.AnalyzeVplanetModel.variance_global_sensitivity">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">variance_global_sensitivity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">param_values</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">Y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">nsample</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span> <span class="n">save</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">subpath</span><span class="o">=</span><span class="s2">&quot;results_sensitivity&quot;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Run Sobol variance-based global sensitivity analysis.</span>
+
+<span class="sd">        Uses the SALib library to sample the parameter space (Saltelli scheme)</span>
+<span class="sd">        and compute first-order (S1) and total-effect (ST) Sobol indices for</span>
+<span class="sd">        every output parameter.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        param_values : np.ndarray, optional</span>
+<span class="sd">            Pre-computed Saltelli sample array of shape</span>
+<span class="sd">            ``(nsample * (n_var_params + 2), n_var_params)``.  If ``None``</span>
+<span class="sd">            (default) new samples are drawn.</span>
+<span class="sd">        Y : np.ndarray, optional</span>
+<span class="sd">            Pre-computed model outputs of shape</span>
+<span class="sd">            ``(n_samples, n_outparams)``.  If ``None`` (default) the model is</span>
+<span class="sd">            run for all ``param_values``.</span>
+<span class="sd">        nsample : int, optional</span>
+<span class="sd">            Base sample size *N* for the Saltelli sampler.  The total number of</span>
+<span class="sd">            model runs is ``N * (n_var_params + 2)``.  Defaults to ``1024``.</span>
+<span class="sd">        save : bool, optional</span>
+<span class="sd">            If ``True``, save samples, sensitivity tables, and figures to</span>
+<span class="sd">            ``self.outpath / subpath / config_id /``.  Defaults to ``False``.</span>
+<span class="sd">        subpath : str, optional</span>
+<span class="sd">            Subdirectory within ``self.outpath`` for saved results.</span>
+<span class="sd">            Defaults to ``&quot;results_sensitivity&quot;``.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None</span>
+<span class="sd">            Results are stored as ``self.table_s1``, ``self.table_sT``,</span>
+<span class="sd">            ``self.fig_s1``, and ``self.fig_sT``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="kn">from</span><span class="w"> </span><span class="nn">SALib.sample</span><span class="w"> </span><span class="kn">import</span> <span class="n">saltelli</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">SALib.analyze</span><span class="w"> </span><span class="kn">import</span> <span class="n">sobol</span>

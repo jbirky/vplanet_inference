@@ -21,6 +21,31 @@ __all__ = [
 
 
 def plot_corner_probability(tt, yy, highlight_pts=None, cmap="Blues_r", array1=None, array2=None, inlabels=None, cb_label=r'$-\ln P$'):
+    """Corner plot of parameter samples coloured by a scalar (e.g. log-probability).
+
+    Parameters
+    ----------
+    tt : np.ndarray, shape (n_samples, n_params)
+        Parameter samples.
+    yy : np.ndarray, shape (n_samples,)
+        Scalar values used to colour the scatter points (e.g. ``-ln P``).
+    highlight_pts : np.ndarray, optional
+        Additional points to overplot in red.
+    cmap : str, optional
+        Matplotlib colormap name.  Defaults to ``"Blues_r"``.
+    array1 : array-like, optional
+        A single parameter vector to mark with vertical/horizontal red lines.
+    array2 : array-like, optional
+        A second parameter vector to mark in green.
+    inlabels : list of str, optional
+        Axis labels for each parameter.
+    cb_label : str, optional
+        Colorbar label.  Defaults to ``r'$-\\ln P$'``.
+
+    Returns
+    -------
+    matplotlib.figure.Figure
+    """
     ndim = tt.shape[1]
     fig = corner.corner(tt, c=yy, plot_datapoints=False, plot_density=False, plot_contours=False, 
                     labels=inlabels, label_kwargs={"fontsize":16, "rotation": 45, "ha": "right"})
@@ -512,21 +537,40 @@ def create_fisher_dashboard(fisher_info, param_names=None, center=None):
 # ========================================================
 
 def local_sensitivity_analysis(vpm_model, theta_fiducial, inparams, outparams, delta_percent=1.0):
-    """
-    Perform local sensitivity analysis by perturbing each parameter by ±delta_percent
-    
-    Parameters:
-    - vpm_model: VPlanet model instance
-    - theta_fiducial: Fiducial parameter values
-    - inparams: Input parameters dictionary  
-    - outparams: Output parameters dictionary
-    - delta_percent: Percentage change to apply (default 1%)
-    
-    Returns:
-    - sensitivity_matrix: Matrix of percent changes [n_outputs x n_inputs x 2] 
-                         where last dim is [+delta, -delta]
-    - param_names: Input parameter names
-    - output_names: Output parameter names
+    """Perform local (gradient-based) sensitivity analysis around a fiducial point.
+
+    Perturbs each input parameter individually by ±``delta_percent`` percent
+    of its fiducial value and records the resulting percent change in every
+    output parameter.
+
+    Parameters
+    ----------
+    vpm_model : VplanetModel
+        Initialised VPLanet model instance.
+    theta_fiducial : np.ndarray, shape (n_params,)
+        Fiducial (reference) parameter values in the units defined by
+        ``vpm_model.inparams``.
+    inparams : dict
+        Input parameter dict (``{"body.dParam": unit, ...}``); used to
+        extract the ordered list of parameter names.
+    outparams : dict
+        Output parameter dict; used to extract the ordered list of output
+        names.
+    delta_percent : float, optional
+        Fractional perturbation size in percent.  Defaults to ``1.0``
+        (i.e. ±1 %).
+
+    Returns
+    -------
+    sensitivity_matrix : np.ndarray, shape (n_outputs, n_inputs, 2)
+        Percent change in each output for each input perturbation.
+        ``sensitivity_matrix[j, i, 0]`` is the response to
+        ``+delta_percent`` applied to input ``i`` on output ``j``;
+        index ``1`` corresponds to ``-delta_percent``.
+    param_names : list of str
+        Input parameter names (keys of ``inparams``).
+    output_names : list of str
+        Output parameter names (keys of ``outparams``).
     """
     
     param_names = list(inparams.keys())
@@ -584,8 +628,32 @@ def local_sensitivity_analysis(vpm_model, theta_fiducial, inparams, outparams, d
 # ========================================================
 
 def plot_sensitivity_heatmap(sensitivity_matrix, param_names, output_names, delta_percent=1.0, label_fs=16):
-    """
-    Plot sensitivity analysis results as heatmaps
+    """Plot local sensitivity analysis results as a four-panel heatmap figure.
+
+    Produces a 2×2 grid showing: (1) average absolute sensitivity,
+    (2) response to +delta perturbation, (3) response to −delta
+    perturbation, and (4) a bar chart of the most influential input for
+    each output.
+
+    Parameters
+    ----------
+    sensitivity_matrix : np.ndarray, shape (n_outputs, n_inputs, 2)
+        Output of :func:`local_sensitivity_analysis`.
+    param_names : list of str
+        Input parameter names (used for x-axis tick labels; the prefix
+        ``"earth.d"`` is stripped automatically).
+    output_names : list of str
+        Output parameter names (used for y-axis tick labels; the prefix
+        ``"final.earth."`` is stripped automatically).
+    delta_percent : float, optional
+        Perturbation size used in the analysis — shown in panel titles.
+        Defaults to ``1.0``.
+    label_fs : int, optional
+        Base font size for axis labels and titles.  Defaults to ``16``.
+
+    Returns
+    -------
+    matplotlib.figure.Figure
     """
     
     # Clean parameter and output names for display

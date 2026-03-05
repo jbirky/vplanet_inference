@@ -56,8 +56,9 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Case Studies</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="case_studies/index.html">Case Studies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="case_studies/index.html">Case Studies Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="case_studies/04_earth_mle.html">Maximum Likelihood Estimation for Earth Interior Evolution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="case_studies/05_custom_rotation_model.html">Custom Rotation-Activity-XUV Model</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
 <ul>
@@ -92,10 +93,14 @@
 
 <div class="genindex-jumpbox">
  <a href="#A"><strong>A</strong></a>
+ | <a href="#C"><strong>C</strong></a>
+ | <a href="#D"><strong>D</strong></a>
  | <a href="#F"><strong>F</strong></a>
  | <a href="#G"><strong>G</strong></a>
  | <a href="#I"><strong>I</strong></a>
  | <a href="#L"><strong>L</strong></a>
+ | <a href="#N"><strong>N</strong></a>
+ | <a href="#O"><strong>O</strong></a>
  | <a href="#P"><strong>P</strong></a>
  | <a href="#Q"><strong>Q</strong></a>
  | <a href="#R"><strong>R</strong></a>
@@ -106,7 +111,43 @@
 <h2 id="A">A</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#vplanet_inference.analyze_fisher_information">analyze_fisher_information() (in module vplanet_inference)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#vplanet_inference.AnalyzeVplanetModel">AnalyzeVplanetModel (class in vplanet_inference)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="C">C</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#vplanet_inference.check_units">check_units() (in module vplanet_inference)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#vplanet_inference.compute_fisher_information">compute_fisher_information() (in module vplanet_inference)</a>
+</li>
+      <li><a href="api.html#vplanet_inference.create_fisher_dashboard">create_fisher_dashboard() (in module vplanet_inference)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="D">D</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#vplanet_inference.VplanetParameters.dict_bounds">dict_bounds (vplanet_inference.VplanetParameters attribute)</a>
+</li>
+      <li><a href="api.html#vplanet_inference.VplanetParameters.dict_data">dict_data (vplanet_inference.VplanetParameters attribute)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#vplanet_inference.VplanetParameters.dict_labels">dict_labels (vplanet_inference.VplanetParameters attribute)</a>
+</li>
+      <li><a href="api.html#vplanet_inference.VplanetParameters.dict_true">dict_true (vplanet_inference.VplanetParameters attribute)</a>
+</li>
+      <li><a href="api.html#vplanet_inference.VplanetParameters.dict_units">dict_units (vplanet_inference.VplanetParameters attribute)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -124,11 +165,15 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#vplanet_inference.VplanetModel.get_evol">get_evol() (vplanet_inference.VplanetModel method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#vplanet_inference.VplanetModel.get_outparam">get_outparam() (vplanet_inference.VplanetModel method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#vplanet_inference.VplanetParameters.get_true_units">get_true_units() (vplanet_inference.VplanetParameters method)</a>
+</li>
+      <li><a href="api.html#vplanet_inference.get_vplanet_units">get_vplanet_units() (in module vplanet_inference)</a>
+</li>
+      <li><a href="api.html#vplanet_inference.get_vplanet_units_source">get_vplanet_units_source() (in module vplanet_inference)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -138,13 +183,43 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#vplanet_inference.VplanetModel.initialize_model">initialize_model() (vplanet_inference.VplanetModel method)</a>
 </li>
+      <li><a href="api.html#vplanet_inference.AnalyzeVplanetModel.inparams_all">inparams_all (vplanet_inference.AnalyzeVplanetModel attribute)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#vplanet_inference.AnalyzeVplanetModel.inparams_fix">inparams_fix (vplanet_inference.AnalyzeVplanetModel attribute)</a>
+</li>
+      <li><a href="api.html#vplanet_inference.AnalyzeVplanetModel.inparams_var">inparams_var (vplanet_inference.AnalyzeVplanetModel attribute)</a>
+</li>
   </ul></td>
 </tr></table>
 
 <h2 id="L">L</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#vplanet_inference.AnalyzeVplanetModel.like_data">like_data (vplanet_inference.AnalyzeVplanetModel attribute)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#vplanet_inference.AnalyzeVplanetModel.lnlike">lnlike() (vplanet_inference.AnalyzeVplanetModel method)</a>
+</li>
+      <li><a href="api.html#vplanet_inference.local_sensitivity_analysis">local_sensitivity_analysis() (in module vplanet_inference)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="N">N</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#vplanet_inference.VplanetParameters.num">num (vplanet_inference.VplanetParameters attribute)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="O">O</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#vplanet_inference.AnalyzeVplanetModel.outparams">outparams (vplanet_inference.AnalyzeVplanetModel attribute)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -152,7 +227,25 @@
 <h2 id="P">P</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#vplanet_inference.plot_condition_number_breakdown">plot_condition_number_breakdown() (in module vplanet_inference)</a>
+</li>
+      <li><a href="api.html#vplanet_inference.plot_corner_probability">plot_corner_probability() (in module vplanet_inference)</a>
+</li>
+      <li><a href="api.html#vplanet_inference.plot_correlation_matrix">plot_correlation_matrix() (in module vplanet_inference)</a>
+</li>
+      <li><a href="api.html#vplanet_inference.plot_eigenvalue_spectrum">plot_eigenvalue_spectrum() (in module vplanet_inference)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#vplanet_inference.plot_fisher_heatmap">plot_fisher_heatmap() (in module vplanet_inference)</a>
+</li>
+      <li><a href="api.html#vplanet_inference.plot_sensitivity_heatmap">plot_sensitivity_heatmap() (in module vplanet_inference)</a>
+</li>
       <li><a href="api.html#vplanet_inference.AnalyzeVplanetModel.plot_sensitivity_table">plot_sensitivity_table() (vplanet_inference.AnalyzeVplanetModel method)</a>
+</li>
+      <li><a href="api.html#vplanet_inference.plot_standard_errors">plot_standard_errors() (in module vplanet_inference)</a>
+</li>
+      <li><a href="api.html#vplanet_inference.plot_uncertainty_ellipse">plot_uncertainty_ellipse() (in module vplanet_inference)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -198,11 +291,13 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#vplanet_inference.AnalyzeVplanetModel.variance_global_sensitivity">variance_global_sensitivity() (vplanet_inference.AnalyzeVplanetModel method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#vplanet_inference.VplanetModel">VplanetModel (class in vplanet_inference)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#vplanet_inference.VplanetParameters">VplanetParameters (class in vplanet_inference)</a>
+</li>
+      <li><a href="api.html#vplanet_inference.AnalyzeVplanetModel.vpm">vpm (vplanet_inference.AnalyzeVplanetModel attribute)</a>
 </li>
   </ul></td>
 </tr></table>

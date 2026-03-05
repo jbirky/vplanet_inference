@@ -12,36 +12,99 @@ __all__ = ["VplanetModel"]
 
 
 class VplanetModel(object):
+    """Interface for running VPLanet forward models with unit-aware parameter substitution.
 
-    def __init__(self, 
-                 inparams, 
-                 inpath=".", 
-                 outparams=None, 
-                 outpath="output/", 
+    Reads a set of VPLanet template input files, substitutes parameter values
+    (converting from user-specified astropy units to SI), executes VPLanet, and
+    returns the requested output quantities with optional unit conversion.
+
+    Parameters
+    ----------
+    inparams : dict
+        Ordered mapping of ``"body.dParamName"`` keys to astropy units.
+        The units define how the corresponding element of ``theta`` is
+        interpreted when passed to :meth:`run_model`.  Use
+        ``u.dex(u.dimensionless_unscaled)`` for log-scale inputs and
+        ``-u.dimensionless_unscaled`` for parameters stored with a sign
+        flip in the VPLanet infile.
+        Example::
+
+            {"star.dMass": u.Msun, "star.dRotPeriod": u.day, "vpl.dStopTime": u.Gyr}
+
+    inpath : str, optional
+        Path to the directory containing template ``.in`` files.
+        Defaults to the current working directory ``"."``.
+    outparams : dict, optional
+        Ordered mapping of ``"final.body.ParamName"`` (or
+        ``"initial.body.ParamName"``) keys to astropy units.  Each key
+        selects one scalar value from the VPLanet log file; each unit
+        controls the conversion applied before returning.
+        Example::
+
+            {"final.star.Luminosity": u.Lsun, "final.star.RotPer": u.day}
+
+    outpath : str, optional
+        Base directory for per-run output subdirectories.
+        Defaults to ``"output/"``.
+    fixsub : dict, optional
+        Fixed parameter substitutions applied to every run (not yet fully
+        implemented).
+    executable : str, optional
+        Name or path of the VPLanet binary.  Defaults to ``"vplanet"``.
+    vplfile : str, optional
+        Name of the primary VPLanet input file.  Defaults to ``"vpl.in"``.
+    sys_name : str, optional
+        Value substituted for ``sSystemName`` in the primary input file.
+        Defaults to ``"system"``.
+    timesteps : astropy.units.Quantity, optional
+        If given, ``dOutputTime`` is set to this value and
+        :meth:`run_model` returns a time-series dictionary instead of a
+        flat array.  Must carry astropy time units (e.g.
+        ``1e6 * u.yr``).
+    time_init : astropy.units.Quantity, optional
+        Initial simulation age written to ``dAge`` in every body file.
+        Defaults to ``5e6 * u.yr``.
+    forward : bool, optional
+        If ``True`` (default) run a forward evolution (``bDoForward 1``).
+        Set to ``False`` for backward integration.
+    verbose : bool, optional
+        Print substituted parameter values and model outputs after each
+        run.  Defaults to ``True``.
+    quiet : bool, optional
+        Suppress VPLanet Python-binding log output.  Defaults to ``True``.
+    debug : bool, optional
+        Print per-parameter substitution details during
+        :meth:`initialize_model`.  Defaults to ``False``.
+
+    Examples
+    --------
+    >>> import vplanet_inference as vpi
+    >>> import astropy.units as u
+    >>> vpm = vpi.VplanetModel(
+    ...     inparams={"star.dMass": u.Msun, "vpl.dStopTime": u.Gyr},
+    ...     outparams={"final.star.Luminosity": u.Lsun},
+    ...     inpath="infiles/stellar/",
+    ...     outpath="output/",
+    ...     verbose=False,
+    ... )
+    >>> result = vpm.run_model([0.09, 7.6])
+    """
+
+    def __init__(self,
+                 inparams,
+                 inpath=".",
+                 outparams=None,
+                 outpath="output/",
                  fixsub=None,
                  executable="vplanet",
-                 vplfile="vpl.in", 
-                 sys_name="system", 
-                 timesteps=None, 
-                 time_init=5e6*u.yr, 
+                 vplfile="vpl.in",
+                 sys_name="system",
+                 timesteps=None,
+                 time_init=5e6*u.yr,
                  forward=True,
                  verbose=True,
                  quiet=True,
                  debug=False):
-        """
-        Class for creating and executing VPLANET infiles.
-
-        params  : (str, list) variable parameter names
-                  ['vpl.dStopTime', 'star.dRotPeriod', 'star.dMass', 'planet.dEcc', 'planet.dOrbPeriod']
-                
-        inpath  : (str) path to template infiles
-                  'infiles/'
-
-        outparams : (str, list) return specified list of parameters from log file
-                    ['final.primary.Radius', 'final.secondary.Radius']
-        
-        timesteps : (float * astropy units, optional)
-        """
 
         # Input parameters
         self.inparams = list(inparams.keys())
@@ -104,10 +167,27 @@ class VplanetModel(object):
 
 
     def initialize_model(self, theta, outpath=None):
-        """
-        theta   : (float, list) parameter values, corresponding to self.param
+        """Write VPLanet input files for a single parameter vector.
 
-        outpath : (str) path to where model infiles should be written
+        Converts ``theta`` from user units to SI, substitutes values into the
+        template ``.in`` files, forces SI unit declarations and ``sSystemName``,
+        and writes the result to ``outpath``.
+
+        Parameters
+        ----------
+        theta : array-like of float
+            Parameter values in the units defined by ``inparams``, in the same
+            order as ``self.inparams``.
+        outpath : str
+            Directory in which to write the substituted input files.  Created
+            automatically if it does not exist.
+
+        Raises
+        ------
+        ValueError
+            If a parameter name listed in ``inparams`` is not found in the
+            corresponding template file, or if the ``timesteps`` / ``time_init``
+            units are invalid.
         """
         
         # Convert units of theta to SI
@@ -241,11 +321,24 @@ class VplanetModel(object):
 
 
     def get_outparam(self, output, **kwargs):
-        """
-        output    : (vplot object) results form a model run obtained using vplot.GetOutput()
+        """Extract scalar final-state output values from a VPLanet output object.
 
-        outparams : (str, list) return specified list of parameters from log file
-                    ['initial.primary.Luminosity', 'final.primary.Radius', 'initial.secondary.Luminosity', 'final.secondary.Radius']
+        Walks the attribute path of each key in ``self.outparams`` (e.g.
+        ``"final.star.Luminosity"`` → ``output.log.final.star.Luminosity``),
+        converts the result to the requested unit, and returns all values as a
+        flat array.  Handles VPLanet modules that emit ``"(null)"`` as a unit
+        string by falling back to the raw SI value.
+
+        Parameters
+        ----------
+        output : vplanet output object
+            Result returned by ``vplanet.get_output(outpath)``.
+
+        Returns
+        -------
+        outvalues : np.ndarray, shape (n_outparams,)
+            Output values in the units specified by ``outparams``, in the same
+            order as ``self.outparams``.
         """
         outvalues = np.zeros(self.noutparam)
 
@@ -275,9 +368,30 @@ class VplanetModel(object):
 
     
     def get_evol(self, output):
+        """Extract time-series evolution arrays from a VPLanet output object.
 
-        """
-        warning: this is going to break for outparams that aren't formatted final.body.param
+        Reads the ``.forward`` file data (loaded by ``vplanet.get_output``),
+        converts each tracked quantity to its requested unit, and returns the
+        time array and a list of converted output arrays.
+
+        Parameters
+        ----------
+        output : vplanet output object
+            Result returned by ``vplanet.get_output(outpath)``.
+
+        Returns
+        -------
+        time_out : astropy.units.Quantity
+            Time array from the VPLanet ``.forward`` file, in the native
+            simulation time unit (seconds in SI mode).
+        evol_out : list of astropy.units.Quantity
+            One entry per output parameter in ``self.outparams``, each a
+            1-D array with the requested unit applied.
+
+        Notes
+        -----
+        This method assumes all ``outparams`` keys follow the
+        ``"final.body.ParamName"`` naming convention.
         """
 
         evol_out = []
@@ -317,10 +431,42 @@ class VplanetModel(object):
 
 
     def run_model(self, theta, remove=True, outsubpath=None, return_output=False):
-        """
-        theta     : (float, list) parameter values, corresponding to self.inparams
+        """Run VPLanet for a single parameter vector and return the results.
 
-        remove    : (bool) True will erase input/output files after model is run
+        Writes input files to a unique randomized subdirectory of
+        ``self.outpath_base``, executes VPLanet, parses the output, and
+        optionally removes the run directory afterwards.
+
+        Parameters
+        ----------
+        theta : array-like of float
+            Parameter values in the units defined by ``inparams``, ordered to
+            match ``self.inparams``.
+        remove : bool, optional
+            If ``True`` (default) delete the run directory after the model
+            completes.  Set to ``False`` to inspect the raw VPLanet output.
+        outsubpath : str or int, optional
+            Subdirectory name appended to ``self.outpath_base``.  If ``None``
+            (default) a random 12-digit hex string is used to avoid collisions
+            in parallel runs.
+        return_output : bool, optional
+            If ``True`` return the raw ``vplanet.get_output`` object instead of
+            the processed array.  Useful for debugging.  Defaults to ``False``.
+
+        Returns
+        -------
+        np.ndarray or dict
+            * If ``timesteps`` was **not** set at construction: a 1-D
+              ``np.ndarray`` of shape ``(n_outparams,)`` with the final-state
+              scalar values in the units specified by ``outparams``.
+            * If ``timesteps`` **was** set: a ``dict`` mapping each
+              ``outparams`` key to its time-series ``astropy.units.Quantity``
+              array, plus a ``"Time"`` key containing the time axis in years.
+
+        Examples
+        --------
+        >>> result = vpm.run_model([0.09, 7.6], remove=True)
+        >>> print(result)   # array([5.22e-4])  — final Luminosity in Lsun
         """
 
         # randomize output directory
@@ -375,6 +521,21 @@ class VplanetModel(object):
 
 
     def quickplot_evol(self, time, evol, ind=None):
+        """Quick diagnostic plot of evolution time series.
+
+        Parameters
+        ----------
+        time : array-like
+            Time array (any units; used as the x-axis).
+        evol : array-like, shape (n_outparams, n_timesteps)
+            Evolution arrays, one row per output parameter.
+        ind : array-like of int, optional
+            Indices of rows in ``evol`` to plot.  Defaults to all rows.
+
+        Returns
+        -------
+        matplotlib.figure.Figure
+        """
 
         import matplotlib.pyplot as plt
         from matplotlib import rc

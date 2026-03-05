@@ -1,0 +1,739 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Custom Rotation-Activity-XUV Model &mdash; vplanet_inference 0.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=a6a68382" />
+      <link rel="stylesheet" type="text/css" href="../_static/fonts.css?v=5583d106" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=d45e8c67"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="API Reference" href="../api.html" />
+    <link rel="prev" title="Maximum Likelihood Estimation for Earth Interior Evolution" href="04_earth_mle.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            vplanet_inference
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quickstart.html">Quickstart</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/index.html">Tutorial Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/01_vplanet_infiles.html">Setting Up and Running VPLanet Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/02_sensitivity_analysis.html">Global Sensitivity Analysis with <code class="docutils literal notranslate"><span class="pre">vplanet_inference</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/03_mcmc_custom_likelihood.html">MCMC with VPLanet and <code class="docutils literal notranslate"><span class="pre">alabi</span></code></a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Case Studies</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="index.html">Case Studies Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="04_earth_mle.html">Maximum Likelihood Estimation for Earth Interior Evolution</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Custom Rotation-Activity-XUV Model</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#the-johnstone-xuv-model">1. The Johnstone XUV Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#stellarevolutionmodel-setup">2. <code class="docutils literal notranslate"><span class="pre">StellarEvolutionModel</span></code> Setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#single-model-evaluation">3. Single Model Evaluation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#parameter-sweeps">4. Parameter Sweeps</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#configuring-run-alabi-py-for-a-new-star">5. Configuring <code class="docutils literal notranslate"><span class="pre">run_alabi.py</span></code> for a New Star</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#testing-different-constraint-combinations">6. Testing Different Constraint Combinations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#prior-and-likelihood-setup">7. Prior and Likelihood Setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#running-alabi-surrogate-mcmc">8. Running <code class="docutils literal notranslate"><span class="pre">alabi</span></code> Surrogate MCMC</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#reloading-and-extending-a-run">9. Reloading and Extending a Run</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#summary">Summary</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../api.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">vplanet_inference</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Custom Rotation-Activity-XUV Model</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/case_studies/05_custom_rotation_model.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="custom-rotation-activity-xuv-model">
+<h1>Custom Rotation-Activity-XUV Model<a class="headerlink" href="#custom-rotation-activity-xuv-model" title="Link to this heading"></a></h1>
+<p>Fitting stellar evolution to observational constraints using <code class="docutils literal notranslate"><span class="pre">johnstone_model.py</span></code>
+and <code class="docutils literal notranslate"><span class="pre">run_alabi.py</span></code>.</p>
+<p>This tutorial walks through using a custom stellar XUV luminosity model — implemented on top
+of VPLanet’s <code class="docutils literal notranslate"><span class="pre">stellar</span></code> module — and the <code class="docutils literal notranslate"><span class="pre">alabi</span></code> surrogate MCMC framework to infer stellar
+properties from present-day observations of luminosity, X-ray emission, rotation period, and age.</p>
+<p><strong>What we cover:</strong></p>
+<ol class="arabic simple">
+<li><p><a class="reference internal" href="#johnstone-model"><span class="std std-ref">1. The Johnstone XUV Model</span></a> — the rotation-activity relation and its 7 free parameters</p></li>
+<li><p><a class="reference internal" href="#model-setup"><span class="std std-ref">2. StellarEvolutionModel Setup</span></a> — configuring <code class="docutils literal notranslate"><span class="pre">StellarEvolutionModel</span></code> with observational data</p></li>
+<li><p><a class="reference internal" href="#single-eval"><span class="std std-ref">3. Single Model Evaluation</span></a> — running a single forward model and computing chi-squared</p></li>
+<li><p><a class="reference internal" href="#sweeps"><span class="std std-ref">4. Parameter Sweeps</span></a> — parallel parameter sweeps and evolution plots</p></li>
+<li><p><a class="reference internal" href="#new-star"><span class="std std-ref">5. Configuring run_alabi.py for a New Star</span></a> — the only section to edit in <code class="docutils literal notranslate"><span class="pre">run_alabi.py</span></code> for a new star</p></li>
+<li><p><a class="reference internal" href="#constraints"><span class="std std-ref">6. Testing Different Constraint Combinations</span></a> — testing different combinations of observational constraints</p></li>
+<li><p><a class="reference internal" href="#prior-likelihood"><span class="std std-ref">7. Prior and Likelihood Setup</span></a> — prior and likelihood functions for <code class="docutils literal notranslate"><span class="pre">alabi</span></code></p></li>
+<li><p><a class="reference internal" href="#alabi-run"><span class="std std-ref">8. Running alabi Surrogate MCMC</span></a> — the full surrogate MCMC pipeline</p></li>
+<li><p><a class="reference internal" href="#reload"><span class="std std-ref">9. Reloading and Extending a Run</span></a> — reloading a saved run to continue training or run MCMC</p></li>
+</ol>
+<hr class="docutils" />
+<p><strong>Files:</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">docs/case_studies/johnstone_model.py</span></code> — <code class="docutils literal notranslate"><span class="pre">StellarEvolutionModel</span></code> class</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">docs/case_studies/run_alabi.py</span></code> — inference script; copy and edit for your star</p></li>
+</ul>
+<p><strong>Dependencies:</strong> <code class="docutils literal notranslate"><span class="pre">vplanet_inference</span></code>, <code class="docutils literal notranslate"><span class="pre">alabi</span></code>, <code class="docutils literal notranslate"><span class="pre">numpy</span></code>, <code class="docutils literal notranslate"><span class="pre">astropy</span></code>, <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code>,
+<code class="docutils literal notranslate"><span class="pre">emcee</span></code> or <code class="docutils literal notranslate"><span class="pre">dynesty</span></code></p>
+<p><strong>References:</strong></p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://doi.org/10.3847/1538-4357/abcc02">Johnstone et al. (2021)</a> — rotation-activity-XUV model</p></li>
+<li><p><a class="reference external" href="https://doi.org/10.1093/mnras/stab1564">King &amp; Wheatley (2021)</a> — EUV estimation from X-ray</p></li>
+<li><p><a class="reference external" href="https://doi.org/10.3847/1538-4357/abded5">Birky et al. (2021)</a> — <code class="docutils literal notranslate"><span class="pre">alabi</span></code> surrogate method</p></li>
+</ul>
+<hr class="docutils" />
+<section id="the-johnstone-xuv-model">
+<span id="johnstone-model"></span><h2>1. The Johnstone XUV Model<a class="headerlink" href="#the-johnstone-xuv-model" title="Link to this heading"></a></h2>
+<p>Standard VPLanet stellar evolution tracks bolometric luminosity, radius, and rotation period
+using the Baraffe stellar models and a magnetic braking prescription. Its built-in XUV model
+is parameterized by <code class="docutils literal notranslate"><span class="pre">dSatXUVFrac</span></code>, <code class="docutils literal notranslate"><span class="pre">dSatXUVTime</span></code>, and <code class="docutils literal notranslate"><span class="pre">dXUVBeta</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">StellarEvolutionModel</span></code> replaces that with the <strong>Johnstone et al. (2021)</strong> formulation,
+which ties X-ray emission to the Rossby number:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}R_X = \frac{L_X}{L_{\rm bol}} =
+\begin{cases}
+C_1 \, Ro^{\beta_1} &amp; Ro &lt; Ro_{\rm sat} \quad \text{(saturated)} \\
+C_2 \, Ro^{\beta_2} &amp; Ro \geq Ro_{\rm sat} \quad \text{(unsaturated)}
+\end{cases}\end{split}\]</div>
+<p>where <span class="math notranslate nohighlight">\(C_1 = R_{X,\rm sat} / Ro_{\rm sat}^{\beta_1}\)</span> and
+<span class="math notranslate nohighlight">\(C_2 = R_{X,\rm sat} / Ro_{\rm sat}^{\beta_2}\)</span> enforce continuity at <span class="math notranslate nohighlight">\(Ro_{\rm sat}\)</span>.</p>
+<p>The Rossby number from VPLanet is rescaled by <span class="math notranslate nohighlight">\(0.95 / 2.11\)</span> to match the Johnstone et al.
+(2021) convective turnover time convention. EUV luminosity is then estimated from X-ray
+luminosity via the King &amp; Wheatley (2021) empirical relation, and total XUV is:</p>
+<div class="math notranslate nohighlight">
+\[L_{\rm XUV} = L_X + L_{\rm EUV}\]</div>
+<p><strong>Free parameters</strong> — 7 total:</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 18.8%" />
+<col style="width: 18.8%" />
+<col style="width: 62.5%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter</p></th>
+<th class="head"><p>Symbol</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">mstar</span></code></p></td>
+<td><p><span class="math notranslate nohighlight">\(m_\star\)</span></p></td>
+<td><p>Stellar mass [<span class="math notranslate nohighlight">\(M_\odot\)</span>]</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">prot</span></code></p></td>
+<td><p><span class="math notranslate nohighlight">\(P_{\rm rot,i}\)</span></p></td>
+<td><p>Initial rotation period [days]</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">age</span></code></p></td>
+<td><p><span class="math notranslate nohighlight">\(t_{\rm age}\)</span></p></td>
+<td><p>Stellar age [Gyr] — the simulation stop time</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">beta1</span></code></p></td>
+<td><p><span class="math notranslate nohighlight">\(\beta_1\)</span></p></td>
+<td><p>Power-law slope in the saturated regime</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">beta2</span></code></p></td>
+<td><p><span class="math notranslate nohighlight">\(\beta_2\)</span></p></td>
+<td><p>Power-law slope in the unsaturated regime</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">Rosat</span></code></p></td>
+<td><p><span class="math notranslate nohighlight">\(Ro_{\rm sat}\)</span></p></td>
+<td><p>Rossby number at the saturation boundary</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">RXsat</span></code></p></td>
+<td><p><span class="math notranslate nohighlight">\(R_{X,\rm sat}\)</span></p></td>
+<td><p>X-ray saturation fraction <span class="math notranslate nohighlight">\(L_X/L_{\rm bol}\)</span></p></td>
+</tr>
+</tbody>
+</table>
+<p>The last four parameters are the Johnstone et al. (2021) activity law coefficients.
+They are inferred jointly with the stellar parameters, propagating activity-model
+uncertainty into the posterior.</p>
+</section>
+<section id="stellarevolutionmodel-setup">
+<span id="model-setup"></span><h2>2. <code class="docutils literal notranslate"><span class="pre">StellarEvolutionModel</span></code> Setup<a class="headerlink" href="#stellarevolutionmodel-setup" title="Link to this heading"></a></h2>
+<p>Initialize the class with any combination of observational constraints.
+Each constraint you pass will be included in the chi-squared fit; omitted ones are ignored.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy</span><span class="w"> </span><span class="kn">import</span> <span class="n">units</span> <span class="k">as</span> <span class="n">u</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">johnstone_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">StellarEvolutionModel</span>
+
+<span class="c1"># Observational data: [mean, std] with astropy units</span>
+<span class="n">Lbol_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">5.22e-4</span><span class="p">,</span> <span class="mf">0.19e-4</span><span class="p">])</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">Lsun</span>
+<span class="n">Lxuv_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">1.0e-4</span><span class="p">,</span>  <span class="mf">0.1e-4</span><span class="p">])</span>  <span class="o">*</span> <span class="n">Lbol_data</span>   <span class="c1"># relative to Lbol</span>
+<span class="n">Prot_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">3.295</span><span class="p">,</span>   <span class="mf">0.003</span><span class="p">])</span>   <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span>
+<span class="n">age_data</span>  <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">7.6</span><span class="p">,</span>     <span class="mf">2.2</span><span class="p">])</span>     <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">Gyr</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">StellarEvolutionModel</span><span class="p">(</span>
+    <span class="n">star_name</span><span class="o">=</span><span class="s2">&quot;Trappist-1&quot;</span><span class="p">,</span>
+    <span class="n">Lbol_data</span><span class="o">=</span><span class="n">Lbol_data</span><span class="p">,</span>
+    <span class="n">Lxuv_data</span><span class="o">=</span><span class="n">Lxuv_data</span><span class="p">,</span>
+    <span class="n">Prot_data</span><span class="o">=</span><span class="n">Prot_data</span><span class="p">,</span>
+    <span class="n">age_data</span><span class="o">=</span><span class="n">age_data</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>Internally <code class="docutils literal notranslate"><span class="pre">__init__</span></code> creates a <code class="docutils literal notranslate"><span class="pre">vpi.VplanetModel</span></code> instance (<code class="docutils literal notranslate"><span class="pre">self.vpm</span></code>) pointing
+to the bundled <code class="docutils literal notranslate"><span class="pre">infiles/stellar/</span></code> directory.</p>
+<p><strong>VPLanet input parameters</strong> substituted at each call:</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 31.2%" />
+<col style="width: 18.8%" />
+<col style="width: 50.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>VPLanet key</p></th>
+<th class="head"><p>Unit</p></th>
+<th class="head"><p>Role</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">star.dMass</span></code></p></td>
+<td><p><span class="math notranslate nohighlight">\(M_\odot\)</span></p></td>
+<td><p>Stellar mass</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">star.dRotPeriod</span></code></p></td>
+<td><p>days</p></td>
+<td><p>Initial rotation period</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">vpl.dStopTime</span></code></p></td>
+<td><p>Gyr</p></td>
+<td><p>Simulation duration = stellar age</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>VPLanet output parameters</strong> collected from the <code class="docutils literal notranslate"><span class="pre">.forward</span></code> time-series file:</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 37.5%" />
+<col style="width: 18.8%" />
+<col style="width: 43.8%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>VPLanet key</p></th>
+<th class="head"><p>Unit</p></th>
+<th class="head"><p>Role</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">final.star.Luminosity</span></code></p></td>
+<td><p><span class="math notranslate nohighlight">\(L_\odot\)</span></p></td>
+<td><p>Bolometric luminosity over time</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">final.star.Radius</span></code></p></td>
+<td><p><span class="math notranslate nohighlight">\(R_\odot\)</span></p></td>
+<td><p>Stellar radius over time</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">final.star.RotPer</span></code></p></td>
+<td><p>days</p></td>
+<td><p>Rotation period over time</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">final.star.RossbyNumber</span></code></p></td>
+<td><p>—</p></td>
+<td><p>Rossby number (rescaled internally)</p></td>
+</tr>
+</tbody>
+</table>
+<p>The model starts at <code class="docutils literal notranslate"><span class="pre">time_init=5e6</span> <span class="pre">yr</span></code> and outputs every <code class="docutils literal notranslate"><span class="pre">timesteps=1e6</span> <span class="pre">yr</span></code>,
+so evolution arrays span the full age at 1 Myr resolution.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><code class="docutils literal notranslate"><span class="pre">run_alabi.py</span></code> must be placed in the same directory as <code class="docutils literal notranslate"><span class="pre">johnstone_model.py</span></code>
+because <code class="docutils literal notranslate"><span class="pre">johnstone_model.py</span></code> uses the relative path <code class="docutils literal notranslate"><span class="pre">../infiles/stellar/</span></code> to
+locate the VPLanet input files.</p>
+</div>
+</section>
+<section id="single-model-evaluation">
+<span id="single-eval"></span><h2>3. Single Model Evaluation<a class="headerlink" href="#single-model-evaluation" title="Link to this heading"></a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">LXUV_model(theta)</span></code> runs one complete forward model.
+<code class="docutils literal notranslate"><span class="pre">theta</span></code> is a 7-element array in the order <code class="docutils literal notranslate"><span class="pre">[mstar,</span> <span class="pre">prot,</span> <span class="pre">age,</span> <span class="pre">beta1,</span> <span class="pre">beta2,</span> <span class="pre">Rosat,</span> <span class="pre">RXsat]</span></code>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Johnstone+2021 best-fit activity parameters</span>
+<span class="n">j21</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;beta1&quot;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mf">0.135</span><span class="p">,</span> <span class="mf">0.030</span><span class="p">),</span>
+    <span class="s2">&quot;beta2&quot;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mf">1.889</span><span class="p">,</span> <span class="mf">0.079</span><span class="p">),</span>
+    <span class="s2">&quot;Rosat&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mf">0.0605</span><span class="p">,</span> <span class="mf">0.00331</span><span class="p">),</span>
+    <span class="s2">&quot;RXsat&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mf">5.135e-4</span><span class="p">,</span> <span class="mf">3.320e-5</span><span class="p">),</span>
+<span class="p">}</span>
+
+<span class="n">theta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
+    <span class="mf">0.09</span><span class="p">,</span>              <span class="c1"># mstar [Msun]</span>
+    <span class="mf">0.5</span><span class="p">,</span>               <span class="c1"># prot_initial [days]</span>
+    <span class="mf">7.6</span><span class="p">,</span>               <span class="c1"># age [Gyr]</span>
+    <span class="n">j21</span><span class="p">[</span><span class="s2">&quot;beta1&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span>
+    <span class="n">j21</span><span class="p">[</span><span class="s2">&quot;beta2&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span>
+    <span class="n">j21</span><span class="p">[</span><span class="s2">&quot;Rosat&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span>
+    <span class="n">j21</span><span class="p">[</span><span class="s2">&quot;RXsat&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span>
+<span class="p">])</span>
+
+<span class="n">evol</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">LXUV_model</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The returned dictionary <code class="docutils literal notranslate"><span class="pre">evol</span></code> contains time-series arrays (with astropy units):</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 50.0%" />
+<col style="width: 50.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Key</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">&quot;Time&quot;</span></code></p></td>
+<td><p>Time since formation [Gyr]</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">&quot;final.star.Luminosity&quot;</span></code></p></td>
+<td><p>Bolometric luminosity [<span class="math notranslate nohighlight">\(L_\odot\)</span>]</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">&quot;final.star.Radius&quot;</span></code></p></td>
+<td><p>Stellar radius [<span class="math notranslate nohighlight">\(R_\odot\)</span>]</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">&quot;final.star.RotPer&quot;</span></code></p></td>
+<td><p>Rotation period [days]</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">&quot;final.star.RossbyNumberScaled&quot;</span></code></p></td>
+<td><p>Rossby number (Johnstone convention)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">&quot;final.star.RX&quot;</span></code></p></td>
+<td><p>X-ray activity fraction <span class="math notranslate nohighlight">\(R_X = L_X / L_{\rm bol}\)</span></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">&quot;final.star.LXRAY&quot;</span></code></p></td>
+<td><p>X-ray luminosity</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">&quot;final.star.LEUV&quot;</span></code></p></td>
+<td><p>EUV luminosity (King &amp; Wheatley 2021)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">&quot;final.star.LXUV&quot;</span></code></p></td>
+<td><p>Total XUV luminosity</p></td>
+</tr>
+</tbody>
+</table>
+<p>After calling <code class="docutils literal notranslate"><span class="pre">LXUV_model</span></code>, the result is stored as <code class="docutils literal notranslate"><span class="pre">model.evol</span></code>.
+Compute the chi-squared against all initialized observables with:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">chi2_array</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">compute_chi_squared_fit</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Chi-squared per observable:&quot;</span><span class="p">,</span> <span class="n">chi2_array</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Total chi-squared:&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">chi2_array</span><span class="p">))</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">compute_chi_squared_fit</span></code> returns <span class="math notranslate nohighlight">\(\chi^2_i = (m_i - d_i)^2 / \sigma_i^2\)</span> for
+each observable that was passed to <code class="docutils literal notranslate"><span class="pre">__init__</span></code>.</p>
+</section>
+<section id="parameter-sweeps">
+<span id="sweeps"></span><h2>4. Parameter Sweeps<a class="headerlink" href="#parameter-sweeps" title="Link to this heading"></a></h2>
+<p>Use <code class="docutils literal notranslate"><span class="pre">run_parameter_sweep</span></code> to explore uncertainty in the initial rotation period or to
+visualize the range of evolutionary tracks. It distributes <code class="docutils literal notranslate"><span class="pre">LXUV_model</span></code> calls across
+all available CPU cores via <code class="docutils literal notranslate"><span class="pre">multiprocessing.Pool</span></code>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">nsamp</span> <span class="o">=</span> <span class="mi">20</span>
+
+<span class="n">mass_samp</span>  <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mf">0.089</span><span class="p">,</span> <span class="mf">0.007</span><span class="p">,</span> <span class="n">nsamp</span><span class="p">)</span>
+<span class="n">prot_samp</span>  <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mf">0.01</span><span class="p">,</span> <span class="mf">5.0</span><span class="p">,</span> <span class="n">nsamp</span><span class="p">)</span>   <span class="c1"># broad initial Prot prior</span>
+<span class="n">age_samp</span>   <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">nsamp</span><span class="p">)</span> <span class="o">*</span> <span class="mf">7.6</span>
+<span class="n">beta1_samp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">j21</span><span class="p">[</span><span class="s2">&quot;beta1&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">j21</span><span class="p">[</span><span class="s2">&quot;beta1&quot;</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="n">nsamp</span><span class="p">)</span>
+<span class="n">beta2_samp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">j21</span><span class="p">[</span><span class="s2">&quot;beta2&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">j21</span><span class="p">[</span><span class="s2">&quot;beta2&quot;</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="n">nsamp</span><span class="p">)</span>
+<span class="n">Rosat_samp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">j21</span><span class="p">[</span><span class="s2">&quot;Rosat&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">j21</span><span class="p">[</span><span class="s2">&quot;Rosat&quot;</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="n">nsamp</span><span class="p">)</span>
+<span class="n">RXsat_samp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">j21</span><span class="p">[</span><span class="s2">&quot;RXsat&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">j21</span><span class="p">[</span><span class="s2">&quot;RXsat&quot;</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="n">nsamp</span><span class="p">)</span>
+
+<span class="n">thetas</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
+    <span class="n">mass_samp</span><span class="p">,</span> <span class="n">prot_samp</span><span class="p">,</span> <span class="n">age_samp</span><span class="p">,</span>
+    <span class="n">beta1_samp</span><span class="p">,</span> <span class="n">beta2_samp</span><span class="p">,</span> <span class="n">Rosat_samp</span><span class="p">,</span> <span class="n">RXsat_samp</span><span class="p">,</span>
+<span class="p">])</span><span class="o">.</span><span class="n">T</span>   <span class="c1"># shape (nsamp, 7)</span>
+
+<span class="n">evols</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">run_parameter_sweep</span><span class="p">(</span><span class="n">thetas</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Plotting methods:</strong></p>
+<p><code class="docutils literal notranslate"><span class="pre">plot_evolution(evols)</span></code> — single panel showing X-ray luminosity vs. time for all tracks,
+with the observed value as a red dashed line and shaded 1-sigma band.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">plot_evolution</span><span class="p">(</span><span class="n">evols</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s2">&quot;xray_evolution.png&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">plot_evolution_multi(evols)</span></code> — three-panel figure showing bolometric luminosity, X-ray
+luminosity, and rotation period vs. time, with all applicable observational constraints
+overplotted. A vertical band marks the age constraint.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">plot_evolution_multi</span><span class="p">(</span><span class="n">evols</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s2">&quot;multi_evolution.png&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="configuring-run-alabi-py-for-a-new-star">
+<span id="new-star"></span><h2>5. Configuring <code class="docutils literal notranslate"><span class="pre">run_alabi.py</span></code> for a New Star<a class="headerlink" href="#configuring-run-alabi-py-for-a-new-star" title="Link to this heading"></a></h2>
+<p>The section at the top of <code class="docutils literal notranslate"><span class="pre">run_alabi.py</span></code> marked <code class="docutils literal notranslate"><span class="pre">CHANGE</span> <span class="pre">TO</span> <span class="pre">THE</span> <span class="pre">DATA</span> <span class="pre">FOR</span> <span class="pre">YOUR</span> <span class="pre">STAR</span></code>
+is the only part you need to edit. Three example stars are already provided:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># TRAPPIST-1 — XUV and rotation measured</span>
+<span class="c1"># star_name = &quot;Trappist-1&quot;</span>
+<span class="c1"># mass_data = np.array([0.08,    0.007])  * u.Msun</span>
+<span class="c1"># Lbol_data = np.array([5.22e-4, 0.19e-4]) * u.Lsun</span>
+<span class="c1"># Lxuv_data = np.array([1.0e-4,  0.1e-4]) * Lbol_data</span>
+<span class="c1"># Prot_data = np.array([3.295,   0.003])  * u.day</span>
+<span class="c1"># age_data  = np.array([7.6,     2.2])    * u.Gyr</span>
+
+<span class="c1"># GJ 3470 — X-ray measured, no XUV</span>
+<span class="c1"># star_name  = &quot;GJ_3470&quot;</span>
+<span class="c1"># mass_data  = np.array([0.51,    0.06])    * u.Msun</span>
+<span class="c1"># Lbol_data  = np.array([0.029,   0.002])   * u.Lsun</span>
+<span class="c1"># Lxray_data = np.array([4.43e27, 7.88e26]) * u.erg/u.s</span>
+<span class="c1"># Prot_data  = np.array([21.54,   0.49])    * u.day</span>
+
+<span class="c1"># 55 Cnc — current default</span>
+<span class="n">star_name</span>  <span class="o">=</span> <span class="s2">&quot;55_Cnc&quot;</span>
+<span class="n">mass_data</span>  <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.905</span><span class="p">,</span>    <span class="mf">0.015</span><span class="p">])</span>   <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">Msun</span>
+<span class="n">Lbol_data</span>  <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.582</span><span class="p">,</span>    <span class="mf">0.014</span><span class="p">])</span>   <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">Lsun</span>
+<span class="n">Lxray_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">6.05e26</span><span class="p">,</span>  <span class="mf">5.23e25</span><span class="p">])</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">erg</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">s</span>
+<span class="n">Prot_data</span>  <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">38.8</span><span class="p">,</span>     <span class="mf">0.05</span><span class="p">])</span>    <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span>
+<span class="n">age_data</span>   <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">10.2</span><span class="p">,</span>     <span class="mf">2.5</span><span class="p">])</span>     <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">Gyr</span>
+</pre></div>
+</div>
+<p>The rest of the script works unchanged because <code class="docutils literal notranslate"><span class="pre">StellarEvolutionModel</span></code> automatically
+adapts its chi-squared to whichever observables were provided.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>If you only have X-ray data (not XUV), pass <code class="docutils literal notranslate"><span class="pre">Lxray_data</span></code> instead of <code class="docutils literal notranslate"><span class="pre">Lxuv_data</span></code>.
+The chi-squared will use <code class="docutils literal notranslate"><span class="pre">final.star.LXRAY</span></code> rather than <code class="docutils literal notranslate"><span class="pre">final.star.LXUV</span></code>.</p>
+</div>
+</section>
+<section id="testing-different-constraint-combinations">
+<span id="constraints"></span><h2>6. Testing Different Constraint Combinations<a class="headerlink" href="#testing-different-constraint-combinations" title="Link to this heading"></a></h2>
+<p>A key scientific question is: <em>which observables most strongly constrain the XUV history?</em>
+<code class="docutils literal notranslate"><span class="pre">run_alabi.py</span></code> initializes four model variants:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">model1</span> <span class="o">=</span> <span class="n">StellarEvolutionModel</span><span class="p">(</span><span class="n">star_name</span><span class="o">=</span><span class="n">star_name</span><span class="p">,</span>
+                               <span class="n">Lbol_data</span><span class="o">=</span><span class="n">Lbol_data</span><span class="p">,</span>
+                               <span class="n">Lxray_data</span><span class="o">=</span><span class="n">Lxray_data</span><span class="p">)</span>       <span class="c1"># Lbol + Lxray</span>
+
+<span class="n">model2</span> <span class="o">=</span> <span class="n">StellarEvolutionModel</span><span class="p">(</span><span class="n">star_name</span><span class="o">=</span><span class="n">star_name</span><span class="p">,</span>
+                               <span class="n">Lbol_data</span><span class="o">=</span><span class="n">Lbol_data</span><span class="p">,</span>
+                               <span class="n">Prot_data</span><span class="o">=</span><span class="n">Prot_data</span><span class="p">)</span>          <span class="c1"># Lbol + Prot</span>
+
+<span class="n">model3</span> <span class="o">=</span> <span class="n">StellarEvolutionModel</span><span class="p">(</span><span class="n">star_name</span><span class="o">=</span><span class="n">star_name</span><span class="p">,</span>
+                               <span class="n">Lbol_data</span><span class="o">=</span><span class="n">Lbol_data</span><span class="p">,</span>
+                               <span class="n">Lxray_data</span><span class="o">=</span><span class="n">Lxray_data</span><span class="p">,</span>
+                               <span class="n">Prot_data</span><span class="o">=</span><span class="n">Prot_data</span><span class="p">)</span>          <span class="c1"># Lbol + Lxray + Prot</span>
+
+<span class="n">model4</span> <span class="o">=</span> <span class="n">StellarEvolutionModel</span><span class="p">(</span><span class="n">star_name</span><span class="o">=</span><span class="n">star_name</span><span class="p">,</span>
+                               <span class="n">Lxray_data</span><span class="o">=</span><span class="n">Lxray_data</span><span class="p">)</span>        <span class="c1"># Lxray only</span>
+</pre></div>
+</div>
+<p>To run inference for a specific model, set the <code class="docutils literal notranslate"><span class="pre">test</span></code> variable near the bottom of the script:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">test</span>  <span class="o">=</span> <span class="s2">&quot;model1&quot;</span>   <span class="c1"># or &quot;model2&quot;, &quot;model3&quot;, &quot;model4&quot;</span>
+<span class="n">model</span> <span class="o">=</span> <span class="nb">eval</span><span class="p">(</span><span class="n">test</span><span class="p">)</span>
+<span class="n">save_dir</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;results/</span><span class="si">{</span><span class="n">star_name</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">test</span><span class="si">}</span><span class="s2">/&quot;</span>
+</pre></div>
+</div>
+<p>Results for each configuration are saved to separate subdirectories, so you can run all
+four and compare posteriors.</p>
+</section>
+<section id="prior-and-likelihood-setup">
+<span id="prior-likelihood"></span><h2>7. Prior and Likelihood Setup<a class="headerlink" href="#prior-and-likelihood-setup" title="Link to this heading"></a></h2>
+<p><strong>Prior</strong></p>
+<p>The prior is specified as a list of <code class="docutils literal notranslate"><span class="pre">(mean,</span> <span class="pre">std)</span></code> tuples. <code class="docutils literal notranslate"><span class="pre">None</span></code> means a flat (uniform)
+prior within the corresponding <code class="docutils literal notranslate"><span class="pre">bounds</span></code> entry.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">prior_data</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">(</span><span class="n">mass_data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">mass_data</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">),</span>  <span class="c1"># mass: Gaussian</span>
+    <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>                               <span class="c1"># Prot_initial: uniform</span>
+    <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>                               <span class="c1"># age: uniform</span>
+    <span class="p">(</span><span class="o">-</span><span class="mf">0.135</span><span class="p">,</span> <span class="mf">0.030</span><span class="p">),</span>                            <span class="c1"># beta1: Gaussian (Johnstone+2021)</span>
+    <span class="p">(</span><span class="o">-</span><span class="mf">1.889</span><span class="p">,</span> <span class="mf">0.079</span><span class="p">),</span>                            <span class="c1"># beta2: Gaussian</span>
+    <span class="p">(</span><span class="mf">0.0605</span><span class="p">,</span> <span class="mf">0.00331</span><span class="p">),</span>                          <span class="c1"># Rsat:  Gaussian</span>
+    <span class="p">(</span><span class="mf">5.135e-4</span><span class="p">,</span> <span class="mf">3.320e-5</span><span class="p">),</span>                       <span class="c1"># RXsat: Gaussian</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+<p>Mass bounds are set to ±5σ from the observed mass, clipped to the valid stellar grid
+range [0.07, 1.4] M☉. Activity law parameters are bounded at ±5σ from Johnstone+2021.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">sigma_factor</span> <span class="o">=</span> <span class="mi">5</span>
+<span class="n">min_mass</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">mass_data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">value</span> <span class="o">-</span> <span class="n">sigma_factor</span> <span class="o">*</span> <span class="n">mass_data</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="mf">0.07</span><span class="p">)</span>
+<span class="n">max_mass</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">mass_data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">value</span> <span class="o">+</span> <span class="n">sigma_factor</span> <span class="o">*</span> <span class="n">mass_data</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="mf">1.4</span><span class="p">)</span>
+
+<span class="n">bounds</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">(</span><span class="n">min_mass</span><span class="p">,</span> <span class="n">max_mass</span><span class="p">),</span>   <span class="c1"># mass</span>
+    <span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">12.0</span><span class="p">),</span>            <span class="c1"># Prot_initial [days]</span>
+    <span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">5.0</span><span class="p">),</span>             <span class="c1"># age [Gyr]</span>
+    <span class="p">(</span><span class="n">min_beta1</span><span class="p">,</span> <span class="n">max_beta1</span><span class="p">),</span> <span class="c1"># beta1</span>
+    <span class="p">(</span><span class="n">min_beta2</span><span class="p">,</span> <span class="n">max_beta2</span><span class="p">),</span> <span class="c1"># beta2</span>
+    <span class="p">(</span><span class="n">min_Rsat</span><span class="p">,</span>  <span class="n">max_Rsat</span><span class="p">),</span>  <span class="c1"># Rsat</span>
+    <span class="p">(</span><span class="n">min_RXsat</span><span class="p">,</span> <span class="n">max_RXsat</span><span class="p">),</span> <span class="c1"># RXsat</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+<p>Three prior function signatures are prepared — one per sampler format:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">partial</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">alabi</span><span class="w"> </span><span class="kn">import</span> <span class="n">utility</span> <span class="k">as</span> <span class="n">ut</span>
+
+<span class="c1"># alabi: draws samples from the prior for GP training</span>
+<span class="n">ps</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">ut</span><span class="o">.</span><span class="n">prior_sampler_normal</span><span class="p">,</span> <span class="n">prior_data</span><span class="o">=</span><span class="n">prior_data</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="n">bounds</span><span class="p">)</span>
+
+<span class="c1"># emcee: evaluates log-prior at a point</span>
+<span class="n">lnprior</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">ut</span><span class="o">.</span><span class="n">lnprior_normal</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="n">bounds</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">prior_data</span><span class="p">)</span>
+
+<span class="c1"># dynesty: maps unit-hypercube to parameter space</span>
+<span class="n">prior_transform</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">ut</span><span class="o">.</span><span class="n">prior_transform_normal</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="n">bounds</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">prior_data</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Likelihood</strong></p>
+<p>The log-likelihood is a Gaussian chi-squared:</p>
+<div class="math notranslate nohighlight">
+\[\ln \mathcal{L}(\theta) = -\frac{1}{2} \sum_i \chi^2_i
+= -\frac{1}{2} \sum_i \left(\frac{m_i(\theta) - d_i}{\sigma_i}\right)^2\]</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">lnlike</span><span class="p">(</span><span class="n">theta</span><span class="p">):</span>
+    <span class="n">_</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">LXUV_model</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+    <span class="n">chi2_array</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">compute_chi_squared_fit</span><span class="p">()</span>
+    <span class="n">lnl</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">chi2_array</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">lnl</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">LXUV_model</span></code> stores the result in <code class="docutils literal notranslate"><span class="pre">model.evol</span></code>, then <code class="docutils literal notranslate"><span class="pre">compute_chi_squared_fit</span></code>
+reads from it to compute <span class="math notranslate nohighlight">\(\chi^2_i\)</span> for each observable initialized at construction.</p>
+</section>
+<section id="running-alabi-surrogate-mcmc">
+<span id="alabi-run"></span><h2>8. Running <code class="docutils literal notranslate"><span class="pre">alabi</span></code> Surrogate MCMC<a class="headerlink" href="#running-alabi-surrogate-mcmc" title="Link to this heading"></a></h2>
+<p>The full pipeline in <code class="docutils literal notranslate"><span class="pre">run_alabi.py</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">alabi</span><span class="w"> </span><span class="kn">import</span> <span class="n">SurrogateModel</span>
+
+<span class="n">sm</span> <span class="o">=</span> <span class="n">SurrogateModel</span><span class="p">(</span>
+    <span class="n">fn</span><span class="o">=</span><span class="n">lnlike</span><span class="p">,</span>
+    <span class="n">bounds</span><span class="o">=</span><span class="n">bounds</span><span class="p">,</span>
+    <span class="n">prior_sampler</span><span class="o">=</span><span class="n">ps</span><span class="p">,</span>
+    <span class="n">savedir</span><span class="o">=</span><span class="n">save_dir</span><span class="p">,</span>
+    <span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>      <span class="c1"># save GP and training set to disk after each iteration</span>
+    <span class="n">labels</span><span class="o">=</span><span class="n">labels</span><span class="p">,</span>
+    <span class="n">scale</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">ncore</span><span class="o">=</span><span class="mi">22</span><span class="p">,</span>        <span class="c1"># parallel VPLanet processes</span>
+<span class="p">)</span>
+
+<span class="c1"># 1. Draw initial training set and fit the first GP</span>
+<span class="n">sm</span><span class="o">.</span><span class="n">init_samples</span><span class="p">(</span><span class="n">ntrain</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="n">ntest</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">reload</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">sm</span><span class="o">.</span><span class="n">init_gp</span><span class="p">(</span><span class="n">kernel</span><span class="o">=</span><span class="s2">&quot;ExpSquaredKernel&quot;</span><span class="p">,</span> <span class="n">fit_amp</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">fit_mean</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">white_noise</span><span class="o">=-</span><span class="mi">15</span><span class="p">)</span>
+
+<span class="c1"># 2. Active learning: add 500 points using BAPE</span>
+<span class="n">sm</span><span class="o">.</span><span class="n">active_train</span><span class="p">(</span><span class="n">niter</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">algorithm</span><span class="o">=</span><span class="s2">&quot;bape&quot;</span><span class="p">,</span> <span class="n">gp_opt_freq</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">sm</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">plots</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;gp_all&quot;</span><span class="p">])</span>
+
+<span class="c1"># 3. MCMC on the trained surrogate</span>
+<span class="n">sm</span><span class="o">.</span><span class="n">run_emcee</span><span class="p">(</span><span class="n">lnprior</span><span class="o">=</span><span class="n">lnprior</span><span class="p">,</span> <span class="n">nwalkers</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">nsteps</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="mf">1e5</span><span class="p">),</span> <span class="n">opt_init</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">sm</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">plots</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;emcee_corner&quot;</span><span class="p">])</span>
+
+<span class="n">sm</span><span class="o">.</span><span class="n">run_dynesty</span><span class="p">(</span><span class="n">ptform</span><span class="o">=</span><span class="n">prior_transform</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;dynamic&#39;</span><span class="p">)</span>
+<span class="n">sm</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">plots</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;dynesty_all&quot;</span><span class="p">])</span>
+</pre></div>
+</div>
+<p><strong>Key</strong> <code class="docutils literal notranslate"><span class="pre">SurrogateModel</span></code> <strong>arguments:</strong></p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 25.0%" />
+<col style="width: 75.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Argument</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">fn</span></code></p></td>
+<td><p>Function to emulate — here <code class="docutils literal notranslate"><span class="pre">lnlike</span></code>, returning a scalar</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">bounds</span></code></p></td>
+<td><p>Hard parameter bounds (7-element list of tuples)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">prior_sampler</span></code></p></td>
+<td><p>Callable that draws prior samples to seed the GP training set</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">savedir</span></code></p></td>
+<td><p>Directory for caching the training set and GP model</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">cache</span></code></p></td>
+<td><p>Save progress after each active-learning iteration</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">ncore</span></code></p></td>
+<td><p>Parallel workers for forward model evaluation</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">scale</span></code></p></td>
+<td><p>GP output scaling; use <code class="docutils literal notranslate"><span class="pre">&quot;nlog&quot;</span></code> for a log-posterior, <code class="docutils literal notranslate"><span class="pre">None</span></code> for log-likelihood</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Active learning arguments:</strong></p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 25.0%" />
+<col style="width: 75.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Argument</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">niter</span></code></p></td>
+<td><p>Number of new training points to add (500 is a good starting point)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">algorithm</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">&quot;bape&quot;</span></code> — Bayesian Active Posterior Estimation (recommended)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">gp_opt_freq</span></code></p></td>
+<td><p>Re-optimize GP hyperparameters every N iterations</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="reloading-and-extending-a-run">
+<span id="reload"></span><h2>9. Reloading and Extending a Run<a class="headerlink" href="#reloading-and-extending-a-run" title="Link to this heading"></a></h2>
+<p>Because <code class="docutils literal notranslate"><span class="pre">cache=True</span></code>, all training evaluations are saved to <code class="docutils literal notranslate"><span class="pre">save_dir</span></code> after each
+iteration. Reload a completed run and continue without repeating any forward model calls:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">alabi</span>
+
+<span class="n">sm</span> <span class="o">=</span> <span class="n">alabi</span><span class="o">.</span><span class="n">cache_utils</span><span class="o">.</span><span class="n">load_model_cache</span><span class="p">(</span><span class="n">save_dir</span><span class="p">)</span>
+<span class="n">sm</span><span class="o">.</span><span class="n">savedir</span> <span class="o">=</span> <span class="n">save_dir</span>   <span class="c1"># re-set if save_dir path has changed</span>
+
+<span class="c1"># Continue active learning from where it left off</span>
+<span class="n">sm</span><span class="o">.</span><span class="n">active_train</span><span class="p">(</span><span class="n">niter</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">algorithm</span><span class="o">=</span><span class="s2">&quot;bape&quot;</span><span class="p">,</span> <span class="n">gp_opt_freq</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">sm</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">plots</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;gp_all&quot;</span><span class="p">])</span>
+
+<span class="c1"># Run MCMC without any additional training</span>
+<span class="n">sm</span><span class="o">.</span><span class="n">run_emcee</span><span class="p">(</span><span class="n">lnprior</span><span class="o">=</span><span class="n">lnprior</span><span class="p">,</span> <span class="n">nwalkers</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">nsteps</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="mf">1e5</span><span class="p">),</span> <span class="n">opt_init</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">sm</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">plots</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;emcee_corner&quot;</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>This is especially useful on HPC clusters where you want to checkpoint progress or add
+more training iterations after reviewing the GP diagnostics.</p>
+</section>
+<hr class="docutils" />
+<section id="summary">
+<h2>Summary<a class="headerlink" href="#summary" title="Link to this heading"></a></h2>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 30.0%" />
+<col style="width: 30.0%" />
+<col style="width: 40.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Step</p></th>
+<th class="head"><p>Code location</p></th>
+<th class="head"><p>Key action</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Configure star data</p></td>
+<td><p>Top of <code class="docutils literal notranslate"><span class="pre">run_alabi.py</span></code></p></td>
+<td><p>Set <code class="docutils literal notranslate"><span class="pre">star_name</span></code>, <code class="docutils literal notranslate"><span class="pre">mass_data</span></code>, luminosity / rotation / age data</p></td>
+</tr>
+<tr class="row-odd"><td><p>Choose constraints</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">model1</span></code>–<code class="docutils literal notranslate"><span class="pre">model4</span></code> block</p></td>
+<td><p>Pass different combinations of data to <code class="docutils literal notranslate"><span class="pre">StellarEvolutionModel</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>Set active model</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">test</span> <span class="pre">=</span> <span class="pre">&quot;model1&quot;</span></code> line</p></td>
+<td><p>Select which constraint set to run</p></td>
+</tr>
+<tr class="row-odd"><td><p>Run single model</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">model.LXUV_model(theta)</span></code></p></td>
+<td><p>Inspect output; call <code class="docutils literal notranslate"><span class="pre">compute_chi_squared_fit()</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>Run parameter sweep</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">model.run_parameter_sweep(thetas)</span></code></p></td>
+<td><p>Parallel forward models; visualize with <code class="docutils literal notranslate"><span class="pre">plot_evolution_multi()</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>Run surrogate MCMC</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">run_alabi.py</span></code> main block</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">init_samples</span></code> → <code class="docutils literal notranslate"><span class="pre">init_gp</span></code> → <code class="docutils literal notranslate"><span class="pre">active_train</span></code> → MCMC</p></td>
+</tr>
+<tr class="row-even"><td><p>Reload saved run</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">alabi.cache_utils.load_model_cache(save_dir)</span></code></p></td>
+<td><p>Continue or run MCMC on a completed GP</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="04_earth_mle.html" class="btn btn-neutral float-left" title="Maximum Likelihood Estimation for Earth Interior Evolution" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../api.html" class="btn btn-neutral float-right" title="API Reference" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Jessica Birky.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

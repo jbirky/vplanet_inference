@@ -31,6 +31,7 @@ Python tools for statistical inference with `VPLanet <https://github.com/Virtual
 
    case_studies/index
    case_studies/04_earth_mle
+   case_studies/05_custom_rotation_model
 
 .. toctree::
    :maxdepth: 2

@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Case Studies &mdash; vplanet_inference 0.0.1 documentation</title>
+  <title>Case Studies Overview &mdash; vplanet_inference 0.0.1 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=a6a68382" />
@@ -59,8 +59,9 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Case Studies</span></p>
 <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Case Studies</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Case Studies Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="04_earth_mle.html">Maximum Likelihood Estimation for Earth Interior Evolution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="05_custom_rotation_model.html">Custom Rotation-Activity-XUV Model</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
 <ul>
@@ -81,7 +82,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">Case Studies</li>
+      <li class="breadcrumb-item active">Case Studies Overview</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../_sources/case_studies/index.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -91,8 +92,8 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="case-studies">
-<h1>Case Studies<a class="headerlink" href="#case-studies" title="Link to this heading"></a></h1>
+  <section id="case-studies-overview">
+<h1>Case Studies Overview<a class="headerlink" href="#case-studies-overview" title="Link to this heading"></a></h1>
 <p>End-to-end science applications of <code class="docutils literal notranslate"><span class="pre">vplanet_inference</span></code> on real research problems.
 Each case study is available as a downloadable Jupyter notebook.</p>
 <hr class="docutils" />
@@ -116,6 +117,14 @@ using maximum likelihood estimation (MLE). Covers VPLanet’s <code class="docut
 modules, Gaussian log-likelihood construction, single and multi-start Nelder-Mead
 optimization, local sensitivity analysis, and Fisher information matrix computation.
 Based on Gilbert-Janizek et al. (2026).</p></td>
+</tr>
+<tr class="row-odd"><td><p>5</p></td>
+<td><p><a class="reference internal" href="05_custom_rotation_model.html"><span class="doc">Custom Rotation-Activity-XUV Model</span></a></p></td>
+<td><p>Fit a custom rotation-activity-XUV model (Johnstone et al. 2021) to stellar
+observational constraints using the <code class="docutils literal notranslate"><span class="pre">alabi</span></code> surrogate MCMC framework. Covers
+implementing a custom likelihood with <code class="docutils literal notranslate"><span class="pre">StellarEvolutionModel</span></code>, testing different
+combinations of luminosity, X-ray, rotation, and age constraints, and running
+active-learning Bayesian inference with <code class="docutils literal notranslate"><span class="pre">emcee</span></code> and <code class="docutils literal notranslate"><span class="pre">dynesty</span></code>.</p></td>
 </tr>
 </tbody>
 </table>

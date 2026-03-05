@@ -1,0 +1,887 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>vplanet_inference.info_vis &mdash; vplanet_inference 0.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=a6a68382" />
+      <link rel="stylesheet" type="text/css" href="../../_static/fonts.css?v=5583d106" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=d45e8c67"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            vplanet_inference
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../quickstart.html">Quickstart</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/index.html">Tutorial Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/01_vplanet_infiles.html">Setting Up and Running VPLanet Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/02_sensitivity_analysis.html">Global Sensitivity Analysis with <code class="docutils literal notranslate"><span class="pre">vplanet_inference</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/03_mcmc_custom_likelihood.html">MCMC with VPLanet and <code class="docutils literal notranslate"><span class="pre">alabi</span></code></a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Case Studies</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../case_studies/index.html">Case Studies Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../case_studies/04_earth_mle.html">Maximum Likelihood Estimation for Earth Interior Evolution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../case_studies/05_custom_rotation_model.html">Custom Rotation-Activity-XUV Model</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">vplanet_inference</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">vplanet_inference.info_vis</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for vplanet_inference.info_vis</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib.patches</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ellipse</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.patches</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">mpatches</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mpl_toolkits.mplot3d</span><span class="w"> </span><span class="kn">import</span> <span class="n">Axes3D</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">seaborn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sns</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">corner</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;plot_corner_probability&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;plot_fisher_heatmap&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;plot_correlation_matrix&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;plot_uncertainty_ellipse&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;plot_eigenvalue_spectrum&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;plot_standard_errors&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;plot_condition_number_breakdown&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;create_fisher_dashboard&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;local_sensitivity_analysis&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;plot_sensitivity_heatmap&quot;</span><span class="p">,</span>
+<span class="p">]</span>
+
+
+<div class="viewcode-block" id="plot_corner_probability">
+<a class="viewcode-back" href="../../api.html#vplanet_inference.plot_corner_probability">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">plot_corner_probability</span><span class="p">(</span><span class="n">tt</span><span class="p">,</span> <span class="n">yy</span><span class="p">,</span> <span class="n">highlight_pts</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;Blues_r&quot;</span><span class="p">,</span> <span class="n">array1</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">array2</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">inlabels</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cb_label</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;$-\ln P$&#39;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Corner plot of parameter samples coloured by a scalar (e.g. log-probability).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    tt : np.ndarray, shape (n_samples, n_params)</span>
+<span class="sd">        Parameter samples.</span>
+<span class="sd">    yy : np.ndarray, shape (n_samples,)</span>
+<span class="sd">        Scalar values used to colour the scatter points (e.g. ``-ln P``).</span>
+<span class="sd">    highlight_pts : np.ndarray, optional</span>
+<span class="sd">        Additional points to overplot in red.</span>
+<span class="sd">    cmap : str, optional</span>
+<span class="sd">        Matplotlib colormap name.  Defaults to ``&quot;Blues_r&quot;``.</span>
+<span class="sd">    array1 : array-like, optional</span>
+<span class="sd">        A single parameter vector to mark with vertical/horizontal red lines.</span>
+<span class="sd">    array2 : array-like, optional</span>
+<span class="sd">        A second parameter vector to mark in green.</span>
+<span class="sd">    inlabels : list of str, optional</span>
+<span class="sd">        Axis labels for each parameter.</span>
+<span class="sd">    cb_label : str, optional</span>
+<span class="sd">        Colorbar label.  Defaults to ``r&#39;$-\\ln P$&#39;``.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    matplotlib.figure.Figure</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">ndim</span> <span class="o">=</span> <span class="n">tt</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">corner</span><span class="o">.</span><span class="n">corner</span><span class="p">(</span><span class="n">tt</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="n">yy</span><span class="p">,</span> <span class="n">plot_datapoints</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">plot_density</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">plot_contours</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> 
+                    <span class="n">labels</span><span class="o">=</span><span class="n">inlabels</span><span class="p">,</span> <span class="n">label_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;fontsize&quot;</span><span class="p">:</span><span class="mi">16</span><span class="p">,</span> <span class="s2">&quot;rotation&quot;</span><span class="p">:</span> <span class="mi">45</span><span class="p">,</span> <span class="s2">&quot;ha&quot;</span><span class="p">:</span> <span class="s2">&quot;right&quot;</span><span class="p">})</span>
+    <span class="n">axes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">fig</span><span class="o">.</span><span class="n">axes</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">ndim</span><span class="p">,</span> <span class="n">ndim</span><span class="p">))</span>
+    <span class="n">cb_rng</span> <span class="o">=</span> <span class="p">[</span><span class="n">yy</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">yy</span><span class="o">.</span><span class="n">max</span><span class="p">()]</span>
+
+    <span class="k">for</span> <span class="n">yi</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ndim</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">xi</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">yi</span><span class="p">):</span>
+            <span class="n">ax</span> <span class="o">=</span> <span class="n">axes</span><span class="p">[</span><span class="n">yi</span><span class="p">,</span> <span class="n">xi</span><span class="p">]</span>
+            <span class="c1"># im = ax.scatter(tt.T[xi], tt.T[yi], c=yy, s=5, cmap=&#39;coolwarm&#39;, norm=colors.LogNorm(vmin=min(cb_rng), vmax=max(cb_rng)), alpha=1.0)</span>
+            <span class="n">im</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">tt</span><span class="o">.</span><span class="n">T</span><span class="p">[</span><span class="n">xi</span><span class="p">],</span> <span class="n">tt</span><span class="o">.</span><span class="n">T</span><span class="p">[</span><span class="n">yi</span><span class="p">],</span> <span class="n">c</span><span class="o">=</span><span class="n">yy</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">cmap</span><span class="p">,</span> <span class="n">norm</span><span class="o">=</span><span class="n">colors</span><span class="o">.</span><span class="n">Normalize</span><span class="p">(</span><span class="n">vmin</span><span class="o">=</span><span class="nb">min</span><span class="p">(</span><span class="n">cb_rng</span><span class="p">),</span> <span class="n">vmax</span><span class="o">=</span><span class="nb">max</span><span class="p">(</span><span class="n">cb_rng</span><span class="p">)),</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">highlight_pts</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">highlight_pts</span><span class="o">.</span><span class="n">T</span><span class="p">[</span><span class="n">xi</span><span class="p">],</span> <span class="n">highlight_pts</span><span class="o">.</span><span class="n">T</span><span class="p">[</span><span class="n">yi</span><span class="p">],</span> <span class="n">s</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">facecolor</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">edgecolor</span><span class="o">=</span><span class="s2">&quot;none&quot;</span><span class="p">)</span>
+        
+    <span class="c1"># remove histograms on diagonal</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ndim</span><span class="p">):</span>
+        <span class="n">ax</span> <span class="o">=</span> <span class="n">axes</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">delaxes</span><span class="p">(</span><span class="n">ax</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">array1</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span> 
+        <span class="k">for</span> <span class="n">yi</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ndim</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">xi</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">yi</span><span class="p">):</span>
+                <span class="n">ax</span> <span class="o">=</span> <span class="n">axes</span><span class="p">[</span><span class="n">yi</span><span class="p">,</span> <span class="n">xi</span><span class="p">]</span>
+                <span class="n">ax</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">array1</span><span class="p">[</span><span class="n">xi</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">)</span>
+                <span class="n">ax</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="n">array1</span><span class="p">[</span><span class="n">yi</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">)</span>
+                <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">array1</span><span class="p">[</span><span class="n">xi</span><span class="p">],</span> <span class="n">array1</span><span class="p">[</span><span class="n">yi</span><span class="p">],</span> <span class="s2">&quot;sr&quot;</span><span class="p">)</span>
+                
+    <span class="k">if</span> <span class="n">array2</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span> 
+        <span class="k">for</span> <span class="n">yi</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ndim</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">xi</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">yi</span><span class="p">):</span>
+                <span class="n">ax</span> <span class="o">=</span> <span class="n">axes</span><span class="p">[</span><span class="n">yi</span><span class="p">,</span> <span class="n">xi</span><span class="p">]</span>
+                <span class="n">ax</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">array2</span><span class="p">[</span><span class="n">xi</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;g&quot;</span><span class="p">)</span>
+                <span class="n">ax</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="n">array2</span><span class="p">[</span><span class="n">yi</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;g&quot;</span><span class="p">)</span>
+                <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">array2</span><span class="p">[</span><span class="n">xi</span><span class="p">],</span> <span class="n">array2</span><span class="p">[</span><span class="n">yi</span><span class="p">],</span> <span class="s2">&quot;sg&quot;</span><span class="p">)</span>
+
+    <span class="n">cb</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">im</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">axes</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span> <span class="n">orientation</span><span class="o">=</span><span class="s1">&#39;vertical&#39;</span><span class="p">,</span> <span class="n">anchor</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> 
+                        <span class="n">shrink</span><span class="o">=</span><span class="mf">.5</span><span class="p">,</span> <span class="n">pad</span><span class="o">=-</span><span class="mf">0.1</span><span class="p">)</span>
+    <span class="n">cb</span><span class="o">.</span><span class="n">set_label</span><span class="p">(</span><span class="n">cb_label</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">25</span><span class="p">,</span> <span class="n">labelpad</span><span class="o">=-</span><span class="mi">120</span><span class="p">)</span>
+    <span class="n">cb_ticks</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">cb_rng</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">cb_rng</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mi">10</span><span class="p">)</span>
+    <span class="n">cb</span><span class="o">.</span><span class="n">set_ticks</span><span class="p">(</span><span class="n">cb_ticks</span><span class="p">)</span>
+    <span class="n">cb</span><span class="o">.</span><span class="n">set_ticklabels</span><span class="p">([</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">val</span><span class="si">:</span><span class="s1">.1f</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">cb_ticks</span><span class="p">])</span>
+    <span class="n">cb</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">labelsize</span><span class="o">=</span><span class="mi">18</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">fig</span></div>
+
+
+
+<div class="viewcode-block" id="plot_fisher_heatmap">
+<a class="viewcode-back" href="../../api.html#vplanet_inference.plot_fisher_heatmap">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">plot_fisher_heatmap</span><span class="p">(</span><span class="n">fisher_info</span><span class="p">,</span> <span class="n">param_names</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Plot Fisher Information Matrix as a heatmap.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    fisher_info : np.ndarray</span>
+<span class="sd">        Fisher Information Matrix</span>
+<span class="sd">    param_names : list, optional</span>
+<span class="sd">        Parameter names for axis labels</span>
+<span class="sd">    ax : matplotlib.axes.Axes, optional</span>
+<span class="sd">        Axes to plot on</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">ax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+    
+    <span class="n">n_params</span> <span class="o">=</span> <span class="n">fisher_info</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">param_names</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">param_names</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s1">&#39;$</span><span class="se">\\</span><span class="s1">theta_</span><span class="se">{{</span><span class="si">{</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="se">}}</span><span class="s1">$&#39;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_params</span><span class="p">)]</span>
+    
+    <span class="c1"># Plot heatmap</span>
+    <span class="n">im</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">fisher_info</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;YlOrRd&#39;</span><span class="p">,</span> <span class="n">aspect</span><span class="o">=</span><span class="s1">&#39;auto&#39;</span><span class="p">)</span>
+    
+    <span class="c1"># Add colorbar</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">im</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Fisher Information&#39;</span><span class="p">)</span>
+    
+    <span class="c1"># Set ticks and labels</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">n_params</span><span class="p">))</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">n_params</span><span class="p">))</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xticklabels</span><span class="p">(</span><span class="n">param_names</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_yticklabels</span><span class="p">(</span><span class="n">param_names</span><span class="p">)</span>
+    
+    <span class="c1"># Add values as text</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_params</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_params</span><span class="p">):</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="n">j</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">fisher_info</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="n">j</span><span class="p">]</span><span class="si">:</span><span class="s1">.1f</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+                          <span class="n">ha</span><span class="o">=</span><span class="s2">&quot;center&quot;</span><span class="p">,</span> <span class="n">va</span><span class="o">=</span><span class="s2">&quot;center&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">9</span><span class="p">)</span>
+    
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Fisher Information Matrix&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">fontweight</span><span class="o">=</span><span class="s1">&#39;bold&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Parameters&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">18</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Parameters&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">18</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">ax</span></div>
+
+
+
+<div class="viewcode-block" id="plot_correlation_matrix">
+<a class="viewcode-back" href="../../api.html#vplanet_inference.plot_correlation_matrix">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">plot_correlation_matrix</span><span class="p">(</span><span class="n">fisher_info</span><span class="p">,</span> <span class="n">param_names</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Plot parameter correlation matrix derived from Fisher Information.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    fisher_info : np.ndarray</span>
+<span class="sd">        Fisher Information Matrix</span>
+<span class="sd">    param_names : list, optional</span>
+<span class="sd">        Parameter names for axis labels</span>
+<span class="sd">    ax : matplotlib.axes.Axes, optional</span>
+<span class="sd">        Axes to plot on</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">ax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+    
+    <span class="n">n_params</span> <span class="o">=</span> <span class="n">fisher_info</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">param_names</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">param_names</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s1">&#39;$</span><span class="se">\\</span><span class="s1">theta_</span><span class="se">{{</span><span class="si">{</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="se">}}</span><span class="s1">$&#39;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_params</span><span class="p">)]</span>
+    
+    <span class="c1"># Compute correlation matrix</span>
+    <span class="n">cov</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">fisher_info</span><span class="p">)</span>
+    <span class="n">std_devs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">cov</span><span class="p">))</span>
+    <span class="n">corr</span> <span class="o">=</span> <span class="n">cov</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">outer</span><span class="p">(</span><span class="n">std_devs</span><span class="p">,</span> <span class="n">std_devs</span><span class="p">)</span>
+    
+    <span class="c1"># Plot heatmap</span>
+    <span class="n">im</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">corr</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;RdBu_r&#39;</span><span class="p">,</span> <span class="n">aspect</span><span class="o">=</span><span class="s1">&#39;auto&#39;</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    
+    <span class="c1"># Add colorbar</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">im</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Correlation&#39;</span><span class="p">)</span>
+    
+    <span class="c1"># Set ticks and labels</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">n_params</span><span class="p">))</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">n_params</span><span class="p">))</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xticklabels</span><span class="p">(</span><span class="n">param_names</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_yticklabels</span><span class="p">(</span><span class="n">param_names</span><span class="p">)</span>
+    
+    <span class="c1"># Add values as text</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_params</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_params</span><span class="p">):</span>
+            <span class="n">color</span> <span class="o">=</span> <span class="s2">&quot;white&quot;</span> <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">corr</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mf">0.5</span> <span class="k">else</span> <span class="s2">&quot;black&quot;</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="n">j</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">corr</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="n">j</span><span class="p">]</span><span class="si">:</span><span class="s1">.2f</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+                          <span class="n">ha</span><span class="o">=</span><span class="s2">&quot;center&quot;</span><span class="p">,</span> <span class="n">va</span><span class="o">=</span><span class="s2">&quot;center&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">9</span><span class="p">)</span>
+    
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Parameter Correlation Matrix&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">,</span> <span class="n">fontweight</span><span class="o">=</span><span class="s1">&#39;bold&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Parameters&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Parameters&#39;</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">ax</span></div>
+
+
+
+<div class="viewcode-block" id="plot_uncertainty_ellipse">
+<a class="viewcode-back" href="../../api.html#vplanet_inference.plot_uncertainty_ellipse">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">plot_uncertainty_ellipse</span><span class="p">(</span><span class="n">fisher_info</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">param_names</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
+                            <span class="n">n_std</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">indices</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Plot 2D uncertainty ellipse from Fisher Information.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    fisher_info : np.ndarray</span>
+<span class="sd">        Fisher Information Matrix</span>
+<span class="sd">    center : np.ndarray, optional</span>
+<span class="sd">        Center point for ellipse (parameter values)</span>
+<span class="sd">    param_names : list, optional</span>
+<span class="sd">        Parameter names for axis labels</span>
+<span class="sd">    n_std : float, default=2</span>
+<span class="sd">        Number of standard deviations for ellipse</span>
+<span class="sd">    ax : matplotlib.axes.Axes, optional</span>
+<span class="sd">        Axes to plot on</span>
+<span class="sd">    indices : tuple, default=(0, 1)</span>
+<span class="sd">        Which two parameters to plot</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">ax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">8</span><span class="p">))</span>
+    
+    <span class="c1"># Extract 2x2 submatrix</span>
+    <span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="o">=</span> <span class="n">indices</span>
+    <span class="n">FI_2d</span> <span class="o">=</span> <span class="n">fisher_info</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ix_</span><span class="p">([</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">],</span> <span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">])]</span>
+    
+    <span class="c1"># Get covariance matrix</span>
+    <span class="n">cov_2d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">FI_2d</span><span class="p">)</span>
+    
+    <span class="k">if</span> <span class="n">center</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">center</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">center</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">center</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">center</span><span class="p">[</span><span class="n">j</span><span class="p">]])</span>
+    
+    <span class="c1"># Compute eigenvalues and eigenvectors</span>
+    <span class="n">eigenvalues</span><span class="p">,</span> <span class="n">eigenvectors</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eigh</span><span class="p">(</span><span class="n">cov_2d</span><span class="p">)</span>
+    
+    <span class="c1"># Compute ellipse parameters</span>
+    <span class="n">angle</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">eigenvectors</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">eigenvectors</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]))</span>
+    <span class="n">width</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">n_std</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">eigenvalues</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">height</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">n_std</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">eigenvalues</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    
+    <span class="c1"># Create ellipse</span>
+    <span class="n">ellipse</span> <span class="o">=</span> <span class="n">Ellipse</span><span class="p">(</span><span class="n">center</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">,</span> <span class="n">angle</span><span class="o">=</span><span class="n">angle</span><span class="p">,</span>
+                     <span class="n">facecolor</span><span class="o">=</span><span class="s1">&#39;lightblue&#39;</span><span class="p">,</span> <span class="n">edgecolor</span><span class="o">=</span><span class="s1">&#39;blue&#39;</span><span class="p">,</span> 
+                     <span class="n">linewidth</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">n_std</span><span class="si">}</span><span class="s1">$</span><span class="se">\\</span><span class="s1">sigma$ confidence&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">add_patch</span><span class="p">(</span><span class="n">ellipse</span><span class="p">)</span>
+    
+    <span class="c1"># Plot center</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">center</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">center</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;ro&#39;</span><span class="p">,</span> <span class="n">markersize</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Parameter estimate&#39;</span><span class="p">)</span>
+    
+    <span class="c1"># Plot principal axes</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">):</span>
+        <span class="c1"># Direction of kth eigenvector</span>
+        <span class="n">direction</span> <span class="o">=</span> <span class="n">eigenvectors</span><span class="p">[:,</span> <span class="n">k</span><span class="p">]</span>
+        <span class="n">length</span> <span class="o">=</span> <span class="n">n_std</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">eigenvalues</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+        
+        <span class="n">ax</span><span class="o">.</span><span class="n">arrow</span><span class="p">(</span><span class="n">center</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">center</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> 
+                <span class="n">length</span> <span class="o">*</span> <span class="n">direction</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">length</span> <span class="o">*</span> <span class="n">direction</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                <span class="n">head_width</span><span class="o">=</span><span class="mf">0.05</span><span class="o">*</span><span class="n">length</span><span class="p">,</span> <span class="n">head_length</span><span class="o">=</span><span class="mf">0.1</span><span class="o">*</span><span class="n">length</span><span class="p">,</span>
+                <span class="n">fc</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="n">ec</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.7</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">arrow</span><span class="p">(</span><span class="n">center</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">center</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> 
+                <span class="o">-</span><span class="n">length</span> <span class="o">*</span> <span class="n">direction</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">-</span><span class="n">length</span> <span class="o">*</span> <span class="n">direction</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                <span class="n">head_width</span><span class="o">=</span><span class="mf">0.05</span><span class="o">*</span><span class="n">length</span><span class="p">,</span> <span class="n">head_length</span><span class="o">=</span><span class="mf">0.1</span><span class="o">*</span><span class="n">length</span><span class="p">,</span>
+                <span class="n">fc</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="n">ec</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.7</span><span class="p">)</span>
+    
+    <span class="c1"># Set axis labels</span>
+    <span class="k">if</span> <span class="n">param_names</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">param_names</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s1">&#39;$</span><span class="se">\\</span><span class="s1">theta_</span><span class="se">{{</span><span class="si">{</span><span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="se">}}</span><span class="s1">$&#39;</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">fisher_info</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])]</span>
+    
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="n">param_names</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="n">param_names</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Uncertainty Ellipse (</span><span class="si">{</span><span class="n">n_std</span><span class="si">}</span><span class="s1">$</span><span class="se">\\</span><span class="s1">sigma$)&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">,</span> <span class="n">fontweight</span><span class="o">=</span><span class="s1">&#39;bold&#39;</span><span class="p">)</span>
+    
+    <span class="c1"># Make aspect ratio equal</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_aspect</span><span class="p">(</span><span class="s1">&#39;equal&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+    
+    <span class="c1"># Set reasonable axis limits</span>
+    <span class="n">margin</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.3</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="n">center</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">width</span><span class="o">/</span><span class="mi">2</span> <span class="o">-</span> <span class="n">margin</span><span class="p">,</span> <span class="n">center</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">width</span><span class="o">/</span><span class="mi">2</span> <span class="o">+</span> <span class="n">margin</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="n">center</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">height</span><span class="o">/</span><span class="mi">2</span> <span class="o">-</span> <span class="n">margin</span><span class="p">,</span> <span class="n">center</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">height</span><span class="o">/</span><span class="mi">2</span> <span class="o">+</span> <span class="n">margin</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">ax</span></div>
+
+
+
+<div class="viewcode-block" id="plot_eigenvalue_spectrum">
+<a class="viewcode-back" href="../../api.html#vplanet_inference.plot_eigenvalue_spectrum">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">plot_eigenvalue_spectrum</span><span class="p">(</span><span class="n">fisher_info</span><span class="p">,</span> <span class="n">param_names</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Plot eigenvalue spectrum of Fisher Information Matrix.</span>
+<span class="sd">    Shows which parameter combinations are well/poorly constrained.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    fisher_info : np.ndarray</span>
+<span class="sd">        Fisher Information Matrix</span>
+<span class="sd">    param_names : list, optional</span>
+<span class="sd">        Parameter names</span>
+<span class="sd">    ax : matplotlib.axes.Axes, optional</span>
+<span class="sd">        Axes to plot on</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">ax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+    
+    <span class="n">n_params</span> <span class="o">=</span> <span class="n">fisher_info</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    
+    <span class="c1"># Compute eigenvalues and eigenvectors</span>
+    <span class="n">eigenvalues</span><span class="p">,</span> <span class="n">eigenvectors</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eigh</span><span class="p">(</span><span class="n">fisher_info</span><span class="p">)</span>
+    
+    <span class="c1"># Sort in descending order</span>
+    <span class="n">idx</span> <span class="o">=</span> <span class="n">eigenvalues</span><span class="o">.</span><span class="n">argsort</span><span class="p">()[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">eigenvalues</span> <span class="o">=</span> <span class="n">eigenvalues</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+    <span class="n">eigenvectors</span> <span class="o">=</span> <span class="n">eigenvectors</span><span class="p">[:,</span> <span class="n">idx</span><span class="p">]</span>
+    
+    <span class="c1"># Plot eigenvalues</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_params</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">bars</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">eigenvalues</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;steelblue&#39;</span><span class="p">,</span> <span class="n">edgecolor</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">1.5</span><span class="p">)</span>
+    
+    <span class="c1"># Color code: red for small eigenvalues (poorly constrained)</span>
+    <span class="n">threshold</span> <span class="o">=</span> <span class="mf">0.1</span> <span class="o">*</span> <span class="n">eigenvalues</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">bar</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">bars</span><span class="p">,</span> <span class="n">eigenvalues</span><span class="p">)):</span>
+        <span class="k">if</span> <span class="n">val</span> <span class="o">&lt;</span> <span class="n">threshold</span><span class="p">:</span>
+            <span class="n">bar</span><span class="o">.</span><span class="n">set_color</span><span class="p">(</span><span class="s1">&#39;salmon&#39;</span><span class="p">)</span>
+    
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Principal Component&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Eigenvalue (Information)&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Fisher Information Eigenvalue Spectrum&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">,</span> <span class="n">fontweight</span><span class="o">=</span><span class="s1">&#39;bold&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="s1">&#39;y&#39;</span><span class="p">)</span>
+    
+    <span class="c1"># Add log scale option if eigenvalues span many orders of magnitude</span>
+    <span class="k">if</span> <span class="n">eigenvalues</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">/</span> <span class="n">eigenvalues</span><span class="o">.</span><span class="n">min</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">100</span><span class="p">:</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_yscale</span><span class="p">(</span><span class="s1">&#39;log&#39;</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Eigenvalue (Information) [log scale]&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+    
+    <span class="c1"># Add legend</span>
+    <span class="n">high_info</span> <span class="o">=</span> <span class="n">mpatches</span><span class="o">.</span><span class="n">Patch</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s1">&#39;steelblue&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Well constrained&#39;</span><span class="p">)</span>
+    <span class="n">low_info</span> <span class="o">=</span> <span class="n">mpatches</span><span class="o">.</span><span class="n">Patch</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s1">&#39;salmon&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Poorly constrained&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">handles</span><span class="o">=</span><span class="p">[</span><span class="n">high_info</span><span class="p">,</span> <span class="n">low_info</span><span class="p">])</span>
+    
+    <span class="c1"># Print eigenvector information</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Principal Components:&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;-&quot;</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">param_names</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">param_names</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s1">&#39;$</span><span class="se">\\</span><span class="s1">theta_</span><span class="se">{{</span><span class="si">{</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="se">}}</span><span class="s1">$&#39;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_params</span><span class="p">)]</span>
+    
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_params</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;PC</span><span class="si">{</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s2"> (λ=</span><span class="si">{</span><span class="n">eigenvalues</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">:</span><span class="s2">.2e</span><span class="si">}</span><span class="s2">):&quot;</span><span class="p">)</span>
+        <span class="n">components</span> <span class="o">=</span> <span class="s2">&quot; + &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">eigenvectors</span><span class="p">[</span><span class="n">j</span><span class="p">,</span><span class="w"> </span><span class="n">i</span><span class="p">]</span><span class="si">:</span><span class="s2">+.2f</span><span class="si">}</span><span class="s2">·</span><span class="si">{</span><span class="n">param_names</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span> 
+                                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_params</span><span class="p">)])</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="n">components</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">eigenvalues</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">threshold</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  ⚠️  WARNING: Poorly constrained direction!&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">()</span>
+    
+    <span class="k">return</span> <span class="n">ax</span></div>
+
+
+
+<div class="viewcode-block" id="plot_standard_errors">
+<a class="viewcode-back" href="../../api.html#vplanet_inference.plot_standard_errors">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">plot_standard_errors</span><span class="p">(</span><span class="n">fisher_info</span><span class="p">,</span> <span class="n">param_names</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Plot parameter standard errors from Fisher Information.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    fisher_info : np.ndarray</span>
+<span class="sd">        Fisher Information Matrix</span>
+<span class="sd">    param_names : list, optional</span>
+<span class="sd">        Parameter names</span>
+<span class="sd">    ax : matplotlib.axes.Axes, optional</span>
+<span class="sd">        Axes to plot on</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">ax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+    
+    <span class="n">n_params</span> <span class="o">=</span> <span class="n">fisher_info</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">param_names</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">param_names</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s1">&#39;$</span><span class="se">\\</span><span class="s1">theta_</span><span class="se">{{</span><span class="si">{</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="se">}}</span><span class="s1">$&#39;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_params</span><span class="p">)]</span>
+    
+    <span class="c1"># Compute standard errors</span>
+    <span class="n">cov</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">fisher_info</span><span class="p">)</span>
+    <span class="n">std_errors</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">cov</span><span class="p">))</span>
+    
+    <span class="c1"># Plot bars</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_params</span><span class="p">)</span>
+    <span class="n">bars</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">std_errors</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;coral&#39;</span><span class="p">,</span> <span class="n">edgecolor</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">,</span> 
+                  <span class="n">linewidth</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.7</span><span class="p">)</span>
+    
+    <span class="c1"># Add value labels on bars</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">bar</span><span class="p">,</span> <span class="n">se</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">bars</span><span class="p">,</span> <span class="n">std_errors</span><span class="p">)):</span>
+        <span class="n">height</span> <span class="o">=</span> <span class="n">bar</span><span class="o">.</span><span class="n">get_height</span><span class="p">()</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="n">bar</span><span class="o">.</span><span class="n">get_x</span><span class="p">()</span> <span class="o">+</span> <span class="n">bar</span><span class="o">.</span><span class="n">get_width</span><span class="p">()</span><span class="o">/</span><span class="mf">2.</span><span class="p">,</span> <span class="n">height</span><span class="p">,</span>
+               <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">se</span><span class="si">:</span><span class="s1">.3f</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">ha</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">,</span> <span class="n">va</span><span class="o">=</span><span class="s1">&#39;bottom&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+    
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Parameters&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Standard Error&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Parameter Uncertainty (Standard Errors)&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">,</span> <span class="n">fontweight</span><span class="o">=</span><span class="s1">&#39;bold&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xticklabels</span><span class="p">(</span><span class="n">param_names</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="s1">&#39;y&#39;</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">ax</span></div>
+
+
+
+<div class="viewcode-block" id="plot_condition_number_breakdown">
+<a class="viewcode-back" href="../../api.html#vplanet_inference.plot_condition_number_breakdown">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">plot_condition_number_breakdown</span><span class="p">(</span><span class="n">fisher_info</span><span class="p">,</span> <span class="n">param_names</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Visualize condition number and its implications.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    fisher_info : np.ndarray</span>
+<span class="sd">        Fisher Information Matrix</span>
+<span class="sd">    param_names : list, optional</span>
+<span class="sd">        Parameter names</span>
+<span class="sd">    ax : matplotlib.axes.Axes, optional</span>
+<span class="sd">        Axes to plot on</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">ax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+    
+    <span class="c1"># Compute eigenvalues</span>
+    <span class="n">eigenvalues</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eigvalsh</span><span class="p">(</span><span class="n">fisher_info</span><span class="p">)</span>
+    <span class="n">eigenvalues</span> <span class="o">=</span> <span class="n">eigenvalues</span><span class="p">[</span><span class="n">eigenvalues</span> <span class="o">&gt;</span> <span class="mf">1e-10</span><span class="p">]</span>  <span class="c1"># Remove numerical zeros</span>
+    <span class="n">eigenvalues</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">eigenvalues</span><span class="p">)[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    
+    <span class="n">condition_number</span> <span class="o">=</span> <span class="n">eigenvalues</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">eigenvalues</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    
+    <span class="c1"># Create visualization</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">eigenvalues</span><span class="p">)</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+    
+    <span class="n">ax</span><span class="o">.</span><span class="n">semilogy</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">eigenvalues</span><span class="p">,</span> <span class="s1">&#39;o-&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">markersize</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> 
+                <span class="n">color</span><span class="o">=</span><span class="s1">&#39;steelblue&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Eigenvalues&#39;</span><span class="p">)</span>
+    
+    <span class="c1"># Highlight max and min</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">semilogy</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">eigenvalues</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s1">&#39;go&#39;</span><span class="p">,</span> <span class="n">markersize</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> 
+                <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;Max: </span><span class="si">{</span><span class="n">eigenvalues</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">:</span><span class="s1">.2e</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">semilogy</span><span class="p">(</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">eigenvalues</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;ro&#39;</span><span class="p">,</span> <span class="n">markersize</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> 
+                <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;Min: </span><span class="si">{</span><span class="n">eigenvalues</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">:</span><span class="s1">.2e</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+    
+    <span class="c1"># Add condition number annotation</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="n">eigenvalues</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="n">eigenvalues</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
+    
+    <span class="c1"># Annotate condition number</span>
+    <span class="n">mid_y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">eigenvalues</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">eigenvalues</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;$</span><span class="se">\\</span><span class="s1">kappa$ = </span><span class="si">{</span><span class="n">condition_number</span><span class="si">:</span><span class="s1">.1f</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> 
+                <span class="n">xy</span><span class="o">=</span><span class="p">(</span><span class="n">n</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="n">mid_y</span><span class="p">),</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">,</span> <span class="n">fontweight</span><span class="o">=</span><span class="s1">&#39;bold&#39;</span><span class="p">,</span>
+                <span class="n">bbox</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">boxstyle</span><span class="o">=</span><span class="s1">&#39;round&#39;</span><span class="p">,</span> <span class="n">facecolor</span><span class="o">=</span><span class="s1">&#39;yellow&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.7</span><span class="p">))</span>
+    
+    <span class="c1"># Add interpretation text</span>
+    <span class="k">if</span> <span class="n">condition_number</span> <span class="o">&lt;</span> <span class="mi">10</span><span class="p">:</span>
+        <span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;Excellent&quot;</span>
+        <span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;green&#39;</span>
+    <span class="k">elif</span> <span class="n">condition_number</span> <span class="o">&lt;</span> <span class="mi">100</span><span class="p">:</span>
+        <span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;Good&quot;</span>
+        <span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;orange&#39;</span>
+    <span class="k">elif</span> <span class="n">condition_number</span> <span class="o">&lt;</span> <span class="mi">1000</span><span class="p">:</span>
+        <span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;Fair&quot;</span>
+        <span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;darkorange&#39;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;Poor&quot;</span>
+        <span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;red&#39;</span>
+    
+    <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mf">0.02</span><span class="p">,</span> <span class="mf">0.98</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;Condition: </span><span class="si">{</span><span class="n">status</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> 
+            <span class="n">transform</span><span class="o">=</span><span class="n">ax</span><span class="o">.</span><span class="n">transAxes</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">fontweight</span><span class="o">=</span><span class="s1">&#39;bold&#39;</span><span class="p">,</span>
+            <span class="n">verticalalignment</span><span class="o">=</span><span class="s1">&#39;top&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span>
+            <span class="n">bbox</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">boxstyle</span><span class="o">=</span><span class="s1">&#39;round&#39;</span><span class="p">,</span> <span class="n">facecolor</span><span class="o">=</span><span class="s1">&#39;white&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.8</span><span class="p">))</span>
+    
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Eigenvalue Index (sorted)&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Eigenvalue (log scale)&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Condition Number Analysis&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">,</span> <span class="n">fontweight</span><span class="o">=</span><span class="s1">&#39;bold&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">ax</span></div>
+
+
+
+<div class="viewcode-block" id="create_fisher_dashboard">
+<a class="viewcode-back" href="../../api.html#vplanet_inference.create_fisher_dashboard">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">create_fisher_dashboard</span><span class="p">(</span><span class="n">fisher_info</span><span class="p">,</span> <span class="n">param_names</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create comprehensive dashboard with multiple Fisher Information visualizations.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    fisher_info : np.ndarray</span>
+<span class="sd">        Fisher Information Matrix</span>
+<span class="sd">    param_names : list, optional</span>
+<span class="sd">        Parameter names</span>
+<span class="sd">    center : np.ndarray, optional</span>
+<span class="sd">        Center point for ellipse plot</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">n_params</span> <span class="o">=</span> <span class="n">fisher_info</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    
+    <span class="k">if</span> <span class="n">n_params</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
+        
+        <span class="c1"># 2x3 layout for 2D case</span>
+        <span class="n">ax1</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">plot_fisher_heatmap</span><span class="p">(</span><span class="n">fisher_info</span><span class="p">,</span> <span class="n">param_names</span><span class="p">,</span> <span class="n">ax1</span><span class="p">)</span>
+        
+        <span class="n">ax2</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">plot_correlation_matrix</span><span class="p">(</span><span class="n">fisher_info</span><span class="p">,</span> <span class="n">param_names</span><span class="p">,</span> <span class="n">ax2</span><span class="p">)</span>
+        
+        <span class="n">ax3</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+        <span class="n">plot_standard_errors</span><span class="p">(</span><span class="n">fisher_info</span><span class="p">,</span> <span class="n">param_names</span><span class="p">,</span> <span class="n">ax3</span><span class="p">)</span>
+        
+        <span class="n">ax4</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+        <span class="n">plot_uncertainty_ellipse</span><span class="p">(</span><span class="n">fisher_info</span><span class="p">,</span> <span class="n">center</span><span class="p">,</span> <span class="n">param_names</span><span class="p">,</span> <span class="n">n_std</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax4</span><span class="p">)</span>
+        
+        <span class="n">ax5</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+        <span class="n">plot_eigenvalue_spectrum</span><span class="p">(</span><span class="n">fisher_info</span><span class="p">,</span> <span class="n">param_names</span><span class="p">,</span> <span class="n">ax5</span><span class="p">)</span>
+        
+        <span class="n">ax6</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
+        <span class="n">plot_condition_number_breakdown</span><span class="p">(</span><span class="n">fisher_info</span><span class="p">,</span> <span class="n">param_names</span><span class="p">,</span> <span class="n">ax6</span><span class="p">)</span>
+        
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="mi">12</span><span class="p">))</span>
+        
+        <span class="c1"># 2x3 layout for higher dimensions</span>
+        <span class="n">ax1</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">plot_fisher_heatmap</span><span class="p">(</span><span class="n">fisher_info</span><span class="p">,</span> <span class="n">param_names</span><span class="p">,</span> <span class="n">ax1</span><span class="p">)</span>
+        
+        <span class="n">ax2</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">plot_correlation_matrix</span><span class="p">(</span><span class="n">fisher_info</span><span class="p">,</span> <span class="n">param_names</span><span class="p">,</span> <span class="n">ax2</span><span class="p">)</span>
+        
+        <span class="n">ax3</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+        <span class="n">plot_standard_errors</span><span class="p">(</span><span class="n">fisher_info</span><span class="p">,</span> <span class="n">param_names</span><span class="p">,</span> <span class="n">ax3</span><span class="p">)</span>
+        
+        <span class="n">ax4</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+        <span class="n">plot_eigenvalue_spectrum</span><span class="p">(</span><span class="n">fisher_info</span><span class="p">,</span> <span class="n">param_names</span><span class="p">,</span> <span class="n">ax4</span><span class="p">)</span>
+        
+        <span class="n">ax5</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+        <span class="n">plot_condition_number_breakdown</span><span class="p">(</span><span class="n">fisher_info</span><span class="p">,</span> <span class="n">param_names</span><span class="p">,</span> <span class="n">ax5</span><span class="p">)</span>
+        
+        <span class="c1"># For &gt;2D, show 2D projection of first two parameters</span>
+        <span class="k">if</span> <span class="n">n_params</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="n">ax6</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
+            <span class="n">plot_uncertainty_ellipse</span><span class="p">(</span><span class="n">fisher_info</span><span class="p">,</span> <span class="n">center</span><span class="p">,</span> <span class="n">param_names</span><span class="p">,</span> 
+                                    <span class="n">n_std</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax6</span><span class="p">,</span> <span class="n">indices</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+    
+    <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">fig</span></div>
+
+
+
+<span class="c1"># ========================================================</span>
+<span class="c1"># Local Sensitivity Analysis</span>
+<span class="c1"># ========================================================</span>
+
+<div class="viewcode-block" id="local_sensitivity_analysis">
+<a class="viewcode-back" href="../../api.html#vplanet_inference.local_sensitivity_analysis">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">local_sensitivity_analysis</span><span class="p">(</span><span class="n">vpm_model</span><span class="p">,</span> <span class="n">theta_fiducial</span><span class="p">,</span> <span class="n">inparams</span><span class="p">,</span> <span class="n">outparams</span><span class="p">,</span> <span class="n">delta_percent</span><span class="o">=</span><span class="mf">1.0</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Perform local (gradient-based) sensitivity analysis around a fiducial point.</span>
+
+<span class="sd">    Perturbs each input parameter individually by ±``delta_percent`` percent</span>
+<span class="sd">    of its fiducial value and records the resulting percent change in every</span>
+<span class="sd">    output parameter.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    vpm_model : VplanetModel</span>
+<span class="sd">        Initialised VPLanet model instance.</span>
+<span class="sd">    theta_fiducial : np.ndarray, shape (n_params,)</span>
+<span class="sd">        Fiducial (reference) parameter values in the units defined by</span>
+<span class="sd">        ``vpm_model.inparams``.</span>
+<span class="sd">    inparams : dict</span>
+<span class="sd">        Input parameter dict (``{&quot;body.dParam&quot;: unit, ...}``); used to</span>
+<span class="sd">        extract the ordered list of parameter names.</span>
+<span class="sd">    outparams : dict</span>
+<span class="sd">        Output parameter dict; used to extract the ordered list of output</span>
+<span class="sd">        names.</span>
+<span class="sd">    delta_percent : float, optional</span>
+<span class="sd">        Fractional perturbation size in percent.  Defaults to ``1.0``</span>
+<span class="sd">        (i.e. ±1 %).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    sensitivity_matrix : np.ndarray, shape (n_outputs, n_inputs, 2)</span>
+<span class="sd">        Percent change in each output for each input perturbation.</span>
+<span class="sd">        ``sensitivity_matrix[j, i, 0]`` is the response to</span>
+<span class="sd">        ``+delta_percent`` applied to input ``i`` on output ``j``;</span>
+<span class="sd">        index ``1`` corresponds to ``-delta_percent``.</span>
+<span class="sd">    param_names : list of str</span>
+<span class="sd">        Input parameter names (keys of ``inparams``).</span>
+<span class="sd">    output_names : list of str</span>
+<span class="sd">        Output parameter names (keys of ``outparams``).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">param_names</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">inparams</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+    <span class="n">output_names</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">outparams</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+    <span class="n">n_params</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">param_names</span><span class="p">)</span>
+    <span class="n">n_outputs</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">output_names</span><span class="p">)</span>
+    
+    <span class="c1"># Get baseline outputs</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Computing baseline outputs...&quot;</span><span class="p">)</span>
+    <span class="n">baseline_outputs</span> <span class="o">=</span> <span class="n">vpm_model</span><span class="o">.</span><span class="n">run_model</span><span class="p">(</span><span class="n">theta_fiducial</span><span class="p">,</span> <span class="n">remove</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    
+    <span class="c1"># Initialize sensitivity matrix [n_outputs x n_inputs x 2]</span>
+    <span class="n">sensitivity_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_outputs</span><span class="p">,</span> <span class="n">n_params</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+    
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Performing sensitivity analysis for </span><span class="si">{</span><span class="n">n_params</span><span class="si">}</span><span class="s2"> parameters...&quot;</span><span class="p">)</span>
+    
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">param_name</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">param_names</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Parameter </span><span class="si">{</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">n_params</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">param_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        
+        <span class="c1"># Create perturbed parameter sets</span>
+        <span class="n">theta_plus</span> <span class="o">=</span> <span class="n">theta_fiducial</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">theta_minus</span> <span class="o">=</span> <span class="n">theta_fiducial</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        
+        <span class="c1"># Apply ±delta_percent change</span>
+        <span class="n">delta</span> <span class="o">=</span> <span class="n">delta_percent</span> <span class="o">/</span> <span class="mf">100.0</span>
+        <span class="n">theta_plus</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">theta_fiducial</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">delta</span><span class="p">)</span>
+        <span class="n">theta_minus</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">theta_fiducial</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">delta</span><span class="p">)</span>
+        
+        <span class="c1"># Run models with perturbed parameters</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">outputs_plus</span> <span class="o">=</span> <span class="n">vpm_model</span><span class="o">.</span><span class="n">run_model</span><span class="p">(</span><span class="n">theta_plus</span><span class="p">,</span> <span class="n">remove</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">outputs_minus</span> <span class="o">=</span> <span class="n">vpm_model</span><span class="o">.</span><span class="n">run_model</span><span class="p">(</span><span class="n">theta_minus</span><span class="p">,</span> <span class="n">remove</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            
+            <span class="c1"># Calculate percent changes for each output</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_outputs</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">baseline_outputs</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># Avoid division by zero</span>
+                    <span class="n">pct_change_plus</span> <span class="o">=</span> <span class="p">((</span><span class="n">outputs_plus</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">-</span> <span class="n">baseline_outputs</span><span class="p">[</span><span class="n">j</span><span class="p">])</span> <span class="o">/</span> <span class="n">baseline_outputs</span><span class="p">[</span><span class="n">j</span><span class="p">])</span> <span class="o">*</span> <span class="mi">100</span>
+                    <span class="n">pct_change_minus</span> <span class="o">=</span> <span class="p">((</span><span class="n">outputs_minus</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">-</span> <span class="n">baseline_outputs</span><span class="p">[</span><span class="n">j</span><span class="p">])</span> <span class="o">/</span> <span class="n">baseline_outputs</span><span class="p">[</span><span class="n">j</span><span class="p">])</span> <span class="o">*</span> <span class="mi">100</span>
+                    
+                    <span class="n">sensitivity_matrix</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">pct_change_plus</span>
+                    <span class="n">sensitivity_matrix</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">pct_change_minus</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">sensitivity_matrix</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+                    
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;    Error with parameter </span><span class="si">{</span><span class="n">param_name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            
+            <span class="n">sensitivity_matrix</span><span class="p">[:,</span> <span class="n">i</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+    
+    <span class="k">return</span> <span class="n">sensitivity_matrix</span><span class="p">,</span> <span class="n">param_names</span><span class="p">,</span> <span class="n">output_names</span></div>
+
+
+
+<span class="c1"># ========================================================</span>
+<span class="c1"># Plot Sensitivity Analysis Results</span>
+<span class="c1"># ========================================================</span>
+
+<div class="viewcode-block" id="plot_sensitivity_heatmap">
+<a class="viewcode-back" href="../../api.html#vplanet_inference.plot_sensitivity_heatmap">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">plot_sensitivity_heatmap</span><span class="p">(</span><span class="n">sensitivity_matrix</span><span class="p">,</span> <span class="n">param_names</span><span class="p">,</span> <span class="n">output_names</span><span class="p">,</span> <span class="n">delta_percent</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">label_fs</span><span class="o">=</span><span class="mi">16</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Plot local sensitivity analysis results as a four-panel heatmap figure.</span>
+
+<span class="sd">    Produces a 2×2 grid showing: (1) average absolute sensitivity,</span>
+<span class="sd">    (2) response to +delta perturbation, (3) response to −delta</span>
+<span class="sd">    perturbation, and (4) a bar chart of the most influential input for</span>
+<span class="sd">    each output.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    sensitivity_matrix : np.ndarray, shape (n_outputs, n_inputs, 2)</span>
+<span class="sd">        Output of :func:`local_sensitivity_analysis`.</span>
+<span class="sd">    param_names : list of str</span>
+<span class="sd">        Input parameter names (used for x-axis tick labels; the prefix</span>
+<span class="sd">        ``&quot;earth.d&quot;`` is stripped automatically).</span>
+<span class="sd">    output_names : list of str</span>
+<span class="sd">        Output parameter names (used for y-axis tick labels; the prefix</span>
+<span class="sd">        ``&quot;final.earth.&quot;`` is stripped automatically).</span>
+<span class="sd">    delta_percent : float, optional</span>
+<span class="sd">        Perturbation size used in the analysis — shown in panel titles.</span>
+<span class="sd">        Defaults to ``1.0``.</span>
+<span class="sd">    label_fs : int, optional</span>
+<span class="sd">        Base font size for axis labels and titles.  Defaults to ``16``.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    matplotlib.figure.Figure</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="c1"># Clean parameter and output names for display</span>
+    <span class="n">param_labels</span> <span class="o">=</span> <span class="p">[</span><span class="n">name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;earth.d&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">param_names</span><span class="p">]</span>
+    <span class="n">output_labels</span> <span class="o">=</span> <span class="p">[</span><span class="n">name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;final.earth.&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">output_names</span><span class="p">]</span>
+    
+    <span class="c1"># Calculate average absolute sensitivity (average of |+delta| and |-delta|)</span>
+    <span class="n">avg_sensitivity</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">sensitivity_matrix</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+    
+    <span class="c1"># Create figure with multiple subplots</span>
+    <span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span><span class="mi">16</span><span class="p">))</span>
+    
+    <span class="c1"># Plot 1: Average absolute sensitivity</span>
+    <span class="n">im1</span> <span class="o">=</span> <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">avg_sensitivity</span><span class="p">,</span> <span class="n">aspect</span><span class="o">=</span><span class="s1">&#39;auto&#39;</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;Purples&#39;</span><span class="p">,</span> 
+                          <span class="n">interpolation</span><span class="o">=</span><span class="s1">&#39;nearest&#39;</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;Average Absolute Sensitivity (|$\Delta$</span><span class="si">{delta_percent}</span><span class="s1">\%|)&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">delta_percent</span><span class="o">=</span><span class="n">delta_percent</span><span class="p">),</span> <span class="n">fontsize</span><span class="o">=</span><span class="n">label_fs</span><span class="p">)</span>
+    <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Input Parameters&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="n">label_fs</span><span class="p">)</span>
+    <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Output Parameters&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="n">label_fs</span><span class="p">)</span>
+    <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">param_labels</span><span class="p">)))</span>
+    <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_xticklabels</span><span class="p">(</span><span class="n">param_labels</span><span class="p">,</span> <span class="n">rotation</span><span class="o">=</span><span class="mi">45</span><span class="p">,</span> <span class="n">ha</span><span class="o">=</span><span class="s1">&#39;right&#39;</span><span class="p">)</span>
+    <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">output_labels</span><span class="p">)))</span>
+    <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_yticklabels</span><span class="p">(</span><span class="n">output_labels</span><span class="p">)</span>
+    
+    <span class="c1"># Add colorbar</span>
+    <span class="n">cbar1</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">im1</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="n">shrink</span><span class="o">=</span><span class="mf">0.8</span><span class="p">)</span>
+    <span class="n">cbar1</span><span class="o">.</span><span class="n">set_label</span><span class="p">(</span><span class="s1">&#39;\% Change in Output&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="n">label_fs</span><span class="p">)</span>
+    
+    <span class="c1"># Plot 2: +delta sensitivity  </span>
+    <span class="n">im2</span> <span class="o">=</span> <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">sensitivity_matrix</span><span class="p">[:,:,</span><span class="mi">0</span><span class="p">],</span> <span class="n">aspect</span><span class="o">=</span><span class="s1">&#39;auto&#39;</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;RdBu_r&#39;</span><span class="p">,</span> 
+                          <span class="n">interpolation</span><span class="o">=</span><span class="s1">&#39;nearest&#39;</span><span class="p">,</span> 
+                          <span class="n">vmin</span><span class="o">=-</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">sensitivity_matrix</span><span class="p">)),</span> 
+                          <span class="n">vmax</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">sensitivity_matrix</span><span class="p">)))</span>
+    <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;+</span><span class="si">{</span><span class="n">delta_percent</span><span class="si">}</span><span class="s1">\% Parameter Change&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="n">label_fs</span><span class="p">)</span>
+    <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Input Parameters&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="n">label_fs</span><span class="p">)</span>
+    <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Output Parameters&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="n">label_fs</span><span class="p">)</span>
+    <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">param_labels</span><span class="p">)))</span>
+    <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_xticklabels</span><span class="p">(</span><span class="n">param_labels</span><span class="p">,</span> <span class="n">rotation</span><span class="o">=</span><span class="mi">45</span><span class="p">,</span> <span class="n">ha</span><span class="o">=</span><span class="s1">&#39;right&#39;</span><span class="p">)</span>
+    <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">output_labels</span><span class="p">)))</span>
+    <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_yticklabels</span><span class="p">(</span><span class="n">output_labels</span><span class="p">)</span>
+    
+    <span class="n">cbar2</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">im2</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span> <span class="n">shrink</span><span class="o">=</span><span class="mf">0.8</span><span class="p">)</span>
+    <span class="n">cbar2</span><span class="o">.</span><span class="n">set_label</span><span class="p">(</span><span class="s1">&#39;\% Change in Output&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="n">label_fs</span><span class="p">)</span>
+    
+    <span class="c1"># Plot 3: -delta sensitivity</span>
+    <span class="n">im3</span> <span class="o">=</span> <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">sensitivity_matrix</span><span class="p">[:,:,</span><span class="mi">1</span><span class="p">],</span> <span class="n">aspect</span><span class="o">=</span><span class="s1">&#39;auto&#39;</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;RdBu&#39;</span><span class="p">,</span> 
+                          <span class="n">interpolation</span><span class="o">=</span><span class="s1">&#39;nearest&#39;</span><span class="p">,</span>
+                          <span class="n">vmin</span><span class="o">=-</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">sensitivity_matrix</span><span class="p">)),</span> 
+                          <span class="n">vmax</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">sensitivity_matrix</span><span class="p">)))</span>
+    <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;-</span><span class="si">{</span><span class="n">delta_percent</span><span class="si">}</span><span class="s1">\% Parameter Change&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="n">label_fs</span><span class="p">)</span>
+    <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Input Parameters&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="n">label_fs</span><span class="p">)</span>
+    <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Output Parameters&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="n">label_fs</span><span class="p">)</span>
+    <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">param_labels</span><span class="p">)))</span>
+    <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_xticklabels</span><span class="p">(</span><span class="n">param_labels</span><span class="p">,</span> <span class="n">rotation</span><span class="o">=</span><span class="mi">45</span><span class="p">,</span> <span class="n">ha</span><span class="o">=</span><span class="s1">&#39;right&#39;</span><span class="p">)</span>
+    <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">output_labels</span><span class="p">)))</span>
+    <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_yticklabels</span><span class="p">(</span><span class="n">output_labels</span><span class="p">)</span>
+    
+    <span class="n">cbar3</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">im3</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="n">shrink</span><span class="o">=</span><span class="mf">0.8</span><span class="p">)</span>
+    <span class="n">cbar3</span><span class="o">.</span><span class="n">set_label</span><span class="p">(</span><span class="s1">&#39;\% Change in Output&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="n">label_fs</span><span class="p">)</span>
+    
+    <span class="c1"># Plot 4: Most sensitive parameter for each output</span>
+    <span class="n">most_sensitive_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">avg_sensitivity</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">most_sensitive_values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">avg_sensitivity</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    
+    <span class="n">bars</span> <span class="o">=</span> <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">barh</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">output_labels</span><span class="p">)),</span> <span class="n">most_sensitive_values</span><span class="p">)</span>
+    <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Most Sensitive Input for Each Output&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="n">label_fs</span><span class="p">)</span>
+    <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Maximum Sensitivity (\</span><span class="si">% c</span><span class="s1">hange)&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="n">label_fs</span><span class="p">)</span>
+    <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">output_labels</span><span class="p">)))</span>
+    <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_yticklabels</span><span class="p">(</span><span class="n">output_labels</span><span class="p">)</span>
+    
+    <span class="c1"># Add labels showing which parameter is most sensitive</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">idx</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">most_sensitive_idx</span><span class="p">,</span> <span class="n">most_sensitive_values</span><span class="p">)):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">val</span><span class="p">):</span>
+            <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="n">val</span> <span class="o">+</span> <span class="mf">0.01</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">most_sensitive_values</span><span class="p">),</span> <span class="n">i</span><span class="p">,</span> 
+                          <span class="n">param_labels</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="n">va</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="n">label_fs</span><span class="p">)</span>
+    
+    <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+    
+    <span class="k">return</span> <span class="n">fig</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Jessica Birky.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

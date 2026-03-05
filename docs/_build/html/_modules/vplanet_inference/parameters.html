@@ -56,8 +56,9 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Case Studies</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../case_studies/index.html">Case Studies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../case_studies/index.html">Case Studies Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../case_studies/04_earth_mle.html">Maximum Likelihood Estimation for Earth Interior Evolution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../case_studies/05_custom_rotation_model.html">Custom Rotation-Activity-XUV Model</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
 <ul>
@@ -246,6 +247,8 @@
 <span class="n">_VPLANET_SOURCE_CACHE</span> <span class="o">=</span> <span class="kc">None</span>
 
 
+<div class="viewcode-block" id="get_vplanet_units">
+<a class="viewcode-back" href="../../api.html#vplanet_inference.get_vplanet_units">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_vplanet_units</span><span class="p">():</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Run ``vplanet -H`` and return a dictionary mapping every parameter name</span>
 <span class="sd">    to its default astropy unit.</span>
@@ -342,7 +345,8 @@
     <span class="c1"># Apply per-parameter overrides (correct known vplanet documentation errors)</span>
     <span class="n">result</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">_VPLANET_PARAM_OVERRIDES</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">result</span>
+    <span class="k">return</span> <span class="n">result</span></div>
+
 
 
 <span class="c1"># --------------------------------------------------------------------------- #</span>
@@ -484,6 +488,8 @@
     <span class="k">return</span> <span class="n">result</span>
 
 
+<div class="viewcode-block" id="get_vplanet_units_source">
+<a class="viewcode-back" href="../../api.html#vplanet_inference.get_vplanet_units_source">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_vplanet_units_source</span><span class="p">(</span><span class="n">parameter</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Look up the unit for a vplanet parameter by parsing the C source code</span>
 <span class="sd">    on GitHub.</span>
@@ -564,12 +570,54 @@
     <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
         <span class="sa">f</span><span class="s2">&quot;Parameter </span><span class="si">{</span><span class="n">parameter</span><span class="si">!r}</span><span class="s2"> was not found in the vplanet source code. &quot;</span>
         <span class="s2">&quot;Check that the parameter name is correct (case-sensitive).&quot;</span>
-    <span class="p">)</span>
+    <span class="p">)</span></div>
+
 
 
 <div class="viewcode-block" id="VplanetParameters">
 <a class="viewcode-back" href="../../api.html#vplanet_inference.VplanetParameters">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">VplanetParameters</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Container for a set of VPLanet parameters and their associated metadata.</span>
+
+<span class="sd">    Used internally by :class:`~vplanet_inference.AnalyzeVplanetModel` to hold</span>
+<span class="sd">    fixed inputs, variable inputs, and outputs loaded from a YAML configuration</span>
+<span class="sd">    file.  Can also be used directly to build parameter dictionaries for</span>
+<span class="sd">    :class:`~vplanet_inference.VplanetModel`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    names : list of str</span>
+<span class="sd">        VPLanet parameter names (e.g. ``[&quot;star.dMass&quot;, &quot;vpl.dStopTime&quot;]``).</span>
+<span class="sd">    units : list of astropy.units.Unit or None</span>
+<span class="sd">        Astropy unit for each parameter, in the same order as ``names``.</span>
+<span class="sd">        ``None`` entries mark dimensionless parameters.</span>
+<span class="sd">    bounds : list of (float, float), optional</span>
+<span class="sd">        ``(min, max)`` prior bounds for each variable parameter.</span>
+<span class="sd">    true : list of float, optional</span>
+<span class="sd">        True / fiducial values for each parameter (used in synthetic tests).</span>
+<span class="sd">    data : list or np.ndarray, optional</span>
+<span class="sd">        Observational data for each parameter, typically ``[[mean, std], ...]``.</span>
+<span class="sd">    labels : list of str, optional</span>
+<span class="sd">        Human-readable plot labels.  Defaults to ``names`` if not provided.</span>
+<span class="sd">    uncertainty : list of float, optional</span>
+<span class="sd">        1-sigma uncertainties; used together with ``true`` by</span>
+<span class="sd">        :meth:`set_data` to build the ``data`` array.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    num : int</span>
+<span class="sd">        Number of parameters.</span>
+<span class="sd">    dict_units : dict</span>
+<span class="sd">        ``{name: unit}`` mapping.</span>
+<span class="sd">    dict_bounds : dict</span>
+<span class="sd">        ``{name: (min, max)}`` mapping (only if ``bounds`` was supplied).</span>
+<span class="sd">    dict_true : dict</span>
+<span class="sd">        ``{name: true_value}`` mapping (only if ``true`` was supplied).</span>
+<span class="sd">    dict_data : dict</span>
+<span class="sd">        ``{name: data_row}`` mapping (only if ``data`` was supplied).</span>
+<span class="sd">    dict_labels : dict</span>
+<span class="sd">        ``{name: label}`` mapping.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">names</span><span class="p">,</span> <span class="n">units</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">true</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">uncertainty</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 
@@ -605,7 +653,13 @@
 <div class="viewcode-block" id="VplanetParameters.set_data">
 <a class="viewcode-back" href="../../api.html#vplanet_inference.VplanetParameters.set_data">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">set_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">true</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set ``true`` values and build the ``data`` array from ``uncertainty``.</span>
 
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        true : array-like of float</span>
+<span class="sd">            True / best-fit values for each parameter.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">true</span> <span class="o">=</span> <span class="n">true</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">true</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">uncertainty</span><span class="p">])</span><span class="o">.</span><span class="n">T</span>
 
@@ -617,7 +671,18 @@
 <div class="viewcode-block" id="VplanetParameters.get_true_units">
 <a class="viewcode-back" href="../../api.html#vplanet_inference.VplanetParameters.get_true_units">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_true_units</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">param_name</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the true value of a parameter as an astropy Quantity.</span>
 
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        param_name : str</span>
+<span class="sd">            Parameter name (must be in ``self.names``).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        astropy.units.Quantity</span>
+<span class="sd">            ``true_value * unit`` for the requested parameter.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">true</span><span class="p">[</span><span class="n">param_name</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">units</span><span class="p">[</span><span class="n">param_name</span><span class="p">]</span></div>
 </div>
 
@@ -638,6 +703,8 @@
     <span class="k">return</span> <span class="n">unit</span>
 
 
+<div class="viewcode-block" id="check_units">
+<a class="viewcode-back" href="../../api.html#vplanet_inference.check_units">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">check_units</span><span class="p">(</span><span class="n">inparams</span><span class="p">,</span> <span class="n">outparams</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Check that the astropy units supplied in *inparams* and *outparams* are</span>
 <span class="sd">    physically consistent with the default units for those parameters.</span>
@@ -815,7 +882,8 @@
 
     <span class="c1"># Return value: keep unknown as (key, user_unit) tuples for backward compat.</span>
     <span class="n">unknown</span> <span class="o">=</span> <span class="p">[(</span><span class="n">key</span><span class="p">,</span> <span class="n">u_unit</span><span class="p">)</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">u_unit</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_reason</span> <span class="ow">in</span> <span class="n">_unknown_ext</span><span class="p">]</span>
-    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;consistent&quot;</span><span class="p">:</span> <span class="n">consistent</span><span class="p">,</span> <span class="s2">&quot;inconsistent&quot;</span><span class="p">:</span> <span class="n">inconsistent</span><span class="p">,</span> <span class="s2">&quot;unknown&quot;</span><span class="p">:</span> <span class="n">unknown</span><span class="p">}</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;consistent&quot;</span><span class="p">:</span> <span class="n">consistent</span><span class="p">,</span> <span class="s2">&quot;inconsistent&quot;</span><span class="p">:</span> <span class="n">inconsistent</span><span class="p">,</span> <span class="s2">&quot;unknown&quot;</span><span class="p">:</span> <span class="n">unknown</span><span class="p">}</span></div>
+
 </pre></div>
 
            </div>
